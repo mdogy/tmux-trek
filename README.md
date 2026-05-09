@@ -63,6 +63,12 @@ GitHub Issues are the canonical roadmap. `TODO.md` is a checked-in snapshot for 
 - Add fog of war to exploration
 - Generate and integrate real artwork with Google Gemini / Nano Banana
 
+## Handoff State
+
+- The repo is currently clean and runnable with a limited feature set.
+- The implemented slice is intentionally small but verified by unit, BDD, and Playwright GUI tests.
+- The next LLM should read [doc/gameplay-plan.md](/Users/michael/Documents/dev/tmux-trek/doc/gameplay-plan.md), [TODO.md](/Users/michael/Documents/dev/tmux-trek/TODO.md), and the open GitHub Issues before changing scope.
+
 ## Contributing
 
 Use Conventional Commits. Keep tmux behavior in `src/engine/` pure and test-first. Preserve the teaching model: every new mechanic should introduce context, give a concrete instruction, and reinforce the command through action.

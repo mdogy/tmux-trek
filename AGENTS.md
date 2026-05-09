@@ -31,3 +31,10 @@ Any game-development change should aim to leave the project with:
 - one clearer instruction to the player
 - one stronger reinforcement loop
 - passing `lint`, `test`, `bdd`, and `build` when feasible
+
+## Handoff
+
+- The current implementation is a limited but runnable vertical slice.
+- Before changing gameplay direction, read [doc/gameplay-plan.md](/Users/michael/Documents/dev/tmux-trek/doc/gameplay-plan.md) and [TODO.md](/Users/michael/Documents/dev/tmux-trek/TODO.md).
+- Treat GitHub Issues as canonical for future feature work and `TODO.md` as the checked-in summary.
+- Preserve the current browser acceptance tests unless the underlying player flow intentionally changes.

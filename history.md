@@ -39,7 +39,7 @@ On 2026-05-08 the repository was normalized into a real project structure:
 
 The original planning documents are preserved in:
 
-- `docs/design/`
+- `doc/`
 - `docs/research/`
 - `docs/prompts/`
 - `docs/assets/`
