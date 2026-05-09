@@ -1,5 +1,23 @@
 # Project History
 
+## 2026-05-09
+
+The project reached a cleaner playable prototype state on 2026-05-09:
+
+- GitHub Pages deployment was fixed by correcting the production asset base path
+- tile-based movement was restored and the captain now stays centered on tiles
+- browser GUI regression tests were added with Playwright
+- keyboard-only acceptance coverage now reaches from Zrix to Vrex
+- terminal font readability and focus handoff between world, dialogue, and terminal were improved
+- obstacle collisions were added and the CLULIX beacon was made visually legible
+
+The roadmap was also synchronized with the current design direction:
+
+- GitHub Issues were expanded to track the next planned features
+- a root `TODO.md` snapshot was added for quick orientation while keeping GitHub Issues canonical
+- the next narrative/gameplay step is to move the opening to the CLULIX bridge and teach session `0` as descent to the planet
+- future design work includes vim navigation, fog of war, an overflow-buffer story loop, and generated art integration
+
 ## 2026-05-08
 
 TMUX Trek began this repository as a planning bundle rather than a runnable codebase. The original folder contained only design and research documents covering:

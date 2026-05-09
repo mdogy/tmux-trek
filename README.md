@@ -45,13 +45,22 @@ npm run build
 ## Documentation
 
 - [Project history](/Users/michael/Documents/dev/tmux-trek/history.md)
+- [TODO snapshot](/Users/michael/Documents/dev/tmux-trek/TODO.md)
 - [Agent workflow](/Users/michael/Documents/dev/tmux-trek/AGENTS.md)
 - [Game design document](/Users/michael/Documents/dev/tmux-trek/docs/design/game-design.md)
 - [Software engineering guide](/Users/michael/Documents/dev/tmux-trek/docs/design/software-engineering-practices.md)
 
 ## Roadmap Tracking
 
-Project TODOs are tracked in GitHub Issues rather than a local `TODO.md`. Use the issue tracker for implementation work, asset pipeline tasks, and curriculum milestones so the roadmap stays visible and reviewable.
+GitHub Issues are the canonical roadmap. `TODO.md` is a checked-in snapshot for quick repo orientation, but issues should be treated as the source of truth for planning and status.
+
+## Planned Direction
+
+- Move the opening to the CLULIX bridge and treat the planet as session `0`
+- Replace world navigation with vim-style `h/j/k/l`
+- Expand the session lesson into the overflow-buffer and armory loop
+- Add fog of war to exploration
+- Generate and integrate real artwork with Google Gemini / Nano Banana
 
 ## Contributing
 
