@@ -13,6 +13,15 @@ async function pressMove(page, key, expectedGrid) {
   await expect(page.locator("#game-root")).toHaveAttribute("data-is-moving", "false");
 }
 
+async function pressBlockedMove(page, key, expectedGrid) {
+  await page.keyboard.press(key);
+  await expect(page.locator("#game-root")).toHaveAttribute(
+    "data-player-grid",
+    `${expectedGrid[0]},${expectedGrid[1]}`,
+  );
+  await expect(page.locator("#game-root")).toHaveAttribute("data-last-move-result", "blocked");
+}
+
 async function moveAlong(page, sequence) {
   for (const [key, expected] of sequence) {
     await pressMove(page, key, expected);
@@ -54,7 +63,14 @@ async function completeZrixChallenge(page) {
 test.describe("TMUX Trek world input", () => {
   test.beforeEach(async ({ page }) => {
     await page.goto("/");
-    await expect(page.locator("#game-root")).toHaveAttribute("data-player-grid", /,/);
+    await expect(page.locator("#game-root")).toHaveAttribute("data-player-grid", "17,12");
+  });
+
+  test("captain starts beside the beacon, not in an arbitrary board position", async ({
+    page,
+  }) => {
+    await expect(page.locator("#game-root")).toHaveAttribute("data-player-grid", "17,12");
+    await expect(page.locator("#game-root")).toHaveAttribute("data-prompt", /CLULIX beacon/);
   });
 
   test("WASD sequence keeps movement responsive without freezing", async ({ page }) => {
@@ -81,36 +97,79 @@ test.describe("TMUX Trek world input", () => {
   });
 
   test("active NPC interaction triggers by proximity before overlap", async ({ page }) => {
-    await pressMove(page, "KeyW", [5, 9]);
-    await pressMove(page, "KeyW", [5, 8]);
-    await pressMove(page, "KeyW", [5, 7]);
-    await pressMove(page, "KeyW", [5, 6]);
-    await pressMove(page, "KeyW", [5, 5]);
+    await moveAlong(page, [
+      ["KeyW", [17, 11]],
+      ["KeyW", [17, 10]],
+      ["KeyW", [17, 9]],
+      ["KeyW", [17, 8]],
+      ["KeyW", [17, 7]],
+      ["KeyW", [17, 6]],
+      ["KeyW", [17, 5]],
+      ["KeyD", [18, 5]],
+      ["KeyA", [17, 5]],
+      ["KeyA", [16, 5]],
+      ["KeyA", [15, 5]],
+      ["KeyA", [14, 5]],
+      ["KeyA", [13, 5]],
+      ["KeyA", [12, 5]],
+      ["KeyA", [11, 5]],
+      ["KeyA", [10, 5]],
+      ["KeyA", [9, 5]],
+      ["KeyA", [8, 5]],
+      ["KeyA", [7, 5]],
+      ["KeyA", [6, 5]],
+    ]);
 
     await expect(page.locator("#game-root")).toHaveAttribute("data-nearby-npc", "zrix");
     await expect(page.locator("#game-root")).toHaveAttribute(
       "data-prompt",
       /Press E to talk to Zrix/,
     );
-    await expect(page.locator("#game-root")).toHaveAttribute("data-player-grid", "5,5");
+    await expect(page.locator("#game-root")).toHaveAttribute("data-player-grid", "6,5");
+  });
+
+  test("obstacle tiles block movement", async ({ page }) => {
+    await moveAlong(page, [
+      ["KeyW", [17, 11]],
+      ["KeyW", [17, 10]],
+      ["KeyW", [17, 9]],
+      ["KeyW", [17, 8]],
+      ["KeyA", [16, 8]],
+      ["KeyA", [15, 8]],
+      ["KeyA", [14, 8]],
+    ]);
+
+    await pressBlockedMove(page, "KeyS", [14, 8]);
   });
 
   test("keyboard-only acceptance flow reaches and opens Vrex after Zrix lesson", async ({
     page,
   }) => {
     await moveAlong(page, [
-      ["KeyW", [5, 9]],
-      ["KeyW", [5, 8]],
-      ["KeyW", [5, 7]],
-      ["KeyW", [5, 6]],
-      ["KeyW", [5, 5]],
+      ["KeyW", [17, 11]],
+      ["KeyW", [17, 10]],
+      ["KeyW", [17, 9]],
+      ["KeyW", [17, 8]],
+      ["KeyW", [17, 7]],
+      ["KeyW", [17, 6]],
+      ["KeyW", [17, 5]],
+      ["KeyA", [16, 5]],
+      ["KeyA", [15, 5]],
+      ["KeyA", [14, 5]],
+      ["KeyA", [13, 5]],
+      ["KeyA", [12, 5]],
+      ["KeyA", [11, 5]],
+      ["KeyA", [10, 5]],
+      ["KeyA", [9, 5]],
+      ["KeyA", [8, 5]],
+      ["KeyA", [7, 5]],
+      ["KeyA", [6, 5]],
     ]);
 
     await expect(page.locator("#game-root")).toHaveAttribute("data-prompt", /Press E to talk to Zrix/);
     await completeZrixChallenge(page);
 
     await moveAlong(page, [
-      ["KeyD", [6, 5]],
       ["KeyD", [7, 5]],
       ["KeyD", [8, 5]],
       ["KeyD", [9, 5]],

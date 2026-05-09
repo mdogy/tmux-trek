@@ -19,6 +19,9 @@ export class WorldScene extends Phaser.Scene {
     this.columns = this.zone.map.columns;
     this.rows = this.zone.map.rows;
     this.playerGrid = { ...this.zone.playerStart };
+    this.blockedTiles = new Set(
+      (this.zone.obstacles?.tiles ?? []).map(([column, row]) => `${column},${row}`),
+    );
 
     this.cameras.main.setBackgroundColor("#0a1628");
     this.#drawTileMap();
@@ -71,6 +74,11 @@ export class WorldScene extends Phaser.Scene {
   #drawLandmarks() {
     const crater = this.#tileCenter(4, 2);
     this.add.circle(crater.x, crater.y, this.tileSize * 2.6, 0x2e2b61, 0.88);
+    this.add.text(crater.x - 74, crater.y - 8, "CRATER", {
+      color: "#b8c7c5",
+      fontFamily: '"Share Tech Mono"',
+      fontSize: "18px",
+    });
 
     this.#drawTileCluster(
       [
@@ -95,11 +103,16 @@ export class WorldScene extends Phaser.Scene {
     );
 
     const beacon = this.#tileCenter(this.zone.beacon.column, this.zone.beacon.row);
-    this.add.rectangle(beacon.x, beacon.y, this.tileSize - 10, this.tileSize - 10, 0x6ec6c0);
-    this.add.rectangle(beacon.x, beacon.y, 22, 22, 0x347c89);
-
-    const archive = this.#tileCenter(16, 6);
-    this.add.circle(archive.x, archive.y, 16, 0xffb300, 0.92);
+    this.add.circle(beacon.x, beacon.y, 30, 0xffb300, 0.18);
+    this.add.circle(beacon.x, beacon.y, 20, 0xffb300, 0.3);
+    this.add.rectangle(beacon.x, beacon.y, this.tileSize - 14, this.tileSize - 14, 0x1f4f67);
+    this.add.rectangle(beacon.x, beacon.y, 18, 28, 0x6ec6c0);
+    this.add.circle(beacon.x, beacon.y - 10, 8, 0xffb300, 0.95);
+    this.add.text(beacon.x - 64, beacon.y + 32, "CLULIX BEACON", {
+      color: "#ffb300",
+      fontFamily: '"Press Start 2P"',
+      fontSize: "10px",
+    });
   }
 
   #drawTileCluster(tiles, fillColor, accentColor) {
@@ -197,6 +210,12 @@ export class WorldScene extends Phaser.Scene {
     const nextRow = Phaser.Math.Clamp(this.playerGrid.row + deltaRow, 1, this.rows - 2);
 
     if (nextColumn === this.playerGrid.column && nextRow === this.playerGrid.row) {
+      this.#syncDebugState(undefined, undefined, "blocked");
+      return;
+    }
+
+    if (this.blockedTiles.has(`${nextColumn},${nextRow}`)) {
+      this.#syncDebugState("Movement blocked by terrain.", null, "blocked");
       return;
     }
 
@@ -216,7 +235,7 @@ export class WorldScene extends Phaser.Scene {
       onComplete: () => {
         this.playerLabel.setPosition(center.x - 24, center.y + 28);
         this.isMoving = false;
-        this.#syncDebugState();
+        this.#syncDebugState(undefined, undefined, "moved");
       },
     });
 
@@ -251,13 +270,17 @@ export class WorldScene extends Phaser.Scene {
     const nearestNpc = this.#getNearestNpc();
     const activeNpc = this.zone.npcs[this.app.getActiveNpcIndex()] ?? null;
     const nearBeacon =
+      this.#tileDistance(this.playerGrid, this.zone.beacon) <= 1;
+    const beaconReady =
       this.app.isBeaconActive() &&
       this.#tileDistance(this.playerGrid, this.zone.beacon) <= 1;
 
-    let prompt = "Use WASD or arrow keys. Each press moves one tile.";
+    let prompt = nearBeacon
+      ? "You are at the CLULIX beacon. Move near Zrix to begin the lesson."
+      : "Use WASD or arrow keys. Each press moves one tile.";
     let nearbyNpcId = nearestNpc?.npc.id ?? null;
 
-    if (nearBeacon) {
+    if (beaconReady) {
       prompt = "Press E at the beacon to finish the lesson";
 
       if (this.interactRequested && !this.app.isOverlayOpen()) {
@@ -276,7 +299,9 @@ export class WorldScene extends Phaser.Scene {
     } else if (nearestNpc) {
       prompt = `Finish the current lesson before speaking with ${nearestNpc.npc.name}`;
     } else if (activeNpc) {
-      prompt = `Move near ${activeNpc.name}. Proximity should trigger before overlap.`;
+      prompt = nearBeacon
+        ? `You are at the CLULIX beacon. Move near ${activeNpc.name} to begin the lesson.`
+        : `Move near ${activeNpc.name}. Proximity should trigger before overlap.`;
     }
 
     if (this.interactRequested && !nearBeacon && !nearestNpc) {
@@ -306,7 +331,11 @@ export class WorldScene extends Phaser.Scene {
     };
   }
 
-  #syncDebugState(prompt = this.interactionText?.text ?? "", nearbyNpcId = null) {
+  #syncDebugState(
+    prompt = this.interactionText?.text ?? "",
+    nearbyNpcId = null,
+    lastMoveResult = null,
+  ) {
     const host = document.querySelector("#game-root");
     if (!host) {
       return;
@@ -317,5 +346,6 @@ export class WorldScene extends Phaser.Scene {
     host.dataset.prompt = prompt;
     host.dataset.nearbyNpc = nearbyNpcId ?? "";
     host.dataset.activeNpc = this.app.getActiveNpcId() ?? "";
+    host.dataset.lastMoveResult = lastMoveResult ?? host.dataset.lastMoveResult ?? "idle";
   }
 }
