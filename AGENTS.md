@@ -9,7 +9,8 @@ Build TMUX Trek as an educational game that teaches tmux through use, not exposi
 
 ## Working Rules
 
-- Read the design documents in `docs/design/` before changing curriculum or game flow.
+- Read the design documents in `doc/` before changing curriculum or game flow.
+- The primary narrative/planning document is [doc/gameplay-plan.md](/Users/michael/Documents/dev/tmux-trek/doc/gameplay-plan.md).
 - Keep tmux behavior deterministic and testable in `src/engine/`.
 - Treat the terminal overlay as the teaching surface and the Phaser world as the motivation layer.
 - Prefer guided instruction, immediate feedback, and short reinforcement loops over dense tutorial text.

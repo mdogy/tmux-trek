@@ -40,15 +40,16 @@ npm run build
 - `src/data/`: zone, dialogue, and command metadata
 - `features/`: BDD scenarios
 - `tests/`: unit, integration, and step definitions
-- `docs/`: original planning material and design references
+- `doc/`: active design and planning documents
+- `docs/`: preserved research, prompts, and reference material
 
 ## Documentation
 
 - [Project history](/Users/michael/Documents/dev/tmux-trek/history.md)
 - [TODO snapshot](/Users/michael/Documents/dev/tmux-trek/TODO.md)
 - [Agent workflow](/Users/michael/Documents/dev/tmux-trek/AGENTS.md)
-- [Game design document](/Users/michael/Documents/dev/tmux-trek/docs/design/game-design.md)
-- [Software engineering guide](/Users/michael/Documents/dev/tmux-trek/docs/design/software-engineering-practices.md)
+- [Gameplay plan](/Users/michael/Documents/dev/tmux-trek/doc/gameplay-plan.md)
+- [Software engineering guide](/Users/michael/Documents/dev/tmux-trek/doc/software-engineering-practices.md)
 
 ## Roadmap Tracking
 

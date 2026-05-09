@@ -2,6 +2,11 @@
 
 This file is a roadmap snapshot. GitHub Issues are the canonical planning surface.
 
+Primary planning documents:
+
+- [Gameplay plan](/Users/michael/Documents/dev/tmux-trek/doc/gameplay-plan.md)
+- [Software engineering guide](/Users/michael/Documents/dev/tmux-trek/doc/software-engineering-practices.md)
+
 ## Current State
 
 - The repository is initialized, documented, tested, and deployed through GitHub Actions and GitHub Pages.
@@ -20,13 +25,12 @@ This file is a roadmap snapshot. GitHub Issues are the canonical planning surfac
 
 ## Requested But Not Yet Implemented
 
-- The captain should begin on the CLULIX bridge rather than already on the planet.
-- The planet surface should be represented as session `0`.
-- Creating a Rift with `tmux` should take the captain down to the planet.
-- Zrix should introduce the overflow buffer as an urgent threat.
-- The player should create `tmux new -s armory` to visit the armory and receive an energy weapon.
-- Detaching should return the player to the ship.
-- The player should use `tmux ls` and `tmux attach -t 0` to return to the planet and delete the overflow buffer.
+- The captain should begin on the CLULIX bridge and use `tmux` to descend to surface session `0`.
+- Zrix should introduce the overflow buffer as a threat that cannot be solved without leaving for another Rift.
+- `tmux new -s armory` should be the only way to reach the armory and obtain an energy weapon.
+- `Ctrl+b d` should return the captain to the ship while leaving the armory Rift intact.
+- `tmux ls` should act as the ship's manifest of reachable destinations.
+- `tmux attach -t 0` should send the captain back to the planet to delete the overflow buffer.
 - World navigation should migrate from WASD to vim `h/j/k/l`.
 - Fog of war should limit visibility and improve exploration readability.
 - Generated art should progressively replace placeholder visuals.
