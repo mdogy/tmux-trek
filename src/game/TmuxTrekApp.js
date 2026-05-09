@@ -71,6 +71,10 @@ export class TmuxTrekApp {
     return this.zone.npcs[this.currentNpcIndex]?.id ?? null;
   }
 
+  getActiveNpcIndex() {
+    return this.currentNpcIndex;
+  }
+
   isCompleted(challengeId) {
     return this.completedChallenges.has(challengeId);
   }
@@ -96,6 +100,10 @@ export class TmuxTrekApp {
 
     const dialogue = dialogueById[activeNpc.dialogueFile];
     this.ui.showDialogue(dialogue, () => this.#startChallenge(activeNpc.challengeId));
+  }
+
+  setWorldPrompt(prompt) {
+    this.state.setInstruction(prompt);
   }
 
   handleBeaconInteraction() {

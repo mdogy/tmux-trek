@@ -7,9 +7,10 @@ The current vertical slice focuses on the first lesson arc: sessions. The player
 ## Current Scope
 
 - Guided Act 1 prototype for session-based tmux learning
-- Phaser-powered exploration space with NPC encounters
+- Phaser-powered tile-based exploration space with NPC encounters
 - xterm.js powered terminal overlay with prefix-key handling
 - Pure tmux session engine with unit and BDD coverage
+- Playwright GUI regression coverage for movement and NPC proximity prompts
 - Repository structure, CI workflows, issue templates, and contributor guidance
 
 ## Development
@@ -26,6 +27,7 @@ The dev server uses Vite. The game opens in the browser and mounts the Phaser ca
 ```bash
 npm run lint
 npm run test
+npm run test:e2e
 npm run bdd
 npm run build
 ```

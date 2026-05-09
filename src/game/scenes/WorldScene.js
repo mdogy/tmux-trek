@@ -1,91 +1,222 @@
 import Phaser from "phaser";
 
+const PROXIMITY_RADIUS_TILES = 2;
+
 export class WorldScene extends Phaser.Scene {
   constructor() {
     super("world");
     this.interactionText = null;
+    this.isMoving = false;
+    this.playerGrid = { column: 0, row: 0 };
+    this.moveQueue = [];
+    this.interactRequested = false;
   }
 
   create() {
     this.app = this.registry.get("app");
-    const zone = this.app.getZone();
+    this.zone = this.app.getZone();
+    this.tileSize = this.zone.map.tileSize;
+    this.columns = this.zone.map.columns;
+    this.rows = this.zone.map.rows;
+    this.playerGrid = { ...this.zone.playerStart };
+
     this.cameras.main.setBackgroundColor("#0a1628");
+    this.#drawTileMap();
+    this.#drawLandmarks();
+    this.#createActors();
+    this.#createUi();
+    this.#bindKeys();
+    this.#syncDebugState();
+  }
 
-    this.add.rectangle(480, 360, 960, 720, 0x10253d);
-    this.add.circle(180, 140, 140, 0x7b2d8b, 0.18);
-    this.add.circle(740, 580, 170, 0x46d9c4, 0.1);
-    this.add.rectangle(zone.beacon.x, zone.beacon.y, 110, 110, 0xffb300, 0.18);
-    this.add.text(zone.beacon.x - 52, zone.beacon.y + 70, "CLULIX", {
-      color: "#ffb300",
-      fontFamily: '"Press Start 2P"',
-      fontSize: "12px",
+  update() {
+    if (!this.app.isOverlayOpen()) {
+      this.#handleMovementInput();
+    }
+
+    this.#updateNpcStates();
+    this.#updateInteractionPrompt();
+  }
+
+  #drawTileMap() {
+    const graphics = this.add.graphics();
+    graphics.fillStyle(0x132744);
+    graphics.fillRect(0, 0, this.zone.map.width, this.zone.map.height);
+
+    for (let row = 0; row < this.rows; row += 1) {
+      for (let column = 0; column < this.columns; column += 1) {
+        const x = column * this.tileSize;
+        const y = row * this.tileSize;
+        const isBorder =
+          row === 0 ||
+          column === 0 ||
+          row === this.rows - 1 ||
+          column === this.columns - 1;
+
+        graphics.fillStyle(isBorder ? 0x347c89 : 0x1b3452);
+        graphics.fillRect(x + 3, y + 3, this.tileSize - 6, this.tileSize - 6);
+
+        if (!isBorder) {
+          graphics.fillStyle(0x2d5383);
+          graphics.fillRect(x + 20, y + 20, 8, 8);
+        }
+      }
+    }
+
+    graphics.lineStyle(4, 0x0c1f36, 1);
+    graphics.strokeRect(0, 0, this.zone.map.width, this.zone.map.height);
+  }
+
+  #drawLandmarks() {
+    const crater = this.#tileCenter(4, 2);
+    this.add.circle(crater.x, crater.y, this.tileSize * 2.6, 0x2e2b61, 0.88);
+
+    this.#drawTileCluster(
+      [
+        [4, 6],
+        [5, 6],
+        [4, 7],
+        [5, 7],
+      ],
+      0x7b2d8b,
+      0xffb300,
+    );
+
+    this.#drawTileCluster(
+      [
+        [14, 9],
+        [15, 9],
+        [14, 10],
+        [15, 10],
+      ],
+      0xffb300,
+      0x7b2d8b,
+    );
+
+    const beacon = this.#tileCenter(this.zone.beacon.column, this.zone.beacon.row);
+    this.add.rectangle(beacon.x, beacon.y, this.tileSize - 10, this.tileSize - 10, 0x6ec6c0);
+    this.add.rectangle(beacon.x, beacon.y, 22, 22, 0x347c89);
+
+    const archive = this.#tileCenter(16, 6);
+    this.add.circle(archive.x, archive.y, 16, 0xffb300, 0.92);
+  }
+
+  #drawTileCluster(tiles, fillColor, accentColor) {
+    tiles.forEach(([column, row]) => {
+      const center = this.#tileCenter(column, row);
+      this.add.rectangle(center.x, center.y, this.tileSize - 6, this.tileSize - 6, fillColor);
+      this.add.rectangle(center.x, center.y, 18, 10, accentColor);
     });
+  }
 
-    this.player = this.add.rectangle(110, 620, 24, 24, 0x46d9c4);
-    this.playerLabel = this.add.text(76, 646, "Captain", {
+  #createActors() {
+    const playerCenter = this.#tileCenter(this.playerGrid.column, this.playerGrid.row);
+    this.player = this.add.rectangle(
+      playerCenter.x,
+      playerCenter.y,
+      this.tileSize - 20,
+      this.tileSize - 20,
+      0x6ec6c0,
+    );
+    this.playerLabel = this.add.text(playerCenter.x - 24, playerCenter.y + 28, "Captain", {
       color: "#f2e8be",
       fontFamily: '"Share Tech Mono"',
       fontSize: "16px",
     });
 
-    this.npcObjects = zone.npcs.map((npc) => {
-      const marker = this.add.rectangle(npc.x, npc.y, 28, 28, npc.color);
-      const label = this.add.text(npc.x - 48, npc.y + 26, npc.name, {
+    this.npcObjects = this.zone.npcs.map((npc) => {
+      const center = this.#tileCenter(npc.column, npc.row);
+      const marker = this.add.rectangle(center.x, center.y, this.tileSize - 18, this.tileSize - 18, npc.color);
+      const label = this.add.text(center.x - 30, center.y + 28, npc.name, {
         color: "#f2e8be",
         fontFamily: '"Share Tech Mono"',
         fontSize: "16px",
       });
       return { npc, marker, label };
     });
+  }
 
+  #createUi() {
     this.interactionText = this.add
-      .text(480, 680, "", {
+      .text(this.zone.map.width / 2, this.zone.map.height - 22, "", {
         color: "#ffb300",
         fontFamily: '"Press Start 2P"',
         fontSize: "10px",
       })
       .setOrigin(0.5);
+  }
 
+  #bindKeys() {
     this.keys = this.input.keyboard.addKeys({
-      up: Phaser.Input.Keyboard.KeyCodes.UP,
-      down: Phaser.Input.Keyboard.KeyCodes.DOWN,
-      left: Phaser.Input.Keyboard.KeyCodes.LEFT,
-      right: Phaser.Input.Keyboard.KeyCodes.RIGHT,
-      w: Phaser.Input.Keyboard.KeyCodes.W,
-      a: Phaser.Input.Keyboard.KeyCodes.A,
-      s: Phaser.Input.Keyboard.KeyCodes.S,
-      d: Phaser.Input.Keyboard.KeyCodes.D,
       interact: Phaser.Input.Keyboard.KeyCodes.E,
+    });
+
+    this.input.keyboard.on("keydown", (event) => {
+      const code = event.code;
+
+      if (code === "KeyE") {
+        this.interactRequested = true;
+        return;
+      }
+
+      const direction = {
+        ArrowUp: { column: 0, row: -1 },
+        KeyW: { column: 0, row: -1 },
+        ArrowDown: { column: 0, row: 1 },
+        KeyS: { column: 0, row: 1 },
+        ArrowLeft: { column: -1, row: 0 },
+        KeyA: { column: -1, row: 0 },
+        ArrowRight: { column: 1, row: 0 },
+        KeyD: { column: 1, row: 0 },
+      }[code];
+
+      if (!direction || event.repeat) {
+        return;
+      }
+
+      this.moveQueue.push(direction);
     });
   }
 
-  update(_, delta) {
-    const moveScale = delta / 16;
-
-    if (!this.app.isOverlayOpen()) {
-      if (this.keys.left.isDown || this.keys.a.isDown) {
-        this.player.x -= 2.8 * moveScale;
-      }
-
-      if (this.keys.right.isDown || this.keys.d.isDown) {
-        this.player.x += 2.8 * moveScale;
-      }
-
-      if (this.keys.up.isDown || this.keys.w.isDown) {
-        this.player.y -= 2.8 * moveScale;
-      }
-
-      if (this.keys.down.isDown || this.keys.s.isDown) {
-        this.player.y += 2.8 * moveScale;
-      }
+  #handleMovementInput() {
+    if (this.isMoving || this.moveQueue.length === 0) {
+      return;
     }
 
-    this.player.x = Phaser.Math.Clamp(this.player.x, 20, 940);
-    this.player.y = Phaser.Math.Clamp(this.player.y, 20, 700);
-    this.playerLabel.setPosition(this.player.x - 34, this.player.y + 22);
+    const nextMove = this.moveQueue.shift();
+    this.#attemptMove(nextMove.column, nextMove.row);
+  }
 
-    this.#updateNpcStates();
-    this.#updateInteractionPrompt();
+  #attemptMove(deltaColumn, deltaRow) {
+    const nextColumn = Phaser.Math.Clamp(
+      this.playerGrid.column + deltaColumn,
+      1,
+      this.columns - 2,
+    );
+    const nextRow = Phaser.Math.Clamp(this.playerGrid.row + deltaRow, 1, this.rows - 2);
+
+    if (nextColumn === this.playerGrid.column && nextRow === this.playerGrid.row) {
+      return;
+    }
+
+    this.playerGrid = {
+      column: nextColumn,
+      row: nextRow,
+    };
+    this.isMoving = true;
+
+    const center = this.#tileCenter(nextColumn, nextRow);
+    this.tweens.add({
+      targets: [this.player, this.playerLabel],
+      duration: 110,
+      ease: "Quad.Out",
+      x: (_, target) => (target === this.player ? center.x : center.x - 24),
+      y: (_, target) => (target === this.player ? center.y : center.y + 28),
+      onComplete: () => {
+        this.isMoving = false;
+        this.#syncDebugState();
+      },
+    });
   }
 
   #updateNpcStates() {
@@ -96,7 +227,7 @@ export class WorldScene extends Phaser.Scene {
       }
 
       if (this.app.getActiveNpcId() === npc.id) {
-        marker.setFillStyle(0xffb300);
+        marker.setFillStyle(0xb34ccd);
         return;
       }
 
@@ -106,54 +237,73 @@ export class WorldScene extends Phaser.Scene {
 
   #updateInteractionPrompt() {
     const nearestNpc = this.#getNearestNpc();
+    const activeNpc = this.zone.npcs[this.app.getActiveNpcIndex()] ?? null;
     const nearBeacon =
       this.app.isBeaconActive() &&
-      Phaser.Math.Distance.Between(
-        this.player.x,
-        this.player.y,
-        this.app.getZone().beacon.x,
-        this.app.getZone().beacon.y,
-      ) < 76;
+      this.#tileDistance(this.playerGrid, this.zone.beacon) <= 1;
+
+    let prompt = "Use WASD or arrow keys. Each press moves one tile.";
+    let nearbyNpcId = nearestNpc?.npc.id ?? null;
 
     if (nearBeacon) {
-      this.interactionText.setText("Press E at the beacon to finish the lesson");
+      prompt = "Press E at the beacon to finish the lesson";
 
-      if (
-        Phaser.Input.Keyboard.JustDown(this.keys.interact) &&
-        !this.app.isOverlayOpen()
-      ) {
+      if (this.interactRequested && !this.app.isOverlayOpen()) {
         this.app.handleBeaconInteraction();
+        this.interactRequested = false;
       }
+    } else if (nearestNpc && activeNpc && nearestNpc.npc.id === activeNpc.id) {
+      prompt = `Press E to talk to ${nearestNpc.npc.name}`;
+      nearbyNpcId = nearestNpc.npc.id;
+      this.app.setWorldPrompt(prompt);
 
-      return;
+      if (this.interactRequested && !this.app.isOverlayOpen()) {
+        this.app.handleNpcInteraction(nearestNpc.npc.id);
+        this.interactRequested = false;
+      }
+    } else if (nearestNpc) {
+      prompt = `Finish the current lesson before speaking with ${nearestNpc.npc.name}`;
+    } else if (activeNpc) {
+      prompt = `Move near ${activeNpc.name}. Proximity should trigger before overlap.`;
     }
 
-    if (!nearestNpc) {
-      this.interactionText.setText("Move with WASD or arrows. Meet the highlighted mentor.");
-      return;
+    if (this.interactRequested && !nearBeacon && !nearestNpc) {
+      this.interactRequested = false;
     }
-
-    const prompt =
-      nearestNpc.npc.id === this.app.getActiveNpcId()
-        ? `Press E to talk to ${nearestNpc.npc.name}`
-        : `Finish the current lesson before speaking with ${nearestNpc.npc.name}`;
 
     this.interactionText.setText(prompt);
-
-    if (
-      Phaser.Input.Keyboard.JustDown(this.keys.interact) &&
-      !this.app.isOverlayOpen()
-    ) {
-      this.app.handleNpcInteraction(nearestNpc.npc.id);
-    }
+    this.#syncDebugState(prompt, nearbyNpcId);
   }
 
   #getNearestNpc() {
     return (
       this.npcObjects.find(
-        ({ npc }) =>
-          Phaser.Math.Distance.Between(this.player.x, this.player.y, npc.x, npc.y) < 84,
+        ({ npc }) => this.#tileDistance(this.playerGrid, npc) <= PROXIMITY_RADIUS_TILES,
       ) ?? null
     );
+  }
+
+  #tileDistance(a, b) {
+    return Math.max(Math.abs(a.column - b.column), Math.abs(a.row - b.row));
+  }
+
+  #tileCenter(column, row) {
+    return {
+      x: column * this.tileSize + this.tileSize / 2,
+      y: row * this.tileSize + this.tileSize / 2,
+    };
+  }
+
+  #syncDebugState(prompt = this.interactionText?.text ?? "", nearbyNpcId = null) {
+    const host = document.querySelector("#game-root");
+    if (!host) {
+      return;
+    }
+
+    host.dataset.playerGrid = `${this.playerGrid.column},${this.playerGrid.row}`;
+    host.dataset.isMoving = this.isMoving ? "true" : "false";
+    host.dataset.prompt = prompt;
+    host.dataset.nearbyNpc = nearbyNpcId ?? "";
+    host.dataset.activeNpc = this.app.getActiveNpcId() ?? "";
   }
 }
