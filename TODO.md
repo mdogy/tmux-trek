@@ -36,8 +36,12 @@ Primary planning documents:
 - Fog of war should limit visibility and improve exploration readability.
 - Generated art should progressively replace placeholder visuals.
 - Ensign Redshirt should become an early companion and then be captured in Act 2, shaping a Rift-based rescue arc.
-- Commander Sock should join in Act 3 with a scanner that can reveal threats through fog of war and sense activity in other Rifts.
+- Commander Sock should join in Act 3, and obtaining her scanner may itself need to be a mission.
+- Before the scanner is acquired, the party should suffer from limited visibility so the upgrade feels meaningful.
+- Once acquired, Sock's scanner should reveal threats through fog of war and sense activity in other Rifts.
 - Vrex should eventually be rescued and become guide and protector for the expedition party.
+- Rift storms should become a recurring theme that throws party members into other Rifts and forces rescue-driven use of sessions, windows, and panes.
+- Future level design should explicitly explore setting up panes so one operation can be performed while another situation is monitored in parallel.
 
 ## Maintenance Notes
 

@@ -106,7 +106,10 @@ This gives later session and window commands a natural story frame:
 
 - In Act 3, the captain should travel with both Ensign Redshirt and Science Officer Commander Sock.
 - By then, Redshirt has recovered and now carries a weapon, making him the party's security specialist.
-- Commander Sock carries a scanner.
+- Commander Sock should not necessarily begin with the scanner already in hand.
+- Acquiring Sock's scanner may itself be a mission.
+- The party should meaningfully suffer from limited visibility before the scanner is obtained, so the scanner feels earned rather than decorative.
+- Once acquired, the scanner should improve the party's survivability and open up richer level design in later acts.
 - Sock's scanner should justify fog-of-war mechanics:
   - she can warn the captain about hidden threats before they are visible
   - she can detect anomalies in nearby obscured territory
@@ -130,6 +133,23 @@ The party structure helps motivate later tmux concepts:
 - copy mode: recover codes, coordinates, and historical records needed to save allies
 
 The rule remains the same: no command should appear unless the story first creates a reason the captain needs it.
+
+## Rift Storm Theme
+
+A recurring later-game theme should be **Rift storms**.
+
+- Rift storms are unstable surges that tear party members away into other Rifts.
+- They create rescue situations that force the captain to become fluent in navigating between sessions, windows, and panes under pressure.
+- A storm should not just separate the party for drama. It should create a command-learning problem with clear operational consequences.
+
+Possible design uses:
+
+- a party member is thrown into another session and must be found and reattached to
+- multiple windows represent different live rescue leads or ship systems affected by the storm
+- pane layouts become necessary so the captain can perform one operation while watching another system, ally, or hazard in parallel
+- storms can justify situations where the player must keep visual awareness in one pane while issuing recovery commands in another
+
+The exact gameplay is not defined yet, but this theme should be developed intentionally in future planning rather than added ad hoc.
 
 ## Command-to-Narrative Mapping
 
@@ -189,3 +209,4 @@ Copy mode should exist because the player must retrieve or move information betw
 - Build Act 2 around Redshirt's capture and rescue across multiple Rifts
 - Add Commander Sock as scanner specialist for fog-of-war and anomaly detection
 - Rescue Vrex later so she becomes the party's guide and protector
+- Develop Rift storms as a recurring cause of cross-Rift rescues and multi-pane coordination
