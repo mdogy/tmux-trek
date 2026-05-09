@@ -84,6 +84,53 @@ This makes the first session command a world transition, not a classroom prompt.
 
 The player learns the command because the story withholds progress until that command is used correctly.
 
+## Party Arc for Later Acts
+
+The later acts should widen the story from a lone-captain tutorial into a party-based expedition where each companion changes what kinds of tmux problems make sense.
+
+### Ensign Redshirt
+
+- Redshirt should begin as the captain's eager but underprepared security escort.
+- He follows the captain in future levels and helps establish the idea that the mission has human stakes beyond the player avatar.
+- Early in Act 2, Redshirt is captured because he forgot his weapon.
+- His capture should not be random. It should happen because the party failed to establish or reach the correct Rifted support location in time.
+- Act 2 should therefore be structured around rescuing Redshirt by navigating through multiple Rifts, views, and operational contexts.
+
+This gives later session and window commands a natural story frame:
+
+- some places contain allies
+- some places contain tools
+- some places must be watched while the captain acts elsewhere
+
+### Commander Sock
+
+- In Act 3, the captain should travel with both Ensign Redshirt and Science Officer Commander Sock.
+- By then, Redshirt has recovered and now carries a weapon, making him the party's security specialist.
+- Commander Sock carries a scanner.
+- Sock's scanner should justify fog-of-war mechanics:
+  - she can warn the captain about hidden threats before they are visible
+  - she can detect anomalies in nearby obscured territory
+  - at higher narrative stakes, she can even sense activity in other Rifts
+
+This makes fog of war and cross-Rift awareness part of the fiction instead of a detached mechanics layer.
+
+### Vrex
+
+- At a later turning point, the party should rescue Vrex.
+- Once rescued, Vrex becomes guide and protector for the expedition.
+- Vrex should not merely give tutorial text. She should materially change the group's survivability, route confidence, and understanding of deeper Rift systems.
+
+## Narrative Use of Later Commands
+
+The party structure helps motivate later tmux concepts:
+
+- sessions: reach different places where allies, tools, or threats reside
+- windows: keep track of multiple rescue leads or systems inside the same mission space
+- panes: monitor companions, threats, and instruments simultaneously during tense operations
+- copy mode: recover codes, coordinates, and historical records needed to save allies
+
+The rule remains the same: no command should appear unless the story first creates a reason the captain needs it.
+
 ## Command-to-Narrative Mapping
 
 ### Sessions
@@ -135,3 +182,10 @@ Copy mode should exist because the player must retrieve or move information betw
 - Add fog of war so unexplored territory feels unknown
 - Generate real art to replace placeholder geometry
 - Build the overflow buffer and armory loop before expanding into later acts
+
+## Mid-Term Planned Story Beats
+
+- Introduce Ensign Redshirt as the captain's companion
+- Build Act 2 around Redshirt's capture and rescue across multiple Rifts
+- Add Commander Sock as scanner specialist for fog-of-war and anomaly detection
+- Rescue Vrex later so she becomes the party's guide and protector

@@ -22,6 +22,7 @@ Primary planning documents:
 - [#4 add overflow buffer, armory session, and delete loop](https://github.com/mdogy/tmux-trek/issues/4)
 - [#5 add fog of war to exploration](https://github.com/mdogy/tmux-trek/issues/5)
 - [#6 generate initial artwork with Google Gemini / Nano Banana](https://github.com/mdogy/tmux-trek/issues/6)
+- [#7 add Redshirt, Commander Sock, and Vrex companion arc](https://github.com/mdogy/tmux-trek/issues/7)
 
 ## Requested But Not Yet Implemented
 
@@ -34,6 +35,9 @@ Primary planning documents:
 - World navigation should migrate from WASD to vim `h/j/k/l`.
 - Fog of war should limit visibility and improve exploration readability.
 - Generated art should progressively replace placeholder visuals.
+- Ensign Redshirt should become an early companion and then be captured in Act 2, shaping a Rift-based rescue arc.
+- Commander Sock should join in Act 3 with a scanner that can reveal threats through fog of war and sense activity in other Rifts.
+- Vrex should eventually be rescued and become guide and protector for the expedition party.
 
 ## Maintenance Notes
 
