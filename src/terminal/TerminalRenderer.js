@@ -20,8 +20,10 @@ export class TerminalRenderer {
     this.term = new Terminal({
       cursorBlink: true,
       convertEol: true,
-      fontFamily: "VT323, monospace",
-      fontSize: 28,
+      fontFamily: '"Share Tech Mono", monospace',
+      fontSize: 20,
+      lineHeight: 1.2,
+      letterSpacing: 0,
       rows: 20,
       theme: {
         background: "#07131f",

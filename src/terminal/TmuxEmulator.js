@@ -32,6 +32,8 @@ export class TmuxEmulator {
     this.keySubscription?.dispose?.();
     this.keySubscription = this.renderer.onKey((event) => this.#handleKey(event));
     this.renderer.clear();
+    this.container.dataset.activeChallenge = challenge.id;
+    this.container.dataset.activeStep = "0";
     this.renderer.writeln("TMUX TREK / TERMINAL PLANE");
     this.renderer.writeln("----------------------------------------");
     this.renderer.writeln(challenge.title);
@@ -49,10 +51,14 @@ export class TmuxEmulator {
     this.activeStepIndex = 0;
     this.inputBuffer = "";
     this.prefixArmed = false;
+    delete this.container.dataset.activeChallenge;
+    delete this.container.dataset.activeStep;
   }
 
   #announceCurrentStep() {
     const step = this.activeChallenge.steps[this.activeStepIndex];
+    this.container.dataset.activeStep = `${this.activeStepIndex}`;
+    this.container.dataset.expected = step.expected;
     this.renderer.writeln(`HELIX: ${step.helix}`);
     this.renderer.writeln(`TASK: ${step.instruction}`);
     this.renderer.writeln("");

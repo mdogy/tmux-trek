@@ -73,6 +73,8 @@ export class UIController {
   hideDialogue() {
     this.dialogueRoot.replaceChildren();
     this.state.setDialogueOpen(false);
+    delete this.dialogueRoot.dataset.speaker;
+    delete this.dialogueRoot.dataset.text;
   }
 
   showToast(message) {
@@ -115,5 +117,8 @@ export class UIController {
     actions.append(button, hint);
     card.append(speaker, text, actions);
     this.dialogueRoot.replaceChildren(card);
+    this.dialogueRoot.dataset.speaker = line.speaker;
+    this.dialogueRoot.dataset.text = line.text;
+    button.focus();
   }
 }

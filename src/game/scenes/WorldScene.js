@@ -27,6 +27,7 @@ export class WorldScene extends Phaser.Scene {
     this.#createUi();
     this.#bindKeys();
     this.#syncDebugState();
+    this.app.focusGame();
   }
 
   update() {
@@ -207,14 +208,25 @@ export class WorldScene extends Phaser.Scene {
 
     const center = this.#tileCenter(nextColumn, nextRow);
     this.tweens.add({
-      targets: [this.player, this.playerLabel],
+      targets: this.player,
       duration: 110,
       ease: "Quad.Out",
-      x: (_, target) => (target === this.player ? center.x : center.x - 24),
-      y: (_, target) => (target === this.player ? center.y : center.y + 28),
+      x: center.x,
+      y: center.y,
       onComplete: () => {
+        this.playerLabel.setPosition(center.x - 24, center.y + 28);
         this.isMoving = false;
         this.#syncDebugState();
+      },
+    });
+
+    this.tweens.add({
+      targets: this.playerLabel,
+      duration: 110,
+      ease: "Quad.Out",
+      x: center.x - 24,
+      y: center.y + 28,
+      onComplete: () => {
       },
     });
   }

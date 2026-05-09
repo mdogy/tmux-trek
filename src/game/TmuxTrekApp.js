@@ -49,6 +49,9 @@ export class TmuxTrekApp {
   }
 
   start() {
+    const gameRoot = document.querySelector("#game-root");
+    gameRoot.tabIndex = 0;
+
     this.game = new Phaser.Game({
       type: Phaser.AUTO,
       width: this.zone.map.width,
@@ -61,6 +64,13 @@ export class TmuxTrekApp {
     });
 
     this.game.registry.set("app", this);
+  }
+
+  focusGame() {
+    window.requestAnimationFrame(() => {
+      document.querySelector("#game-root")?.focus();
+      this.game?.canvas?.focus?.();
+    });
   }
 
   getZone() {
@@ -123,6 +133,7 @@ export class TmuxTrekApp {
         this.state.setInstruction(
           "The current slice ends here. Keep the player's next instruction visible as new commands are added.",
         );
+        this.focusGame();
       },
     );
   }
@@ -131,6 +142,7 @@ export class TmuxTrekApp {
     this.completedChallenges.add(challengeId);
     this.state.setTerminalOpen(false);
     this.terminal.close();
+    this.focusGame();
 
     this.currentNpcIndex += 1;
 
