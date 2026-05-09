@@ -1,0 +1,42 @@
+{
+  "name": "tmux-trek",
+  "version": "0.1.0",
+  "description": "A browser-based teaching game for learning tmux through play.",
+  "scripts": {
+    "dev": "vite",
+    "build": "vite build",
+    "preview": "vite preview",
+    "lint": "eslint .",
+    "format": "prettier --write .",
+    "format:check": "prettier --check .",
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "bdd": "cucumber-js \"features/**/*.feature\" --import \"tests/step-definitions/**/*.steps.js\"",
+    "prepare": "husky"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "type": "module",
+  "private": true,
+  "dependencies": {
+    "@xterm/addon-fit": "^0.11.0",
+    "@xterm/addon-web-links": "^0.12.0",
+    "@xterm/xterm": "^6.0.0",
+    "phaser": "^4.1.0"
+  },
+  "devDependencies": {
+    "@commitlint/cli": "^21.0.0",
+    "@commitlint/config-conventional": "^21.0.0",
+    "@cucumber/cucumber": "^12.8.2",
+    "@eslint/js": "^10.0.1",
+    "@vitest/coverage-v8": "^4.1.5",
+    "eslint": "^10.3.0",
+    "globals": "^17.6.0",
+    "husky": "^9.1.7",
+    "jsdom": "^29.1.1",
+    "prettier": "^3.8.3",
+    "vite": "^8.0.11",
+    "vitest": "^4.1.5"
+  }
+}
