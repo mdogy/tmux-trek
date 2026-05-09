@@ -47,6 +47,10 @@ npm run build
 - [Game design document](/Users/michael/Documents/dev/tmux-trek/docs/design/game-design.md)
 - [Software engineering guide](/Users/michael/Documents/dev/tmux-trek/docs/design/software-engineering-practices.md)
 
+## Roadmap Tracking
+
+Project TODOs are tracked in GitHub Issues rather than a local `TODO.md`. Use the issue tracker for implementation work, asset pipeline tasks, and curriculum milestones so the roadmap stays visible and reviewable.
+
 ## Contributing
 
 Use Conventional Commits. Keep tmux behavior in `src/engine/` pure and test-first. Preserve the teaching model: every new mechanic should introduce context, give a concrete instruction, and reinforce the command through action.
