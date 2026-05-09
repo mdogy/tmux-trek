@@ -1,0 +1,27 @@
+[
+  {
+    "id": "tmux",
+    "label": "tmux",
+    "summary": "Start or enter a session."
+  },
+  {
+    "id": "tmux new -s clulix",
+    "label": "tmux new -s clulix",
+    "summary": "Create a named session you can find again."
+  },
+  {
+    "id": "Ctrl+b d",
+    "label": "Ctrl+b d",
+    "summary": "Detach without killing the session."
+  },
+  {
+    "id": "tmux ls",
+    "label": "tmux ls",
+    "summary": "List the sessions that currently exist."
+  },
+  {
+    "id": "tmux attach -t clulix",
+    "label": "tmux attach -t clulix",
+    "summary": "Re-enter a named session."
+  }
+]

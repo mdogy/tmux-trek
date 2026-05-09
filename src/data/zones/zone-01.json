@@ -1,0 +1,41 @@
+{
+  "id": 1,
+  "name": "Landing Crater",
+  "map": {
+    "width": 960,
+    "height": 720
+  },
+  "npcs": [
+    {
+      "id": "zrix",
+      "name": "Zrix",
+      "x": 220,
+      "y": 240,
+      "color": 8070539,
+      "challengeId": "session-init",
+      "dialogueFile": "zone-01-zrix"
+    },
+    {
+      "id": "vrex",
+      "name": "Vrex",
+      "x": 520,
+      "y": 320,
+      "color": 16757531,
+      "challengeId": "detach-drill",
+      "dialogueFile": "zone-01-vrex"
+    },
+    {
+      "id": "orin",
+      "name": "Archivist Orin",
+      "x": 770,
+      "y": 190,
+      "color": 4649412,
+      "challengeId": "return-to-rift",
+      "dialogueFile": "zone-01-orin"
+    }
+  ],
+  "beacon": {
+    "x": 850,
+    "y": 560
+  }
+}

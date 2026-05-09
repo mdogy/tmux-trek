@@ -1,0 +1,63 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta
+      name="viewport"
+      content="width=device-width, initial-scale=1.0"
+    />
+    <title>TMUX Trek</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Press+Start+2P&family=Share+Tech+Mono&family=VT323&display=swap"
+      rel="stylesheet"
+    />
+  </head>
+  <body>
+    <div id="app">
+      <header class="masthead">
+        <div>
+          <p class="eyebrow">Educational Adventure Prototype</p>
+          <h1>TMUX Trek</h1>
+          <p class="lede">
+            Learn tmux by exploring, listening, and using the commands inside a
+            guided terminal.
+          </p>
+        </div>
+      </header>
+      <main class="layout">
+        <section class="viewport-panel">
+          <div id="game-root" class="game-root"></div>
+          <div id="terminal-root" class="terminal-root hidden"></div>
+          <div id="dialogue-root" class="dialogue-root hidden"></div>
+          <div id="toast-root" class="toast-root"></div>
+        </section>
+        <aside class="sidebar">
+          <section class="panel">
+            <p class="panel-label">Zone</p>
+            <h2 id="zone-name">Landing Crater</h2>
+          </section>
+          <section class="panel">
+            <p class="panel-label">Mission</p>
+            <p id="mission-text"></p>
+          </section>
+          <section class="panel">
+            <p class="panel-label">HELIX Guidance</p>
+            <p id="instruction-text"></p>
+          </section>
+          <section class="panel">
+            <p class="panel-label">TMUX Codex</p>
+            <ul id="codex-list" class="codex-list"></ul>
+          </section>
+          <section class="panel">
+            <p class="panel-label">Session Status</p>
+            <p id="active-session"></p>
+            <ul id="session-list" class="session-list"></ul>
+          </section>
+        </aside>
+      </main>
+    </div>
+    <script type="module" src="/src/main.js"></script>
+  </body>
+</html>

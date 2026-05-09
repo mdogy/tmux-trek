@@ -1,0 +1,58 @@
+[
+  {
+    "id": "session-init",
+    "title": "Open your first rift",
+    "successMessage": "Zrix chirps approvingly. You can now open and name a session.",
+    "steps": [
+      {
+        "kind": "command",
+        "expected": "tmux",
+        "unlockCommand": "tmux",
+        "instruction": "Type tmux and press Enter to open a raw session.",
+        "helix": "A session is the first rift. Open one before you worry about managing it."
+      },
+      {
+        "kind": "command",
+        "expected": "tmux new -s clulix",
+        "unlockCommand": "tmux new -s clulix",
+        "instruction": "Now name the rift with tmux new -s clulix.",
+        "helix": "Names turn vague memory into reliable navigation."
+      }
+    ]
+  },
+  {
+    "id": "detach-drill",
+    "title": "Leave the rift without killing it",
+    "successMessage": "Vrex nods. The rift remains alive even after you step away.",
+    "steps": [
+      {
+        "kind": "keybinding",
+        "expected": "d",
+        "unlockCommand": "Ctrl+b d",
+        "instruction": "Press Ctrl+b, then d to detach from the active session.",
+        "helix": "Detach is the heart of tmux. Work survives your absence."
+      }
+    ]
+  },
+  {
+    "id": "return-to-rift",
+    "title": "Prove the rift persisted",
+    "successMessage": "The CLULIX beacon hums back to life. Session persistence confirmed.",
+    "steps": [
+      {
+        "kind": "command",
+        "expected": "tmux ls",
+        "unlockCommand": "tmux ls",
+        "instruction": "Type tmux ls to inspect every session still on the planet.",
+        "helix": "Listing gives you orientation before you leap."
+      },
+      {
+        "kind": "command",
+        "expected": "tmux attach -t clulix",
+        "unlockCommand": "tmux attach -t clulix",
+        "instruction": "Re-enter your ship session with tmux attach -t clulix.",
+        "helix": "Attach is how you step back into suspended work."
+      }
+    ]
+  }
+]
