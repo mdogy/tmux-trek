@@ -13,6 +13,8 @@
     "test:watch": "vitest",
     "test:e2e": "playwright test",
     "bdd": "cucumber-js \"features/**/*.feature\" --import \"tests/step-definitions/**/*.steps.js\"",
+    "assets:list": "node scripts/parse-prompts.js",
+    "assets:generate": "node scripts/generate-assets.js",
     "prepare": "husky"
   },
   "keywords": [],
