@@ -1,6 +1,5 @@
 import Phaser from "phaser";
 
-const PROXIMITY_RADIUS_TILES = 2;
 const TERRAIN_SHEET_KEY = "z-shell-terrain";
 const TERRAIN_SHEET_PATH = "assets/tiles/z-shell-terrain.png";
 const TERRAIN_FRAMES = {
@@ -9,6 +8,37 @@ const TERRAIN_FRAMES = {
   obstacle: [8, 9, 10, 11],
   beacon: 14,
 };
+const SPRITE_KEYS = {
+  captain: "captain-sprite",
+  zrix: "zrix-sprite",
+  vrex: "vrex-sprite",
+  orin: "orin-sprite",
+};
+const CRATER_FLOOR_TILES = [
+  [3, 1],
+  [4, 1],
+  [5, 1],
+  [2, 2],
+  [3, 2],
+  [4, 2],
+  [5, 2],
+  [6, 2],
+  [3, 3],
+  [4, 3],
+  [5, 3],
+];
+const CRATER_EDGE_TILES = [
+  [2, 1],
+  [6, 1],
+  [2, 3],
+  [6, 3],
+  [3, 0],
+  [4, 0],
+  [5, 0],
+  [3, 4],
+  [4, 4],
+  [5, 4],
+];
 
 export class WorldScene extends Phaser.Scene {
   constructor() {
@@ -39,8 +69,11 @@ export class WorldScene extends Phaser.Scene {
         ([column, row]) => `${column},${row}`,
       ),
     );
+    this.occupiedTiles = new Map();
 
     this.cameras.main.setBackgroundColor("#0a1628");
+    this.#createSpriteTextures();
+    this.#registerOccupiedTiles();
     this.#drawTileMap();
     this.#drawLandmarks();
     this.#createActors();
@@ -78,13 +111,7 @@ export class WorldScene extends Phaser.Scene {
   }
 
   #drawLandmarks() {
-    const crater = this.#tileCenter(4, 2);
-    this.add.circle(crater.x, crater.y, this.tileSize * 2.6, 0x2e2b61, 0.88);
-    this.add.text(crater.x - 74, crater.y - 8, "CRATER", {
-      color: "#b8c7c5",
-      fontFamily: '"Share Tech Mono"',
-      fontSize: "18px",
-    });
+    this.#drawCrater();
 
     this.#drawTileCluster([
       [4, 6],
@@ -104,17 +131,53 @@ export class WorldScene extends Phaser.Scene {
       this.zone.beacon.column,
       this.zone.beacon.row,
     );
-    this.add.circle(beacon.x, beacon.y, 30, 0xffb300, 0.18);
-    this.add.image(
+    this.beaconGlow = this.add.circle(beacon.x, beacon.y, 30, 0xffb300, 0.18);
+    this.beaconSprite = this.add.image(
       beacon.x,
       beacon.y,
       TERRAIN_SHEET_KEY,
       TERRAIN_FRAMES.beacon,
     );
+    this.beaconHighlight = this.#createHighlight(beacon.x, beacon.y);
     this.add.text(beacon.x - 64, beacon.y + 32, "CLULIX BEACON", {
       color: "#ffb300",
       fontFamily: '"Press Start 2P"',
       fontSize: "10px",
+    });
+  }
+
+  #drawCrater() {
+    CRATER_FLOOR_TILES.forEach(([column, row], index) => {
+      const center = this.#tileCenter(column, row);
+      this.add
+        .image(
+          center.x,
+          center.y,
+          TERRAIN_SHEET_KEY,
+          TERRAIN_FRAMES.ground[index % 3],
+        )
+        .setTint(0x312b64)
+        .setAlpha(0.92);
+    });
+
+    CRATER_EDGE_TILES.forEach(([column, row], index) => {
+      const center = this.#tileCenter(column, row);
+      this.add
+        .image(
+          center.x,
+          center.y,
+          TERRAIN_SHEET_KEY,
+          TERRAIN_FRAMES.obstacle[index % 4],
+        )
+        .setTint(0x5d4fa0)
+        .setAlpha(0.96);
+    });
+
+    const label = this.#tileCenter(4, 2);
+    this.add.text(label.x - 42, label.y - 8, "CRATER", {
+      color: "#b8c7c5",
+      fontFamily: '"Share Tech Mono"',
+      fontSize: "18px",
     });
   }
 
@@ -132,12 +195,10 @@ export class WorldScene extends Phaser.Scene {
       this.playerGrid.column,
       this.playerGrid.row,
     );
-    this.player = this.add.rectangle(
+    this.player = this.add.image(
       playerCenter.x,
       playerCenter.y,
-      this.tileSize - 20,
-      this.tileSize - 20,
-      0x6ec6c0,
+      SPRITE_KEYS.captain,
     );
     this.playerLabel = this.add.text(
       playerCenter.x - 24,
@@ -152,20 +213,122 @@ export class WorldScene extends Phaser.Scene {
 
     this.npcObjects = this.zone.npcs.map((npc) => {
       const center = this.#tileCenter(npc.column, npc.row);
-      const marker = this.add.rectangle(
-        center.x,
-        center.y,
-        this.tileSize - 18,
-        this.tileSize - 18,
-        npc.color,
-      );
+      const highlight = this.#createHighlight(center.x, center.y);
+      const marker = this.add.image(center.x, center.y, SPRITE_KEYS[npc.id]);
       const label = this.add.text(center.x - 30, center.y + 28, npc.name, {
         color: "#f2e8be",
         fontFamily: '"Share Tech Mono"',
         fontSize: "16px",
       });
-      return { npc, marker, label };
+      return { npc, marker, label, highlight };
     });
+  }
+
+  #createSpriteTextures() {
+    if (!this.textures.exists(SPRITE_KEYS.captain)) {
+      this.#drawHumanoidSprite(SPRITE_KEYS.captain, {
+        suit: 0x46d9c4,
+        trim: 0xffb300,
+        visor: 0x0a1628,
+      });
+    }
+
+    if (!this.textures.exists(SPRITE_KEYS.zrix)) {
+      this.#drawAlienSprite(SPRITE_KEYS.zrix, {
+        body: 0x7b2d8b,
+        accent: 0x46d9c4,
+        eye: 0xffb300,
+      });
+    }
+
+    if (!this.textures.exists(SPRITE_KEYS.vrex)) {
+      this.#drawAlienSprite(SPRITE_KEYS.vrex, {
+        body: 0xffb300,
+        accent: 0x7b2d8b,
+        eye: 0x07131f,
+      });
+    }
+
+    if (!this.textures.exists(SPRITE_KEYS.orin)) {
+      this.#drawArchivistSprite(SPRITE_KEYS.orin);
+    }
+  }
+
+  #drawHumanoidSprite(key, { suit, trim, visor }) {
+    const graphics = this.add.graphics();
+    graphics.fillStyle(trim);
+    graphics.fillRoundedRect(13, 4, 22, 18, 8);
+    graphics.fillStyle(visor);
+    graphics.fillRoundedRect(17, 8, 14, 8, 4);
+    graphics.fillStyle(suit);
+    graphics.fillRoundedRect(14, 22, 20, 17, 5);
+    graphics.fillStyle(trim);
+    graphics.fillRect(12, 25, 5, 10);
+    graphics.fillRect(31, 25, 5, 10);
+    graphics.fillRect(17, 38, 5, 6);
+    graphics.fillRect(26, 38, 5, 6);
+    graphics.generateTexture(key, 48, 48);
+    graphics.destroy();
+  }
+
+  #drawAlienSprite(key, { body, accent, eye }) {
+    const graphics = this.add.graphics();
+    graphics.fillStyle(body);
+    graphics.fillEllipse(24, 23, 26, 30);
+    graphics.fillEllipse(14, 30, 10, 10);
+    graphics.fillEllipse(34, 30, 10, 10);
+    graphics.fillStyle(accent);
+    graphics.fillEllipse(24, 18, 13, 8);
+    graphics.fillRect(21, 6, 3, 12);
+    graphics.fillRect(26, 6, 3, 12);
+    graphics.fillStyle(eye);
+    graphics.fillCircle(19, 22, 3);
+    graphics.fillCircle(29, 22, 3);
+    graphics.generateTexture(key, 48, 48);
+    graphics.destroy();
+  }
+
+  #drawArchivistSprite(key) {
+    const graphics = this.add.graphics();
+    graphics.fillStyle(0x2d5383);
+    graphics.fillRoundedRect(13, 11, 22, 27, 4);
+    graphics.fillStyle(0x46d9c4);
+    graphics.fillTriangle(24, 4, 13, 17, 35, 17);
+    graphics.fillStyle(0xffb300);
+    graphics.fillRect(17, 22, 14, 3);
+    graphics.fillRect(17, 29, 14, 3);
+    graphics.fillStyle(0xf2e8be);
+    graphics.fillCircle(20, 17, 2);
+    graphics.fillCircle(28, 17, 2);
+    graphics.generateTexture(key, 48, 48);
+    graphics.destroy();
+  }
+
+  #createHighlight(x, y) {
+    return this.add
+      .rectangle(x, y, this.tileSize - 4, this.tileSize - 4)
+      .setStrokeStyle(4, 0xfff17a, 1)
+      .setFillStyle(0xffb300, 0.08)
+      .setVisible(false);
+  }
+
+  #registerOccupiedTiles() {
+    this.zone.npcs.forEach((npc) => {
+      this.occupiedTiles.set(`${npc.column},${npc.row}`, {
+        kind: "npc",
+        id: npc.id,
+        name: npc.name,
+      });
+    });
+
+    this.occupiedTiles.set(
+      `${this.zone.beacon.column},${this.zone.beacon.row}`,
+      {
+        kind: "beacon",
+        id: "beacon",
+        name: "CLULIX beacon",
+      },
+    );
   }
 
   #createUi() {
@@ -247,8 +410,12 @@ export class WorldScene extends Phaser.Scene {
       return;
     }
 
-    if (this.blockedTiles.has(`${nextColumn},${nextRow}`)) {
-      this.#syncDebugState("Movement blocked by terrain.", null, "blocked");
+    const occupiedTile = this.occupiedTiles.get(`${nextColumn},${nextRow}`);
+    if (this.blockedTiles.has(`${nextColumn},${nextRow}`) || occupiedTile) {
+      const reason = occupiedTile
+        ? `${occupiedTile.name} blocks the way.`
+        : "Movement blocked by terrain.";
+      this.#syncDebugState(reason, null, "blocked");
       return;
     }
 
@@ -283,79 +450,116 @@ export class WorldScene extends Phaser.Scene {
   }
 
   #updateNpcStates() {
-    this.npcObjects.forEach(({ npc, marker }) => {
+    const target = this.#getAdjacentInteractable();
+    this.npcObjects.forEach(({ npc, marker, highlight }) => {
+      highlight.setVisible(target?.kind === "npc" && target.npc.id === npc.id);
+
       if (this.app.isCompleted(npc.challengeId)) {
-        marker.setFillStyle(0x46d9c4);
+        marker.setTint(0x46d9c4);
         return;
       }
 
       if (this.app.getActiveNpcId() === npc.id) {
-        marker.setFillStyle(0xb34ccd);
+        marker.setTint(0xffffff);
         return;
       }
 
-      marker.setFillStyle(0x5f5f6f);
+      marker.setTint(0x8a8a9a);
     });
+
+    this.beaconHighlight?.setVisible(target?.kind === "beacon");
   }
 
   #updateInteractionPrompt() {
-    const nearestNpc = this.#getNearestNpc();
+    const target = this.#getAdjacentInteractable();
     const activeNpc = this.zone.npcs[this.app.getActiveNpcIndex()] ?? null;
-    const nearBeacon =
-      this.#tileDistance(this.playerGrid, this.zone.beacon) <= 1;
-    const beaconReady =
-      this.app.isBeaconActive() &&
-      this.#tileDistance(this.playerGrid, this.zone.beacon) <= 1;
+    const beaconReady = this.app.isBeaconActive();
 
-    let prompt = nearBeacon
-      ? "You are at the CLULIX beacon. Move near Zrix to begin the lesson."
-      : "Use WASD or arrow keys. Each press moves one tile.";
-    let nearbyNpcId = nearestNpc?.npc.id ?? null;
+    let prompt =
+      target?.kind === "beacon"
+        ? "You are at the CLULIX beacon. Move near Zrix to begin the lesson."
+        : "Use WASD or arrow keys. Each press moves one tile.";
+    let nearbyNpcId = target?.kind === "npc" ? target.npc.id : null;
+    let lastInteractionResult = null;
 
-    if (beaconReady) {
+    if (target?.kind === "beacon" && beaconReady) {
       prompt = "Press E at the beacon to finish the lesson";
 
       if (this.interactRequested && !this.app.isOverlayOpen()) {
         this.app.handleBeaconInteraction();
+        lastInteractionResult = "beacon";
         this.interactRequested = false;
       }
-    } else if (nearestNpc && activeNpc && nearestNpc.npc.id === activeNpc.id) {
-      prompt = `Press E to talk to ${nearestNpc.npc.name}`;
-      nearbyNpcId = nearestNpc.npc.id;
+    } else if (target?.kind === "beacon") {
+      prompt =
+        "The CLULIX beacon has nothing to say yet. Find the highlighted mentor.";
+      if (this.interactRequested && !this.app.isOverlayOpen()) {
+        lastInteractionResult = "nothing";
+      }
+    } else if (
+      target?.kind === "npc" &&
+      activeNpc &&
+      target.npc.id === activeNpc.id
+    ) {
+      prompt = `Press E to talk to ${target.npc.name}`;
+      nearbyNpcId = target.npc.id;
       this.app.setWorldPrompt(prompt);
 
       if (this.interactRequested && !this.app.isOverlayOpen()) {
-        this.app.handleNpcInteraction(nearestNpc.npc.id);
+        this.app.handleNpcInteraction(target.npc.id);
+        lastInteractionResult = "dialogue";
         this.interactRequested = false;
       }
-    } else if (nearestNpc) {
-      prompt = `Finish the current lesson before speaking with ${nearestNpc.npc.name}`;
+    } else if (target?.kind === "npc") {
+      prompt = `${target.npc.name} has nothing to say yet. Find ${activeNpc?.name ?? "the active mentor"}.`;
+      if (this.interactRequested && !this.app.isOverlayOpen()) {
+        this.app.handleInactiveInteraction(target.npc.name, activeNpc?.name);
+        lastInteractionResult = "nothing";
+      }
     } else if (activeNpc) {
-      prompt = nearBeacon
-        ? `You are at the CLULIX beacon. Move near ${activeNpc.name} to begin the lesson.`
-        : `Move near ${activeNpc.name}. Proximity should trigger before overlap.`;
+      prompt = `Stand immediately left or right of ${activeNpc.name}. The target will highlight before E works.`;
     }
 
-    if (this.interactRequested && !nearBeacon && !nearestNpc) {
+    if (this.interactRequested && !target) {
+      lastInteractionResult = "none";
       this.interactRequested = false;
     }
 
     this.interactionText.setText(prompt);
-    this.#syncDebugState(prompt, nearbyNpcId);
+    this.#syncDebugState(
+      prompt,
+      nearbyNpcId,
+      undefined,
+      target?.id ?? null,
+      lastInteractionResult,
+    );
     this.interactRequested = false;
   }
 
-  #getNearestNpc() {
+  #getAdjacentInteractable() {
+    const candidates = [
+      ...this.zone.npcs.map((npc) => ({
+        kind: "npc",
+        id: npc.id,
+        npc,
+        column: npc.column,
+        row: npc.row,
+      })),
+      {
+        kind: "beacon",
+        id: "beacon",
+        column: this.zone.beacon.column,
+        row: this.zone.beacon.row,
+      },
+    ];
+
     return (
-      this.npcObjects.find(
-        ({ npc }) =>
-          this.#tileDistance(this.playerGrid, npc) <= PROXIMITY_RADIUS_TILES,
+      candidates.find(
+        (candidate) =>
+          candidate.row === this.playerGrid.row &&
+          Math.abs(candidate.column - this.playerGrid.column) === 1,
       ) ?? null
     );
-  }
-
-  #tileDistance(a, b) {
-    return Math.max(Math.abs(a.column - b.column), Math.abs(a.row - b.row));
   }
 
   #tileCenter(column, row) {
@@ -369,6 +573,8 @@ export class WorldScene extends Phaser.Scene {
     prompt = this.interactionText?.text ?? "",
     nearbyNpcId = null,
     lastMoveResult = null,
+    highlightedTargetId = null,
+    lastInteractionResult = null,
   ) {
     const host = document.querySelector("#game-root");
     if (!host) {
@@ -380,6 +586,9 @@ export class WorldScene extends Phaser.Scene {
     host.dataset.prompt = prompt;
     host.dataset.nearbyNpc = nearbyNpcId ?? "";
     host.dataset.activeNpc = this.app.getActiveNpcId() ?? "";
+    host.dataset.highlightedTarget = highlightedTargetId ?? "";
+    host.dataset.lastInteractionResult =
+      lastInteractionResult ?? host.dataset.lastInteractionResult ?? "idle";
     host.dataset.lastMoveResult =
       lastMoveResult ?? host.dataset.lastMoveResult ?? "idle";
   }

@@ -8,6 +8,7 @@ async function readGrid(page) {
 }
 
 async function pressMove(page, key, expectedGrid) {
+  await page.locator("#game-root").focus();
   await page.keyboard.press(key);
   await expect
     .poll(() => page.locator("#game-root").getAttribute("data-player-grid"))
@@ -19,6 +20,7 @@ async function pressMove(page, key, expectedGrid) {
 }
 
 async function pressBlockedMove(page, key, expectedGrid) {
+  await page.locator("#game-root").focus();
   await page.keyboard.press(key);
   await expect(page.locator("#game-root")).toHaveAttribute(
     "data-player-grid",
@@ -103,6 +105,10 @@ test.describe("TMUX Trek world input", () => {
     );
   });
 
+  test("place tiles block movement", async ({ page }) => {
+    await pressBlockedMove(page, "KeyD", [17, 12]);
+  });
+
   test("WASD sequence keeps movement responsive without freezing", async ({
     page,
   }) => {
@@ -128,7 +134,7 @@ test.describe("TMUX Trek world input", () => {
     );
   });
 
-  test("active NPC interaction triggers by proximity before overlap", async ({
+  test("active NPC interaction requires horizontal adjacency and highlights the target", async ({
     page,
   }) => {
     await moveAlong(page, [
@@ -139,8 +145,102 @@ test.describe("TMUX Trek world input", () => {
       ["KeyW", [17, 7]],
       ["KeyW", [17, 6]],
       ["KeyW", [17, 5]],
-      ["KeyD", [18, 5]],
-      ["KeyA", [17, 5]],
+      ["KeyW", [17, 4]],
+      ["KeyW", [17, 3]],
+      ["KeyA", [16, 3]],
+      ["KeyA", [15, 3]],
+      ["KeyA", [14, 3]],
+      ["KeyA", [13, 3]],
+      ["KeyA", [12, 3]],
+      ["KeyA", [11, 3]],
+      ["KeyA", [10, 3]],
+      ["KeyA", [9, 3]],
+      ["KeyA", [8, 3]],
+      ["KeyA", [7, 3]],
+    ]);
+
+    await expect(page.locator("#game-root")).toHaveAttribute(
+      "data-nearby-npc",
+      "zrix",
+    );
+    await expect(page.locator("#game-root")).toHaveAttribute(
+      "data-highlighted-target",
+      "zrix",
+    );
+    await expect(page.locator("#game-root")).toHaveAttribute(
+      "data-prompt",
+      /Press E to talk to Zrix/,
+    );
+    await expect(page.locator("#game-root")).toHaveAttribute(
+      "data-player-grid",
+      "7,3",
+    );
+  });
+
+  test("occupied character tiles block movement", async ({ page }) => {
+    await moveAlong(page, [
+      ["KeyW", [17, 11]],
+      ["KeyW", [17, 10]],
+      ["KeyW", [17, 9]],
+      ["KeyW", [17, 8]],
+      ["KeyW", [17, 7]],
+      ["KeyW", [17, 6]],
+      ["KeyW", [17, 5]],
+      ["KeyW", [17, 4]],
+      ["KeyW", [17, 3]],
+      ["KeyA", [16, 3]],
+      ["KeyA", [15, 3]],
+      ["KeyA", [14, 3]],
+      ["KeyA", [13, 3]],
+      ["KeyA", [12, 3]],
+      ["KeyA", [11, 3]],
+      ["KeyA", [10, 3]],
+      ["KeyA", [9, 3]],
+      ["KeyA", [8, 3]],
+      ["KeyA", [7, 3]],
+    ]);
+
+    await pressBlockedMove(page, "KeyA", [7, 3]);
+  });
+
+  test("wrong adjacent character has nothing to say yet", async ({ page }) => {
+    await moveAlong(page, [
+      ["KeyW", [17, 11]],
+      ["KeyW", [17, 10]],
+      ["KeyW", [17, 9]],
+      ["KeyW", [17, 8]],
+      ["KeyW", [17, 7]],
+      ["KeyW", [17, 6]],
+      ["KeyW", [17, 5]],
+      ["KeyW", [17, 4]],
+    ]);
+
+    await expect(page.locator("#game-root")).toHaveAttribute(
+      "data-highlighted-target",
+      "orin",
+    );
+    await page.keyboard.press("KeyE");
+    await expect(page.locator("#dialogue-root")).toHaveClass(/hidden/);
+    await expect(page.locator("#game-root")).toHaveAttribute(
+      "data-last-interaction-result",
+      "nothing",
+    );
+    await expect(page.locator("#instruction-text")).toContainText(
+      "Archivist Orin has nothing to say yet",
+    );
+  });
+
+  test("standing above or below a character does not enable interaction", async ({
+    page,
+  }) => {
+    await moveAlong(page, [
+      ["KeyW", [17, 11]],
+      ["KeyW", [17, 10]],
+      ["KeyW", [17, 9]],
+      ["KeyW", [17, 8]],
+      ["KeyW", [17, 7]],
+      ["KeyW", [17, 6]],
+      ["KeyW", [17, 5]],
       ["KeyA", [16, 5]],
       ["KeyA", [15, 5]],
       ["KeyA", [14, 5]],
@@ -152,19 +252,18 @@ test.describe("TMUX Trek world input", () => {
       ["KeyA", [8, 5]],
       ["KeyA", [7, 5]],
       ["KeyA", [6, 5]],
+      ["KeyW", [6, 4]],
     ]);
 
     await expect(page.locator("#game-root")).toHaveAttribute(
-      "data-nearby-npc",
-      "zrix",
+      "data-highlighted-target",
+      "",
     );
+    await page.keyboard.press("KeyE");
+    await expect(page.locator("#dialogue-root")).toHaveClass(/hidden/);
     await expect(page.locator("#game-root")).toHaveAttribute(
-      "data-prompt",
-      /Press E to talk to Zrix/,
-    );
-    await expect(page.locator("#game-root")).toHaveAttribute(
-      "data-player-grid",
-      "6,5",
+      "data-last-interaction-result",
+      "none",
     );
   });
 
@@ -193,24 +292,19 @@ test.describe("TMUX Trek world input", () => {
       ["KeyW", [17, 7]],
       ["KeyW", [17, 6]],
       ["KeyW", [17, 5]],
-      ["KeyA", [16, 5]],
-      ["KeyA", [15, 5]],
-      ["KeyA", [14, 5]],
-      ["KeyA", [13, 5]],
-      ["KeyA", [12, 5]],
-      ["KeyA", [11, 5]],
-      ["KeyA", [10, 5]],
-      ["KeyA", [9, 5]],
+      ["KeyW", [17, 4]],
+      ["KeyW", [17, 3]],
+      ["KeyA", [16, 3]],
     ]);
 
     await page.keyboard.press("KeyE");
     await page.waitForTimeout(100);
-    await pressMove(page, "KeyA", [8, 5]);
+    await pressMove(page, "KeyA", [15, 3]);
 
     await expect(page.locator("#dialogue-root")).toHaveClass(/hidden/);
     await expect(page.locator("#game-root")).toHaveAttribute(
       "data-prompt",
-      /Press E to talk to Zrix/,
+      /Stand immediately left or right of Zrix/,
     );
   });
 
@@ -225,17 +319,18 @@ test.describe("TMUX Trek world input", () => {
       ["KeyW", [17, 7]],
       ["KeyW", [17, 6]],
       ["KeyW", [17, 5]],
-      ["KeyA", [16, 5]],
-      ["KeyA", [15, 5]],
-      ["KeyA", [14, 5]],
-      ["KeyA", [13, 5]],
-      ["KeyA", [12, 5]],
-      ["KeyA", [11, 5]],
-      ["KeyA", [10, 5]],
-      ["KeyA", [9, 5]],
-      ["KeyA", [8, 5]],
-      ["KeyA", [7, 5]],
-      ["KeyA", [6, 5]],
+      ["KeyW", [17, 4]],
+      ["KeyW", [17, 3]],
+      ["KeyA", [16, 3]],
+      ["KeyA", [15, 3]],
+      ["KeyA", [14, 3]],
+      ["KeyA", [13, 3]],
+      ["KeyA", [12, 3]],
+      ["KeyA", [11, 3]],
+      ["KeyA", [10, 3]],
+      ["KeyA", [9, 3]],
+      ["KeyA", [8, 3]],
+      ["KeyA", [7, 3]],
     ]);
 
     await expect(page.locator("#game-root")).toHaveAttribute(
@@ -245,11 +340,13 @@ test.describe("TMUX Trek world input", () => {
     await completeZrixChallenge(page);
 
     await moveAlong(page, [
-      ["KeyD", [7, 5]],
-      ["KeyD", [8, 5]],
-      ["KeyD", [9, 5]],
-      ["KeyD", [10, 5]],
-      ["KeyS", [10, 6]],
+      ["KeyD", [8, 3]],
+      ["KeyD", [9, 3]],
+      ["KeyD", [10, 3]],
+      ["KeyD", [11, 3]],
+      ["KeyS", [11, 4]],
+      ["KeyS", [11, 5]],
+      ["KeyS", [11, 6]],
     ]);
 
     await expect(page.locator("#game-root")).toHaveAttribute(
