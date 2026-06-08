@@ -1,6 +1,14 @@
 import Phaser from "phaser";
 
 const PROXIMITY_RADIUS_TILES = 2;
+const TERRAIN_SHEET_KEY = "z-shell-terrain";
+const TERRAIN_SHEET_PATH = "assets/tiles/z-shell-terrain.png";
+const TERRAIN_FRAMES = {
+  ground: [0, 1, 2],
+  border: [3, 4, 5, 6, 7],
+  obstacle: [8, 9, 10, 11],
+  beacon: 14,
+};
 
 export class WorldScene extends Phaser.Scene {
   constructor() {
@@ -12,6 +20,13 @@ export class WorldScene extends Phaser.Scene {
     this.interactRequested = false;
   }
 
+  preload() {
+    this.load.spritesheet(TERRAIN_SHEET_KEY, TERRAIN_SHEET_PATH, {
+      frameWidth: 48,
+      frameHeight: 48,
+    });
+  }
+
   create() {
     this.app = this.registry.get("app");
     this.zone = this.app.getZone();
@@ -20,7 +35,9 @@ export class WorldScene extends Phaser.Scene {
     this.rows = this.zone.map.rows;
     this.playerGrid = { ...this.zone.playerStart };
     this.blockedTiles = new Set(
-      (this.zone.obstacles?.tiles ?? []).map(([column, row]) => `${column},${row}`),
+      (this.zone.obstacles?.tiles ?? []).map(
+        ([column, row]) => `${column},${row}`,
+      ),
     );
 
     this.cameras.main.setBackgroundColor("#0a1628");
@@ -43,32 +60,21 @@ export class WorldScene extends Phaser.Scene {
   }
 
   #drawTileMap() {
-    const graphics = this.add.graphics();
-    graphics.fillStyle(0x132744);
-    graphics.fillRect(0, 0, this.zone.map.width, this.zone.map.height);
-
     for (let row = 0; row < this.rows; row += 1) {
       for (let column = 0; column < this.columns; column += 1) {
-        const x = column * this.tileSize;
-        const y = row * this.tileSize;
         const isBorder =
           row === 0 ||
           column === 0 ||
           row === this.rows - 1 ||
           column === this.columns - 1;
-
-        graphics.fillStyle(isBorder ? 0x347c89 : 0x1b3452);
-        graphics.fillRect(x + 3, y + 3, this.tileSize - 6, this.tileSize - 6);
-
-        if (!isBorder) {
-          graphics.fillStyle(0x2d5383);
-          graphics.fillRect(x + 20, y + 20, 8, 8);
-        }
+        const framePool = isBorder
+          ? TERRAIN_FRAMES.border
+          : TERRAIN_FRAMES.ground;
+        const frame = framePool[(column * 7 + row * 11) % framePool.length];
+        const center = this.#tileCenter(column, row);
+        this.add.image(center.x, center.y, TERRAIN_SHEET_KEY, frame);
       }
     }
-
-    graphics.lineStyle(4, 0x0c1f36, 1);
-    graphics.strokeRect(0, 0, this.zone.map.width, this.zone.map.height);
   }
 
   #drawLandmarks() {
@@ -80,34 +86,31 @@ export class WorldScene extends Phaser.Scene {
       fontSize: "18px",
     });
 
-    this.#drawTileCluster(
-      [
-        [4, 6],
-        [5, 6],
-        [4, 7],
-        [5, 7],
-      ],
-      0x7b2d8b,
-      0xffb300,
-    );
+    this.#drawTileCluster([
+      [4, 6],
+      [5, 6],
+      [4, 7],
+      [5, 7],
+    ]);
 
-    this.#drawTileCluster(
-      [
-        [14, 9],
-        [15, 9],
-        [14, 10],
-        [15, 10],
-      ],
-      0xffb300,
-      0x7b2d8b,
-    );
+    this.#drawTileCluster([
+      [14, 9],
+      [15, 9],
+      [14, 10],
+      [15, 10],
+    ]);
 
-    const beacon = this.#tileCenter(this.zone.beacon.column, this.zone.beacon.row);
+    const beacon = this.#tileCenter(
+      this.zone.beacon.column,
+      this.zone.beacon.row,
+    );
     this.add.circle(beacon.x, beacon.y, 30, 0xffb300, 0.18);
-    this.add.circle(beacon.x, beacon.y, 20, 0xffb300, 0.3);
-    this.add.rectangle(beacon.x, beacon.y, this.tileSize - 14, this.tileSize - 14, 0x1f4f67);
-    this.add.rectangle(beacon.x, beacon.y, 18, 28, 0x6ec6c0);
-    this.add.circle(beacon.x, beacon.y - 10, 8, 0xffb300, 0.95);
+    this.add.image(
+      beacon.x,
+      beacon.y,
+      TERRAIN_SHEET_KEY,
+      TERRAIN_FRAMES.beacon,
+    );
     this.add.text(beacon.x - 64, beacon.y + 32, "CLULIX BEACON", {
       color: "#ffb300",
       fontFamily: '"Press Start 2P"',
@@ -115,16 +118,20 @@ export class WorldScene extends Phaser.Scene {
     });
   }
 
-  #drawTileCluster(tiles, fillColor, accentColor) {
-    tiles.forEach(([column, row]) => {
+  #drawTileCluster(tiles) {
+    tiles.forEach(([column, row], index) => {
       const center = this.#tileCenter(column, row);
-      this.add.rectangle(center.x, center.y, this.tileSize - 6, this.tileSize - 6, fillColor);
-      this.add.rectangle(center.x, center.y, 18, 10, accentColor);
+      const frame =
+        TERRAIN_FRAMES.obstacle[index % TERRAIN_FRAMES.obstacle.length];
+      this.add.image(center.x, center.y, TERRAIN_SHEET_KEY, frame);
     });
   }
 
   #createActors() {
-    const playerCenter = this.#tileCenter(this.playerGrid.column, this.playerGrid.row);
+    const playerCenter = this.#tileCenter(
+      this.playerGrid.column,
+      this.playerGrid.row,
+    );
     this.player = this.add.rectangle(
       playerCenter.x,
       playerCenter.y,
@@ -132,15 +139,26 @@ export class WorldScene extends Phaser.Scene {
       this.tileSize - 20,
       0x6ec6c0,
     );
-    this.playerLabel = this.add.text(playerCenter.x - 24, playerCenter.y + 28, "Captain", {
-      color: "#f2e8be",
-      fontFamily: '"Share Tech Mono"',
-      fontSize: "16px",
-    });
+    this.playerLabel = this.add.text(
+      playerCenter.x - 24,
+      playerCenter.y + 28,
+      "Captain",
+      {
+        color: "#f2e8be",
+        fontFamily: '"Share Tech Mono"',
+        fontSize: "16px",
+      },
+    );
 
     this.npcObjects = this.zone.npcs.map((npc) => {
       const center = this.#tileCenter(npc.column, npc.row);
-      const marker = this.add.rectangle(center.x, center.y, this.tileSize - 18, this.tileSize - 18, npc.color);
+      const marker = this.add.rectangle(
+        center.x,
+        center.y,
+        this.tileSize - 18,
+        this.tileSize - 18,
+        npc.color,
+      );
       const label = this.add.text(center.x - 30, center.y + 28, npc.name, {
         color: "#f2e8be",
         fontFamily: '"Share Tech Mono"',
@@ -173,6 +191,10 @@ export class WorldScene extends Phaser.Scene {
         return;
       }
 
+      if (this.app.isOverlayOpen()) {
+        return;
+      }
+
       const direction = {
         ArrowUp: { column: 0, row: -1 },
         KeyW: { column: 0, row: -1 },
@@ -185,6 +207,10 @@ export class WorldScene extends Phaser.Scene {
       }[code];
 
       if (!direction || event.repeat) {
+        return;
+      }
+
+      if (this.isMoving || this.moveQueue.length > 0) {
         return;
       }
 
@@ -207,9 +233,16 @@ export class WorldScene extends Phaser.Scene {
       1,
       this.columns - 2,
     );
-    const nextRow = Phaser.Math.Clamp(this.playerGrid.row + deltaRow, 1, this.rows - 2);
+    const nextRow = Phaser.Math.Clamp(
+      this.playerGrid.row + deltaRow,
+      1,
+      this.rows - 2,
+    );
 
-    if (nextColumn === this.playerGrid.column && nextRow === this.playerGrid.row) {
+    if (
+      nextColumn === this.playerGrid.column &&
+      nextRow === this.playerGrid.row
+    ) {
       this.#syncDebugState(undefined, undefined, "blocked");
       return;
     }
@@ -245,8 +278,7 @@ export class WorldScene extends Phaser.Scene {
       ease: "Quad.Out",
       x: center.x - 24,
       y: center.y + 28,
-      onComplete: () => {
-      },
+      onComplete: () => {},
     });
   }
 
@@ -310,12 +342,14 @@ export class WorldScene extends Phaser.Scene {
 
     this.interactionText.setText(prompt);
     this.#syncDebugState(prompt, nearbyNpcId);
+    this.interactRequested = false;
   }
 
   #getNearestNpc() {
     return (
       this.npcObjects.find(
-        ({ npc }) => this.#tileDistance(this.playerGrid, npc) <= PROXIMITY_RADIUS_TILES,
+        ({ npc }) =>
+          this.#tileDistance(this.playerGrid, npc) <= PROXIMITY_RADIUS_TILES,
       ) ?? null
     );
   }
@@ -346,6 +380,7 @@ export class WorldScene extends Phaser.Scene {
     host.dataset.prompt = prompt;
     host.dataset.nearbyNpc = nearbyNpcId ?? "";
     host.dataset.activeNpc = this.app.getActiveNpcId() ?? "";
-    host.dataset.lastMoveResult = lastMoveResult ?? host.dataset.lastMoveResult ?? "idle";
+    host.dataset.lastMoveResult =
+      lastMoveResult ?? host.dataset.lastMoveResult ?? "idle";
   }
 }

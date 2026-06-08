@@ -5,6 +5,7 @@ This file is a roadmap snapshot. GitHub Issues are the canonical planning surfac
 Primary planning documents:
 
 - [Gameplay plan](/Users/michael/Documents/dev/tmux-trek/doc/gameplay-plan.md)
+- [Delivery workflow](/Users/michael/Documents/dev/tmux-trek/doc/delivery-workflow.md)
 - [Software engineering guide](/Users/michael/Documents/dev/tmux-trek/doc/software-engineering-practices.md)
 
 ## Current State
@@ -13,6 +14,7 @@ Primary planning documents:
 - The current vertical slice is feature-incomplete but playable.
 - The world is tile-based, keyboard-driven, collision-aware, and covered by browser acceptance tests.
 - The current implemented lesson arc reaches from spawn near the CLULIX beacon through Zrix and into Vrex's interaction flow.
+- The GitHub Pages test build deploys from `main` after pull-request CI passes and the PR is merged.
 
 ## Open Roadmap Issues
 
@@ -48,3 +50,4 @@ Primary planning documents:
 - Do not close roadmap issues until the implementation, tests, and docs are actually complete.
 - Keep browser acceptance tests keyboard-only and DOM-driven by default.
 - Prefer updating GitHub Issues first, then refresh this file as a summary snapshot.
+- Use the standard branch, pull request, CI, merge, and GitHub Pages deployment workflow for deployable changes.

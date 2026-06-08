@@ -32,9 +32,22 @@ Any game-development change should aim to leave the project with:
 - one stronger reinforcement loop
 - passing `lint`, `test`, `bdd`, and `build` when feasible
 
+Deployable changes should follow the standard delivery workflow:
+
+- create an alternate branch from `main`
+- commit a small Conventional Commit
+- open a pull request targeting `main`
+- wait for CI to pass
+- merge the pull request
+- verify the GitHub Pages test deployment
+
+The detailed workflow is documented in
+[doc/delivery-workflow.md](/Users/michael/Documents/dev/tmux-trek/doc/delivery-workflow.md).
+
 ## Handoff
 
 - The current implementation is a limited but runnable vertical slice.
 - Before changing gameplay direction, read [doc/gameplay-plan.md](/Users/michael/Documents/dev/tmux-trek/doc/gameplay-plan.md) and [TODO.md](/Users/michael/Documents/dev/tmux-trek/TODO.md).
+- Before deploying, read [doc/delivery-workflow.md](/Users/michael/Documents/dev/tmux-trek/doc/delivery-workflow.md).
 - Treat GitHub Issues as canonical for future feature work and `TODO.md` as the checked-in summary.
 - Preserve the current browser acceptance tests unless the underlying player flow intentionally changes.

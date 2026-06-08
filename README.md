@@ -32,6 +32,23 @@ npm run bdd
 npm run build
 ```
 
+## Test Deployment
+
+The test build is deployed with GitHub Pages at
+<https://mdogy.github.io/tmux-trek/>.
+
+Use the standard delivery path for every deployable change:
+
+1. Create an alternate branch from `main`.
+2. Commit a small, reviewable change.
+3. Open a pull request targeting `main`.
+4. Wait for GitHub Actions CI to pass.
+5. Merge the pull request.
+6. Let the Pages deployment workflow publish `main`.
+
+See [Delivery workflow](/Users/michael/Documents/dev/tmux-trek/doc/delivery-workflow.md)
+for the full process.
+
 ## Repository Layout
 
 - `src/engine/`: pure tmux logic with no rendering dependencies
@@ -48,6 +65,7 @@ npm run build
 - [Project history](/Users/michael/Documents/dev/tmux-trek/history.md)
 - [TODO snapshot](/Users/michael/Documents/dev/tmux-trek/TODO.md)
 - [Agent workflow](/Users/michael/Documents/dev/tmux-trek/AGENTS.md)
+- [Delivery workflow](/Users/michael/Documents/dev/tmux-trek/doc/delivery-workflow.md)
 - [Gameplay plan](/Users/michael/Documents/dev/tmux-trek/doc/gameplay-plan.md)
 - [Software engineering guide](/Users/michael/Documents/dev/tmux-trek/doc/software-engineering-practices.md)
 

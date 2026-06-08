@@ -1,10 +1,15 @@
 # TMUX Trek — Software Engineering Practices Guide
+
 ## Purpose
+
 This document defines the complete software engineering methodology for building **TMUX Trek** in a robust, LLM-assisted, and collaboratively maintainable way. It covers Behavior-Driven Development (BDD), Test-Driven Development (TDD), Git discipline, GitHub issue tracking, the `gh` CLI workflow, and automated deployment to GitHub Pages. Every practice described here is designed to be directly executable by a developer or an LLM coding agent following this document as a skill file.
 
-***
+---
+
 ## 1. Repository Setup
+
 ### 1.1 Initialize the Repository
+
 ```bash
 # Create and navigate to the project
 mkdir tmux-trek && cd tmux-trek
@@ -23,7 +28,9 @@ gh repo create tmux-trek \
 git remote add origin https://github.com/YOUR_USERNAME/tmux-trek.git
 git push -u origin main
 ```
+
 ### 1.2 Project Directory Structure
+
 ```
 tmux-trek/
 ├── .github/
@@ -75,7 +82,9 @@ tmux-trek/
 ├── package.json
 └── README.md
 ```
+
 ### 1.3 Package Initialization and Dependencies
+
 ```bash
 npm init -y
 
@@ -102,19 +111,36 @@ npm install -D eslint prettier eslint-plugin-vitest
 npm install -D commitlint @commitlint/config-conventional husky
 ```
 
-***
+---
+
 ## 2. Branching Strategy
+
 TMUX Trek uses **GitHub Flow** — a lightweight, PR-driven model where `main` is always deployable. For structured version releases, an optional `develop` integration branch is used.[^1][^2]
+
+For the current test deployment, the required path is:
+
+1. Create an alternate branch from `main`.
+2. Commit a small, reviewable change.
+3. Push the branch and open a pull request targeting `main`.
+4. Let GitHub Actions CI pass on the pull request.
+5. Merge the pull request.
+6. Let GitHub Pages deploy the updated `main` build.
+
+The operational checklist lives in
+[doc/delivery-workflow.md](/Users/michael/Documents/dev/tmux-trek/doc/delivery-workflow.md).
+
 ### 2.1 Branch Types and Naming
-| Branch Type | Pattern | Example | Created From |
-|---|---|---|---|
-| Feature | `feature/issue-N-short-desc` | `feature/12-session-manager` | `main` |
-| Bug fix | `fix/issue-N-short-desc` | `fix/34-pane-focus-crash` | `main` |
-| BDD scenario | `bdd/issue-N-feature-name` | `bdd/15-copy-mode-scenarios` | `main` |
-| Hotfix | `hotfix/short-desc` | `hotfix/deploy-path-wrong` | `main` |
-| Release | `release/vX.Y.Z` | `release/v0.3.0` | `main` |
+
+| Branch Type  | Pattern                      | Example                      | Created From |
+| ------------ | ---------------------------- | ---------------------------- | ------------ |
+| Feature      | `feature/issue-N-short-desc` | `feature/12-session-manager` | `main`       |
+| Bug fix      | `fix/issue-N-short-desc`     | `fix/34-pane-focus-crash`    | `main`       |
+| BDD scenario | `bdd/issue-N-feature-name`   | `bdd/15-copy-mode-scenarios` | `main`       |
+| Hotfix       | `hotfix/short-desc`          | `hotfix/deploy-path-wrong`   | `main`       |
+| Release      | `release/vX.Y.Z`             | `release/v0.3.0`             | `main`       |
 
 **Rules:**
+
 - Branch names always reference the GitHub Issue number[^2]
 - `main` is protected — direct pushes are forbidden
 - All merges require a passing CI run
@@ -134,10 +160,14 @@ gh pr create \
   --assignee "@me"
 ```
 
-***
+---
+
 ## 3. Commit Message Convention (Conventional Commits)
+
 All commits use the [Conventional Commits](https://www.conventionalcommits.org) specification, enforced by `commitlint` and `husky`.[^1]
+
 ### 3.1 Format
+
 ```
 <type>(<scope>): <short description>
 
@@ -145,22 +175,28 @@ All commits use the [Conventional Commits](https://www.conventionalcommits.org) 
 
 [optional footer: Closes #N, Breaking change notice]
 ```
+
 ### 3.2 Types
-| Type | When to Use |
-|---|---|
-| `feat` | New feature, new game mechanic, new command support |
-| `fix` | Bug fix |
-| `test` | Adding or updating tests only |
-| `bdd` | Adding or updating BDD feature files |
-| `docs` | Documentation changes |
-| `refactor` | Code restructuring without behavior change |
-| `chore` | Build tooling, dependencies, CI config |
-| `perf` | Performance improvement |
-| `style` | Formatting, whitespace (no logic change) |
-| `revert` | Reverts a previous commit |
+
+| Type       | When to Use                                         |
+| ---------- | --------------------------------------------------- |
+| `feat`     | New feature, new game mechanic, new command support |
+| `fix`      | Bug fix                                             |
+| `test`     | Adding or updating tests only                       |
+| `bdd`      | Adding or updating BDD feature files                |
+| `docs`     | Documentation changes                               |
+| `refactor` | Code restructuring without behavior change          |
+| `chore`    | Build tooling, dependencies, CI config              |
+| `perf`     | Performance improvement                             |
+| `style`    | Formatting, whitespace (no logic change)            |
+| `revert`   | Reverts a previous commit                           |
+
 ### 3.3 Scope Values for TMUX Trek
+
 `engine` · `terminal` · `game` · `panes` · `windows` · `sessions` · `copy-mode` · `config` · `ci` · `assets` · `docs`
+
 ### 3.4 Examples
+
 ```
 feat(engine): add SessionManager with create, attach, detach, kill
 
@@ -187,7 +223,9 @@ and be reattachable. This is the most critical behavioral contract.
 
 Closes #15
 ```
+
 ### 3.5 Enforce with Husky + Commitlint
+
 ```bash
 npx husky init
 echo "npx commitlint --edit \$1" > .husky/commit-msg
@@ -196,21 +234,38 @@ echo "npx commitlint --edit \$1" > .husky/commit-msg
 ```js
 // commitlint.config.js
 export default {
-  extends: ['@commitlint/config-conventional'],
+  extends: ["@commitlint/config-conventional"],
   rules: {
-    'scope-enum': [2, 'always', [
-      'engine','terminal','game','panes','windows',
-      'sessions','copy-mode','config','ci','assets','docs'
-    ]],
-    'subject-max-length': [2, 'always', 72]
-  }
+    "scope-enum": [
+      2,
+      "always",
+      [
+        "engine",
+        "terminal",
+        "game",
+        "panes",
+        "windows",
+        "sessions",
+        "copy-mode",
+        "config",
+        "ci",
+        "assets",
+        "docs",
+      ],
+    ],
+    "subject-max-length": [2, "always", 72],
+  },
 };
 ```
 
-***
+---
+
 ## 4. GitHub Issues — The Canonical Unit of Work
+
 Every piece of work — feature, bug, BDD scenario, documentation — begins as a GitHub Issue. No branch is created without an issue. No PR is opened without a `Closes #N` reference.[^3]
+
 ### 4.1 Issue Labels
+
 Create these labels in the repository:
 
 ```bash
@@ -228,8 +283,11 @@ gh label create "phaser"        --color "b60205" --description "Phaser 4 game wo
 gh label create "ci/cd"         --color "cccccc" --description "GitHub Actions, deployment"
 gh label create "blocked"       --color "e4e669" --description "Waiting on another issue"
 ```
+
 ### 4.2 Issue Templates
+
 **`.github/ISSUE_TEMPLATE/feature.md`**
+
 ```markdown
 ---
 name: Feature
@@ -238,22 +296,28 @@ labels: feature
 ---
 
 ## Summary
+
 <!-- One sentence: what does this add to the game? -->
 
 ## Acceptance Criteria
+
 <!-- These become BDD scenarios in features/ -->
+
 - [ ] Given ... When ... Then ...
 - [ ] Given ... When ... Then ...
 
 ## Implementation Notes
+
 <!-- Relevant files, dependencies, data structures -->
 
 ## Linked Issues
+
 <!-- Closes #N, Depends on #N -->
 ```
 
 **`.github/ISSUE_TEMPLATE/bdd-scenario.md`**
-```markdown
+
+````markdown
 ---
 name: BDD Scenario
 about: Define behavioral contracts as Gherkin scenarios
@@ -261,9 +325,11 @@ labels: bdd
 ---
 
 ## Feature File
+
 `features/<area>/<name>.feature`
 
 ## Scenarios to Define
+
 ```gherkin
 Feature: <feature name>
 
@@ -272,10 +338,13 @@ Feature: <feature name>
     When ...
     Then ...
 ```
+````
 
 ## Step Definitions to Implement
+
 `tests/step-definitions/<name>.steps.js`
-```
+
+````
 ### 4.3 Issue Milestones
 Create milestones that map to game acts:
 
@@ -300,8 +369,10 @@ gh api repos/:owner/:repo/milestones --method POST \
 gh api repos/:owner/:repo/milestones --method POST \
   -f title="Infrastructure" \
   -f description="CI/CD, build system, deployment, testing framework"
-```
+````
+
 ### 4.4 The gh Issue Workflow (Daily Developer Loop)
+
 ```bash
 # Create a feature issue
 gh issue create \
@@ -326,12 +397,16 @@ gh issue view 12
 gh pr create --title "feat(engine): SessionManager" --body "Closes #12"
 ```
 
-***
+---
+
 ## 5. Behavior-Driven Development (BDD)
+
 BDD in TMUX Trek defines the **behavioral contracts** of the tmux emulator, the game world logic, and the puzzle system in human-readable Gherkin syntax. BDD scenarios become the acceptance tests — if a scenario passes, the feature is done.[^4]
 
 The BDD framework is **Cucumber.js** (`@cucumber/cucumber`) running via `jest-cucumber` for Vitest integration.[^5][^6]
+
 ### 5.1 BDD Philosophy for TMUX Trek
+
 The key architectural decision that makes TMUX Trek testable is the **strict separation of pure engine logic from rendering**:[^7]
 
 - `src/engine/` — pure JavaScript, no DOM, no Phaser, no xterm.js. Input: plain objects. Output: plain objects.
@@ -339,7 +414,9 @@ The key architectural decision that makes TMUX Trek testable is the **strict sep
 - `src/game/` — Phaser scenes that call the engine
 
 BDD tests operate only against `src/engine/`. The engine is a deterministic state machine.[^8]
+
 ### 5.2 Feature File Organization
+
 ```
 features/
 ├── sessions/
@@ -366,8 +443,11 @@ features/
     ├── zone-unlock.feature
     └── helix-hint-system.feature
 ```
+
 ### 5.3 BDD Feature File Examples
+
 **`features/sessions/attach-detach.feature`**
+
 ```gherkin
 Feature: Session persistence across detach and reattach
   As a player learning tmux
@@ -405,6 +485,7 @@ Feature: Session persistence across detach and reattach
 ```
 
 **`features/panes/split-panes.feature`**
+
 ```gherkin
 Feature: Splitting panes in a window
   As a player learning pane management
@@ -443,6 +524,7 @@ Feature: Splitting panes in a window
 ```
 
 **`features/game-world/command-collection.feature`**
+
 ```gherkin
 Feature: Command glyph collection unlocks gameplay
   As a player
@@ -471,12 +553,15 @@ Feature: Command glyph collection unlocks gameplay
     When the player approaches tile (10, 8)
     Then the force-field tile should become passable
 ```
+
 ### 5.4 Step Definition Implementation
+
 **`tests/step-definitions/sessions.steps.js`**
+
 ```javascript
-import { Given, When, Then, Before } from '@cucumber/cucumber';
-import { expect } from 'vitest';
-import { TmuxEngine } from '../../src/engine/TmuxEngine.js';
+import { Given, When, Then, Before } from "@cucumber/cucumber";
+import { expect } from "vitest";
+import { TmuxEngine } from "../../src/engine/TmuxEngine.js";
 
 let engine;
 
@@ -484,60 +569,62 @@ Before(() => {
   engine = new TmuxEngine();
 });
 
-Given('the tmux emulator is initialized', () => {
+Given("the tmux emulator is initialized", () => {
   expect(engine).toBeDefined();
   expect(engine.getSessions()).toHaveLength(0);
 });
 
-Given('no sessions exist', () => {
+Given("no sessions exist", () => {
   engine.reset();
 });
 
-Given('a session named {string} is created', (name) => {
+Given("a session named {string} is created", (name) => {
   engine.createSession(name);
 });
 
-Given('the session {string} is the active session', (name) => {
+Given("the session {string} is the active session", (name) => {
   engine.attachSession(name);
 });
 
-When('the player executes {string}', (command) => {
+When("the player executes {string}", (command) => {
   engine.handleInput(command);
 });
 
-Then('the session {string} should be in a detached state', (name) => {
+Then("the session {string} should be in a detached state", (name) => {
   const session = engine.getSession(name);
   expect(session).toBeDefined();
   expect(session.attached).toBe(false);
 });
 
-Then('the session {string} should still exist in the session list', (name) => {
+Then("the session {string} should still exist in the session list", (name) => {
   expect(engine.getSession(name)).toBeDefined();
 });
 
-Then('no session should be active', () => {
+Then("no session should be active", () => {
   expect(engine.getActiveSession()).toBeNull();
 });
 
-Then('the session {string} should be the active session', (name) => {
+Then("the session {string} should be the active session", (name) => {
   const active = engine.getActiveSession();
   expect(active?.name).toBe(name);
 });
 
-Then('an error message {string} should be displayed', (msg) => {
+Then("an error message {string} should be displayed", (msg) => {
   expect(engine.getLastError()).toContain(msg);
 });
 ```
+
 ### 5.5 Cucumber Configuration
+
 ```javascript
 // cucumber.config.js
 export default {
   default: {
-    require: ['tests/step-definitions/**/*.steps.js'],
-    format: ['progress-bar', 'html:reports/cucumber.html'],
-    paths: ['features/**/*.feature'],
-    publishQuiet: true
-  }
+    require: ["tests/step-definitions/**/*.steps.js"],
+    format: ["progress-bar", "html:reports/cucumber.html"],
+    paths: ["features/**/*.feature"],
+    publishQuiet: true,
+  },
 };
 ```
 
@@ -552,34 +639,38 @@ export default {
 }
 ```
 
-***
+---
+
 ## 6. Test-Driven Development (TDD)
+
 TDD governs the implementation of all engine logic in `src/engine/`. The cycle is Red → Green → Refactor. No production logic is written in `src/engine/` without a failing test first.[^7][^8]
 
 The test runner is **Vitest** — chosen over Jest because of native ESM support, Vite integration (same config as the build), and faster watch mode that reruns only affected tests.[^9]
+
 ### 6.1 Vitest Configuration
+
 ```javascript
 // vitest.config.js
-import { defineConfig } from 'vitest/config';
+import { defineConfig } from "vitest/config";
 
 export default defineConfig({
   test: {
-    environment: 'node',       // Engine tests: pure Node, no DOM
-    include: ['tests/unit/**/*.test.js'],
+    environment: "node", // Engine tests: pure Node, no DOM
+    include: ["tests/unit/**/*.test.js"],
     coverage: {
-      provider: 'v8',
-      include: ['src/engine/**'],
-      exclude: ['src/game/**', 'src/terminal/**'],
+      provider: "v8",
+      include: ["src/engine/**"],
+      exclude: ["src/game/**", "src/terminal/**"],
       thresholds: {
         lines: 90,
         branches: 85,
         functions: 90,
-        statements: 90
+        statements: 90,
       },
-      reporter: ['text', 'html', 'lcov']
+      reporter: ["text", "html", "lcov"],
     },
-    globals: true
-  }
+    globals: true,
+  },
 });
 ```
 
@@ -594,8 +685,11 @@ export default defineConfig({
   }
 }
 ```
+
 ### 6.2 TDD Cycle for Engine Components
+
 **The Rule:** Every method in `src/engine/` must be written in this order:
+
 1. Write a failing unit test
 2. Write the minimum code to make it pass
 3. Refactor for clarity — tests must still pass
@@ -603,87 +697,88 @@ export default defineConfig({
 ```javascript
 // tests/unit/engine/SessionManager.test.js
 
-import { describe, it, expect, beforeEach } from 'vitest';
-import { SessionManager } from '../../../src/engine/SessionManager.js';
+import { describe, it, expect, beforeEach } from "vitest";
+import { SessionManager } from "../../../src/engine/SessionManager.js";
 
-describe('SessionManager', () => {
-
+describe("SessionManager", () => {
   let sm;
 
   beforeEach(() => {
     sm = new SessionManager();
   });
 
-  describe('createSession', () => {
-    it('creates a session with the given name', () => {
-      sm.createSession('clulix');
-      expect(sm.getSession('clulix')).toBeDefined();
+  describe("createSession", () => {
+    it("creates a session with the given name", () => {
+      sm.createSession("clulix");
+      expect(sm.getSession("clulix")).toBeDefined();
     });
 
-    it('assigns auto-incrementing numeric index when no name given', () => {
+    it("assigns auto-incrementing numeric index when no name given", () => {
       sm.createSession();
-      expect(sm.getSession('0')).toBeDefined();
+      expect(sm.getSession("0")).toBeDefined();
     });
 
-    it('throws when a session with that name already exists', () => {
-      sm.createSession('clulix');
-      expect(() => sm.createSession('clulix')).toThrow('duplicate session name');
+    it("throws when a session with that name already exists", () => {
+      sm.createSession("clulix");
+      expect(() => sm.createSession("clulix")).toThrow(
+        "duplicate session name",
+      );
     });
 
-    it('new session starts with one window (window 0)', () => {
-      sm.createSession('clulix');
-      const session = sm.getSession('clulix');
+    it("new session starts with one window (window 0)", () => {
+      sm.createSession("clulix");
+      const session = sm.getSession("clulix");
       expect(session.windows).toHaveLength(1);
       expect(session.windows.index).toBe(0);
     });
   });
 
-  describe('attachSession / detachSession', () => {
-    it('marks session as attached and sets it as active', () => {
-      sm.createSession('clulix');
-      sm.attachSession('clulix');
-      expect(sm.getActiveSession()?.name).toBe('clulix');
-      expect(sm.getSession('clulix').attached).toBe(true);
+  describe("attachSession / detachSession", () => {
+    it("marks session as attached and sets it as active", () => {
+      sm.createSession("clulix");
+      sm.attachSession("clulix");
+      expect(sm.getActiveSession()?.name).toBe("clulix");
+      expect(sm.getSession("clulix").attached).toBe(true);
     });
 
-    it('detaching makes session persist but inactive', () => {
-      sm.createSession('clulix');
-      sm.attachSession('clulix');
+    it("detaching makes session persist but inactive", () => {
+      sm.createSession("clulix");
+      sm.attachSession("clulix");
       sm.detachSession();
-      expect(sm.getSession('clulix')).toBeDefined();
+      expect(sm.getSession("clulix")).toBeDefined();
       expect(sm.getActiveSession()).toBeNull();
     });
 
-    it('throws when attaching a non-existent session', () => {
-      expect(() => sm.attachSession('ghost')).toThrow('no session named ghost');
+    it("throws when attaching a non-existent session", () => {
+      expect(() => sm.attachSession("ghost")).toThrow("no session named ghost");
     });
   });
 
-  describe('listSessions', () => {
-    it('returns empty array when no sessions exist', () => {
+  describe("listSessions", () => {
+    it("returns empty array when no sessions exist", () => {
       expect(sm.listSessions()).toEqual([]);
     });
 
-    it('returns all sessions with their attached state', () => {
-      sm.createSession('alpha');
-      sm.createSession('beta');
-      sm.attachSession('alpha');
+    it("returns all sessions with their attached state", () => {
+      sm.createSession("alpha");
+      sm.createSession("beta");
+      sm.attachSession("alpha");
       const list = sm.listSessions();
       expect(list).toHaveLength(2);
-      expect(list.find(s => s.name === 'alpha').attached).toBe(true);
-      expect(list.find(s => s.name === 'beta').attached).toBe(false);
+      expect(list.find((s) => s.name === "alpha").attached).toBe(true);
+      expect(list.find((s) => s.name === "beta").attached).toBe(false);
     });
   });
 
-  describe('killSession', () => {
-    it('removes the session from the manager', () => {
-      sm.createSession('clulix');
-      sm.killSession('clulix');
-      expect(sm.getSession('clulix')).toBeUndefined();
+  describe("killSession", () => {
+    it("removes the session from the manager", () => {
+      sm.createSession("clulix");
+      sm.killSession("clulix");
+      expect(sm.getSession("clulix")).toBeUndefined();
     });
 
-    it('throws when killing a non-existent session', () => {
-      expect(() => sm.killSession('ghost')).toThrow('no session named ghost');
+    it("throws when killing a non-existent session", () => {
+      expect(() => sm.killSession("ghost")).toThrow("no session named ghost");
     });
   });
 });
@@ -753,139 +848,149 @@ describe('PaneManager', () => {
   });
 });
 ```
+
 ### 6.3 TDD for Copy Mode Engine
+
 Copy mode is the most complex engine component and the highest-value TDD target.[^8]
 
 ```javascript
 // tests/unit/engine/CopyModeEngine.test.js
 
-import { describe, it, expect, beforeEach } from 'vitest';
-import { CopyModeEngine } from '../../../src/engine/CopyModeEngine.js';
+import { describe, it, expect, beforeEach } from "vitest";
+import { CopyModeEngine } from "../../../src/engine/CopyModeEngine.js";
 
 const SAMPLE_BUFFER = [
-  'Line 0: CLULIX systems online',
-  'Line 1: Session established',
-  'Line 2: WARNING: launch code required',
-  'Line 3: Code: ZRIX-7734-ALPHA',
-  'Line 4: End of log'
+  "Line 0: CLULIX systems online",
+  "Line 1: Session established",
+  "Line 2: WARNING: launch code required",
+  "Line 3: Code: ZRIX-7734-ALPHA",
+  "Line 4: End of log",
 ];
 
-describe('CopyModeEngine', () => {
+describe("CopyModeEngine", () => {
   let cme;
 
   beforeEach(() => {
     cme = new CopyModeEngine(SAMPLE_BUFFER);
   });
 
-  describe('entry and exit', () => {
-    it('starts in normal mode (not copy mode)', () => {
+  describe("entry and exit", () => {
+    it("starts in normal mode (not copy mode)", () => {
       expect(cme.isActive()).toBe(false);
     });
 
-    it('activates on enter()', () => {
+    it("activates on enter()", () => {
       cme.enter();
       expect(cme.isActive()).toBe(true);
     });
 
-    it('cursor starts at last line on entry', () => {
+    it("cursor starts at last line on entry", () => {
       cme.enter();
       expect(cme.getCursorLine()).toBe(4);
     });
 
-    it('q exits copy mode', () => {
+    it("q exits copy mode", () => {
       cme.enter();
-      cme.handleKey('q');
+      cme.handleKey("q");
       expect(cme.isActive()).toBe(false);
     });
   });
 
-  describe('vim navigation', () => {
+  describe("vim navigation", () => {
     beforeEach(() => cme.enter());
 
-    it('k moves cursor up one line', () => {
-      cme.handleKey('k');
+    it("k moves cursor up one line", () => {
+      cme.handleKey("k");
       expect(cme.getCursorLine()).toBe(3);
     });
 
-    it('j moves cursor down (does not go below last line)', () => {
-      cme.handleKey('k');
-      cme.handleKey('j');
+    it("j moves cursor down (does not go below last line)", () => {
+      cme.handleKey("k");
+      cme.handleKey("j");
       expect(cme.getCursorLine()).toBe(4);
     });
 
-    it('g jumps to first line', () => {
-      cme.handleKey('g');
+    it("g jumps to first line", () => {
+      cme.handleKey("g");
       expect(cme.getCursorLine()).toBe(0);
     });
 
-    it('G jumps to last line', () => {
-      cme.handleKey('g'); // go to top first
-      cme.handleKey('G');
+    it("G jumps to last line", () => {
+      cme.handleKey("g"); // go to top first
+      cme.handleKey("G");
       expect(cme.getCursorLine()).toBe(4);
     });
 
-    it('w moves cursor forward one word', () => {
-      cme.handleKey('g'); // line 0: "Line 0: CLULIX systems online"
+    it("w moves cursor forward one word", () => {
+      cme.handleKey("g"); // line 0: "Line 0: CLULIX systems online"
       const colBefore = cme.getCursorCol();
-      cme.handleKey('w');
+      cme.handleKey("w");
       expect(cme.getCursorCol()).toBeGreaterThan(colBefore);
     });
   });
 
-  describe('selection and copy', () => {
+  describe("selection and copy", () => {
     beforeEach(() => cme.enter());
 
-    it('Space starts a selection at cursor position', () => {
-      cme.handleKey('g');     // go to line 0
-      cme.handleKey('Space');
+    it("Space starts a selection at cursor position", () => {
+      cme.handleKey("g"); // go to line 0
+      cme.handleKey("Space");
       expect(cme.isSelecting()).toBe(true);
       expect(cme.getSelectionStart()).toEqual({ line: 0, col: 0 });
     });
 
-    it('Enter copies selected text to buffer', () => {
-      cme.handleKey('g');
-      cme.handleKey('Space');
-      cme.handleKey('w'); cme.handleKey('w'); // select 2 words
-      cme.handleKey('Enter');
-      expect(cme.getBuffer(0)).toContain('Line');
+    it("Enter copies selected text to buffer", () => {
+      cme.handleKey("g");
+      cme.handleKey("Space");
+      cme.handleKey("w");
+      cme.handleKey("w"); // select 2 words
+      cme.handleKey("Enter");
+      expect(cme.getBuffer(0)).toContain("Line");
       expect(cme.isSelecting()).toBe(false);
     });
 
-    it('multiple copies populate indexed buffers', () => {
+    it("multiple copies populate indexed buffers", () => {
       // Copy buffer 0
-      cme.handleKey('g');
-      cme.handleKey('Space');
-      cme.handleKey('w');
-      cme.handleKey('Enter');
+      cme.handleKey("g");
+      cme.handleKey("Space");
+      cme.handleKey("w");
+      cme.handleKey("Enter");
       // Copy buffer 1
-      cme.handleKey('j');
-      cme.handleKey('Space');
-      cme.handleKey('w');
-      cme.handleKey('Enter');
+      cme.handleKey("j");
+      cme.handleKey("Space");
+      cme.handleKey("w");
+      cme.handleKey("Enter");
       expect(cme.getBufferCount()).toBe(2);
     });
   });
 });
 ```
+
 ### 6.4 What NOT to Unit Test
+
 Following the principle of not testing the framework:[^8]
+
 - Do NOT unit test Phaser scene rendering, sprite positions, or animation playback — these are Phaser's responsibility
 - Do NOT unit test xterm.js terminal rendering output
 - Do NOT unit test that a DOM element has focus
 - **DO** unit test every method in `src/engine/` — the state machine logic is entirely yours
 
-***
+---
+
 ## 7. CI/CD Pipeline
+
 ### 7.1 CI Workflow — Run Tests on Every PR
+
 **`.github/workflows/ci.yml`**
+
 ```yaml
 name: CI
 
 on:
   push:
-    branches: [ main ]
+    branches: [main]
   pull_request:
-    branches: [ main ]
+    branches: [main]
 
 jobs:
   test:
@@ -899,8 +1004,8 @@ jobs:
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: '22'
-          cache: 'npm'
+          node-version: "22"
+          cache: "npm"
 
       - name: Install dependencies
         run: npm ci
@@ -926,14 +1031,17 @@ jobs:
           name: cucumber-report
           path: reports/cucumber.html
 ```
+
 ### 7.2 Deploy Workflow — GitHub Pages on Merge to Main
+
 **`.github/workflows/deploy.yml`**
+
 ```yaml
 name: Deploy to GitHub Pages
 
 on:
   push:
-    branches: [ main ]
+    branches: [main]
   workflow_dispatch:
 
 permissions:
@@ -957,8 +1065,8 @@ jobs:
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: '22'
-          cache: 'npm'
+          node-version: "22"
+          cache: "npm"
 
       - name: Install dependencies
         run: npm ci
@@ -986,29 +1094,33 @@ jobs:
         id: deployment
         uses: actions/deploy-pages@v4
 ```
+
 ### 7.3 Vite Build Configuration
+
 ```javascript
 // vite.config.js
-import { defineConfig } from 'vite';
+import { defineConfig } from "vite";
 
 export default defineConfig({
-  base: '/tmux-trek/',   // Must match the GitHub repo name
+  base: "/tmux-trek/", // Must match the GitHub repo name
   build: {
-    outDir: 'dist',
-    assetsDir: 'assets',
+    outDir: "dist",
+    assetsDir: "assets",
     rollupOptions: {
       input: {
-        main: 'index.html'
-      }
-    }
+        main: "index.html",
+      },
+    },
   },
   server: {
     port: 3000,
-    open: true
-  }
+    open: true,
+  },
 });
 ```
+
 ### 7.4 Enable GitHub Pages
+
 ```bash
 # Configure GitHub Pages source to GitHub Actions
 gh api repos/:owner/:repo/pages \
@@ -1020,16 +1132,23 @@ gh api repos/:owner/:repo/pages \
 gh run list --workflow=deploy.yml
 ```
 
-***
+---
+
 ## 8. Pull Request Process
+
 ### 8.1 PR Template
+
 **`.github/pull_request_template.md`**
-```markdown
+
+````markdown
 ## Summary
+
 <!-- What does this PR do? Link to the issue. -->
+
 Closes #
 
 ## Type of Change
+
 - [ ] `feat` — New feature
 - [ ] `fix` — Bug fix
 - [ ] `test` — Tests only (TDD unit or BDD scenario)
@@ -1037,27 +1156,32 @@ Closes #
 - [ ] `chore` — Build, CI, dependencies
 
 ## Changes Made
+
 <!-- Bullet list of files changed and why -->
 
 ## Test Evidence
+
 - [ ] Unit tests added/updated in `tests/unit/`
 - [ ] BDD scenarios added/updated in `features/`
 - [ ] All existing tests pass (`npm test`)
 - [ ] BDD suite passes (`npm run bdd`)
 
 ## BDD Scenarios Covered
+
 <!-- Paste the Gherkin scenarios this PR satisfies -->
-```Given ...```
+
+`Given ...`
 
 ## Checklist
+
 - [ ] Conventional commit message format used
 - [ ] Branch named `type/issue-N-description`
 - [ ] No direct changes to `src/game/` from engine-only PRs
 - [ ] Coverage thresholds maintained (≥90% lines on `src/engine/`)
-```
-
+````
 
 ### 8.2 Merge Strategy
+
 - **Squash merge** for feature branches — keeps `main` history clean
 - **Merge commit** for release branches — preserves release boundary
 - Never force-push to `main`
@@ -1067,9 +1191,12 @@ Closes #
 gh pr merge 34 --squash --delete-branch
 ```
 
-***
+---
+
 ## 9. Documentation Standards
+
 ### 9.1 README Structure
+
 The `README.md` must always be current and contain:
 
 1. **Project badge row** — CI status, coverage, license
@@ -1086,7 +1213,9 @@ cat >> README.md << 'EOF'
 ![Deploy](https://github.com/YOUR_USERNAME/tmux-trek/actions/workflows/deploy.yml/badge.svg)
 EOF
 ```
+
 ### 9.2 JSDoc for Engine Layer
+
 Every public method in `src/engine/` must have JSDoc. The engine is the shared contract between the game, terminal, and tests.
 
 ```javascript
@@ -1104,13 +1233,19 @@ Every public method in `src/engine/` must have JSDoc. The engine is the shared c
  */
 createSession(name) { ... }
 ```
+
 ### 9.3 Feature File Comments
+
 BDD feature files serve as living documentation. They must be written first, before implementation, and must be comprehensible without code context. Each scenario title must be a complete statement of the expected behavior.
 
-***
+---
+
 ## 10. LLM-Assisted Development Workflow
+
 When using an LLM coding agent to implement TMUX Trek, the following workflow ensures robust, testable output:
+
 ### 10.1 Issue-First Prompting
+
 Always start a coding session by providing the GitHub Issue number and the relevant BDD feature file. The LLM's job is to make the BDD scenarios pass, nothing more.
 
 ```
@@ -1124,7 +1259,9 @@ Constraints:
 - Write TDD unit tests in tests/unit/engine/ first (Red), then implement (Green)
 - Follow the commit convention: feat(engine): <description>
 ```
+
 ### 10.2 The LLM Red-Green-Refactor Loop
+
 ```
 STEP 1 (Red): Write the failing tests.
   - Run: npm test → all new tests should FAIL
@@ -1143,9 +1280,13 @@ STEP 4 (BDD): Connect to feature file.
   - Run: npm run bdd → BDD scenarios should PASS
   - Commit: bdd(sessions): implement attach-detach step definitions
 ```
+
 ### 10.3 Coverage Gates
+
 The CI pipeline enforces ≥90% line coverage on `src/engine/`. An LLM PR that drops coverage below the threshold will fail CI and cannot be merged. This prevents the common failure mode of implementation without tests.
+
 ### 10.4 Issue Tracking Commands for LLM Agent
+
 ```bash
 # List current sprint issues
 gh issue list --milestone "Act 1 - Sessions" --state open
@@ -1163,8 +1304,10 @@ gh pr create --title "feat(engine): SessionManager" --body "Closes #12" --label 
 gh issue view 12  # Should show "closed"
 ```
 
-***
+---
+
 ## 11. Development Environment Setup (One-Time)
+
 ```bash
 # Clone the repo
 gh repo clone YOUR_USERNAME/tmux-trek
@@ -1190,19 +1333,21 @@ gh workflow list
 # Should show: CI, Deploy to GitHub Pages
 ```
 
-***
+---
+
 ## 12. Quality Gates Summary
-| Gate | Tool | Threshold | Enforced By |
-|---|---|---|---|
-| Commit format | commitlint + husky | 100% conventional commits | Pre-commit hook |
-| Unit test pass | Vitest | 100% of tests | CI workflow |
-| Engine coverage (lines) | Vitest + v8 | ≥ 90% | CI workflow |
-| Engine coverage (branches) | Vitest + v8 | ≥ 85% | CI workflow |
-| BDD scenario pass | Cucumber.js | 100% of scenarios | CI workflow |
-| Lint | ESLint | 0 errors | CI workflow |
-| Build | Vite | Exit 0 | Deploy workflow |
-| PR merge | GitHub branch protection | Requires CI pass | Branch rules |
-| Direct main push | GitHub branch protection | Forbidden | Branch rules |
+
+| Gate                       | Tool                     | Threshold                 | Enforced By     |
+| -------------------------- | ------------------------ | ------------------------- | --------------- |
+| Commit format              | commitlint + husky       | 100% conventional commits | Pre-commit hook |
+| Unit test pass             | Vitest                   | 100% of tests             | CI workflow     |
+| Engine coverage (lines)    | Vitest + v8              | ≥ 90%                     | CI workflow     |
+| Engine coverage (branches) | Vitest + v8              | ≥ 85%                     | CI workflow     |
+| BDD scenario pass          | Cucumber.js              | 100% of scenarios         | CI workflow     |
+| Lint                       | ESLint                   | 0 errors                  | CI workflow     |
+| Build                      | Vite                     | Exit 0                    | Deploy workflow |
+| PR merge                   | GitHub branch protection | Requires CI pass          | Branch rules    |
+| Direct main push           | GitHub branch protection | Forbidden                 | Branch rules    |
 
 ---
 
@@ -1225,4 +1370,3 @@ gh workflow list
 8. [Testing Phaser Games with Vitest - DEV Community](https://dev.to/davidmorais/testing-phaser-games-with-vitest-3kon) - Introduction As you may know, I am currently developing my own solo indie game, it's...
 
 9. [Getting started with Vitest](https://www.speakeasy.com/blog/vitest-vs-jest) - A comparison of Jest and Vitest in terms of their features, performance, and developer experience to...
-
