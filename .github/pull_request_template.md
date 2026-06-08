@@ -17,3 +17,9 @@
 
 - [ ] The player gets a clearer next instruction
 - [ ] The mechanic reinforces a real tmux habit
+
+## Handoff
+
+- [ ] `doc/session-handoff.md` updated, or not needed
+- [ ] `TODO.md` updated, or not needed
+- [ ] `history.md` updated, or not needed

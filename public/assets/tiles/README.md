@@ -12,3 +12,5 @@
 
 `z-shell-terrain-source.png` is the generated high-resolution source atlas kept
 for future edits and alternate exports.
+
+Character textures are not part of this atlas. They are currently generated with Phaser graphics in `src/game/scenes/WorldScene.js`. Replacing those textures with a character sprite sheet is planned work; preserve distinct character silhouettes and existing collision/interaction behavior.

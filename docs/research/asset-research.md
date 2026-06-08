@@ -1,5 +1,7 @@
 <img src="https://r2cdn.perplexity.ai/pplx-full-logo-primary-dark%402x.png" style="height:64px;margin-right:32px"/>
 
+> Preserved research, not current implementation guidance. See [`doc/session-handoff.md`](../../doc/session-handoff.md) for the runtime asset state and next tasks.
+
 # If I were to build TMUX Adventures lets call it TMUX Trek and make it a bit more science viction with exploration of a strange planet. collect resources for tile assets.
 
 Here's a full resource guide for **TMUX Trek**, organized by asset category with direct links and license info.
@@ -126,4 +128,3 @@ This gives you a natural difficulty gradient from the open planet surface (simpl
 [^14]: https://www.youtube.com/watch?v=cYZgNo0pcUU
 
 [^15]: https://itch.io/game-assets/free/tag-16x16/tag-science-fiction
-

@@ -1,53 +1,49 @@
 # TODO
 
-This file is a roadmap snapshot. GitHub Issues are the canonical planning surface.
-
-Primary planning documents:
-
-- [Gameplay plan](/Users/michael/Documents/dev/tmux-trek/doc/gameplay-plan.md)
-- [Delivery workflow](/Users/michael/Documents/dev/tmux-trek/doc/delivery-workflow.md)
-- [Software engineering guide](/Users/michael/Documents/dev/tmux-trek/doc/software-engineering-practices.md)
+This is the checked-in roadmap snapshot as of June 8, 2026. GitHub Issues are the canonical planning surface.
 
 ## Current State
 
-- The repository is initialized, documented, tested, and deployed through GitHub Actions and GitHub Pages.
-- The current vertical slice is feature-incomplete but playable.
-- The world is tile-based, keyboard-driven, collision-aware, and covered by browser acceptance tests.
-- The current implemented lesson arc runs through session basics, Act 2's Redshirt window rescue, and Act 3's Commander Sock pane scanner.
-- The GitHub Pages test build deploys from `main` after pull-request CI passes and the PR is merged.
+- `main` is deployed at <https://mdogy.github.io/tmux-trek/>.
+- The Landing Crater vertical slice is playable through session basics, Act 2's Redshirt window rescue, and Act 3's Commander Sock pane scanner.
+- The pure engine supports session create/attach/detach/list/kill, window create/list/next/previous, pane split, and active-pane close.
+- The world has collision-aware tile movement, solid NPC/place tiles, horizontal-adjacency highlights, and contextual `E` interactions.
+- Terrain uses `public/assets/tiles/z-shell-terrain.png`; characters are distinct Phaser-generated textures rather than atlas frames.
+- Baseline checks: 14 unit tests, 2 BDD scenarios, 11 Playwright tests, lint, and production build.
 
-## Open Roadmap Issues
+## Recommended Next Work
 
-- [#1 automate Nano Banana asset generation and download pipeline](https://github.com/mdogy/tmux-trek/issues/1)
-- [#2 start on the CLULIX bridge and descend to session 0](https://github.com/mdogy/tmux-trek/issues/2)
-- [#3 change world navigation from WASD to vim hjkl](https://github.com/mdogy/tmux-trek/issues/3)
-- [#4 add overflow buffer, armory session, and delete loop](https://github.com/mdogy/tmux-trek/issues/4)
-- [#5 add fog of war to exploration](https://github.com/mdogy/tmux-trek/issues/5)
-- [#6 generate initial artwork with Google Gemini / Nano Banana](https://github.com/mdogy/tmux-trek/issues/6)
-- [#7 add Redshirt, Commander Sock, and Vrex companion arc](https://github.com/mdogy/tmux-trek/issues/7)
+1. Implement the intended Act 1 opening: CLULIX bridge, surface session `0`, overflow buffer, armory Rift, weapon pickup, detach, manifest, return, and delete loop.
+2. Separate story locations into real zones/scenes instead of representing every act on the Landing Crater map.
+3. Add fog of war and make Commander Sock's scanner reveal hidden threats.
+4. Expand Redshirt's compact window drill into a multi-view rescue mission.
+5. Replace runtime-generated character textures with a maintainable sprite atlas and animations.
 
-## Requested But Not Yet Implemented
+## Open GitHub Issues
 
-- The captain should begin on the CLULIX bridge and use `tmux` to descend to surface session `0`.
-- Zrix should introduce the overflow buffer as a threat that cannot be solved without leaving for another Rift.
-- `tmux new -s armory` should be the only way to reach the armory and obtain an energy weapon.
-- `Ctrl+b d` should return the captain to the ship while leaving the armory Rift intact.
-- `tmux ls` should act as the ship's manifest of reachable destinations.
-- `tmux attach -t 0` should send the captain back to the planet to delete the overflow buffer.
-- World navigation should migrate from WASD to vim `h/j/k/l`.
-- Fog of war should limit visibility and improve exploration readability.
-- Generated art should progressively replace placeholder visuals.
-- Expand Act 2's implemented Redshirt window rescue into a larger multi-Rift mission.
-- Expand Act 3's implemented Commander Sock pane scanner into a fog-of-war mission.
-- Before the scanner is acquired, the party should suffer from limited visibility so the upgrade feels meaningful.
-- Once acquired, Sock's scanner should reveal threats through fog of war and sense activity in other Rifts.
-- Vrex should eventually be rescued and become guide and protector for the expedition party.
-- Rift storms should become a recurring theme that throws party members into other Rifts and forces rescue-driven use of sessions, windows, and panes.
-- Future level design should explicitly explore setting up panes so one operation can be performed while another situation is monitored in parallel.
+- [#1 Automate Nano Banana asset generation and download pipeline](https://github.com/mdogy/tmux-trek/issues/1)
+- [#2 Add overflow buffer, armory session, and delete loop](https://github.com/mdogy/tmux-trek/issues/2)
+- [#3 Change world navigation from WASD to vim `h/j/k/l`](https://github.com/mdogy/tmux-trek/issues/3)
+- [#4 Add fog of war to exploration](https://github.com/mdogy/tmux-trek/issues/4)
+- [#5 Start on the CLULIX bridge and descend to session `0`](https://github.com/mdogy/tmux-trek/issues/5)
+- [#6 Generate initial artwork with Google Gemini / Nano Banana](https://github.com/mdogy/tmux-trek/issues/6)
+- [#7 Add Redshirt, Commander Sock, and Vrex companion arc](https://github.com/mdogy/tmux-trek/issues/7)
 
-## Maintenance Notes
+## Known Gaps
 
-- Do not close roadmap issues until the implementation, tests, and docs are actually complete.
-- Keep browser acceptance tests keyboard-only and DOM-driven by default.
-- Prefer updating GitHub Issues first, then refresh this file as a summary snapshot.
-- Use the standard branch, pull request, CI, merge, and GitHub Pages deployment workflow for deployable changes.
+- Progression, zone selection, and dialogue imports are hardcoded in `src/game/TmuxTrekApp.js`.
+- All five mentors occupy one map; there are no bridge, armory, or separate act scenes.
+- Window and pane state changes are terminal output/state only; the HUD still renders sessions only.
+- No save system, reset control, combat, companion following, fog of war, audio, or animated character atlas exists.
+- `tmux kill-session -t name` and `Ctrl+b n` work in the engine but are not taught by the current challenge sequence.
+- Later window/pane commands from the design plan remain unsupported.
+- The browser acceptance path is intentionally keyboard-only but long and coupled to exact map coordinates.
+- `npm run format:check` is not a clean repository-wide gate yet.
+- The Gemini asset generator is experimental, targets `assets/` rather than runtime `public/assets/`, and may require selector maintenance.
+
+## Maintenance Rules
+
+- Read [Session Handoff](doc/session-handoff.md) and [Gameplay Plan](doc/gameplay-plan.md) before changing flow.
+- When adding a command, update engine behavior, curriculum/codex data, challenge steps, and automated tests together.
+- Keep GitHub Issues and this snapshot synchronized after meaningful roadmap changes.
+- Use the documented branch, PR, CI, merge, and Pages deployment workflow.

@@ -1,5 +1,7 @@
 # TMUX Trek — Software Engineering Practices Guide
 
+> This is a broad engineering reference and includes aspirational examples. For the repository's implemented architecture, commands, tests, and immediate next task, read [Session Handoff](session-handoff.md). For the exact active delivery path, read [Delivery Workflow](delivery-workflow.md).
+
 ## Purpose
 
 This document defines the complete software engineering methodology for building **TMUX Trek** in a robust, LLM-assisted, and collaboratively maintainable way. It covers Behavior-Driven Development (BDD), Test-Driven Development (TDD), Git discipline, GitHub issue tracking, the `gh` CLI workflow, and automated deployment to GitHub Pages. Every practice described here is designed to be directly executable by a developer or an LLM coding agent following this document as a skill file.
@@ -126,8 +128,7 @@ For the current test deployment, the required path is:
 5. Merge the pull request.
 6. Let GitHub Pages deploy the updated `main` build.
 
-The operational checklist lives in
-[doc/delivery-workflow.md](/Users/michael/Documents/dev/tmux-trek/doc/delivery-workflow.md).
+The operational checklist lives in [Delivery Workflow](delivery-workflow.md).
 
 ### 2.1 Branch Types and Naming
 

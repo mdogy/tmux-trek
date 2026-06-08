@@ -1,17 +1,33 @@
 # TMUX Trek
 
-TMUX Trek is a browser-based teaching game for learning tmux through play. The project combines a lightweight Phaser world with an in-browser terminal so the player learns the tmux mental model by moving through short, guided challenges instead of reading a static cheat sheet.
+TMUX Trek is a browser-based educational game that teaches real tmux muscle memory through story actions. A Phaser world motivates each lesson, while an xterm.js terminal overlay requires the player to perform the command that advances the mission.
 
-The current vertical slice focuses on the first lesson arc: sessions. The player explores the Landing Crater, meets three Zshellian guides, and learns how to start a tmux session, name it, detach, list sessions, and reattach. The UI keeps the next step visible at all times so the game teaches by doing, not by dumping reference text up front.
+Live test build: <https://mdogy.github.io/tmux-trek/>
 
-## Current Scope
+## Playable Today
 
-- Guided Act 1 prototype for session-based tmux learning
-- Phaser-powered tile-based exploration space with NPC encounters
-- xterm.js powered terminal overlay with prefix-key handling
-- Pure tmux session engine with unit and BDD coverage
-- Playwright GUI regression coverage for movement and NPC proximity prompts
-- Repository structure, CI workflows, issue templates, and contributor guidance
+The current Landing Crater vertical slice is a single, linear sequence:
+
+1. Zrix teaches `tmux` and `tmux new -s clulix`.
+2. Vrex teaches `Ctrl+b d`.
+3. Archivist Orin teaches `tmux ls` and `tmux attach -t clulix`.
+4. Act 2 rescues Ensign Redshirt with windows: `Ctrl+b c`, `Ctrl+b w`, `Ctrl+b p`.
+5. Act 3 assembles Commander Sock's scanner with panes: `Ctrl+b %`, `Ctrl+b "`, `Ctrl+b x`.
+6. The player returns to the CLULIX beacon to close the loop.
+
+The world uses tile-based WASD/arrow movement, solid NPCs and landmarks, horizontal-adjacency interaction, generated character textures, and a deployed terrain sprite sheet.
+
+## Resume Development
+
+Start with [Session Handoff](doc/session-handoff.md). It records the implemented architecture, known limitations, exact test baseline, current roadmap, and recommended next task.
+
+Then read:
+
+- [Gameplay Plan](doc/gameplay-plan.md): intended narrative and command-to-story mapping
+- [TODO](TODO.md): checked-in roadmap snapshot; GitHub Issues remain canonical
+- [Project History](history.md): chronological implementation record
+- [Repository Guidelines](AGENTS.md): architecture and contribution rules
+- [Delivery Workflow](doc/delivery-workflow.md): branch, PR, CI, merge, and Pages deployment
 
 ## Development
 
@@ -20,7 +36,11 @@ npm install
 npm run dev
 ```
 
-The dev server uses Vite. The game opens in the browser and mounts the Phaser canvas into `#game-root`.
+Vite serves the game at <http://127.0.0.1:4173/>. Playwright may require:
+
+```bash
+npx playwright install chromium
+```
 
 ## Quality Gates
 
@@ -32,61 +52,21 @@ npm run bdd
 npm run build
 ```
 
-## Test Deployment
-
-The test build is deployed with GitHub Pages at
-<https://mdogy.github.io/tmux-trek/>.
-
-Use the standard delivery path for every deployable change:
-
-1. Create an alternate branch from `main`.
-2. Commit a small, reviewable change.
-3. Open a pull request targeting `main`.
-4. Wait for GitHub Actions CI to pass.
-5. Merge the pull request.
-6. Let the Pages deployment workflow publish `main`.
-
-See [Delivery workflow](/Users/michael/Documents/dev/tmux-trek/doc/delivery-workflow.md)
-for the full process.
+As of June 8, 2026, the verified baseline is 14 unit tests, 2 BDD scenarios, and 11 browser acceptance tests. `npm run format:check` currently reports legacy formatting drift in files outside recent gameplay work.
 
 ## Repository Layout
 
-- `src/engine/`: pure tmux logic with no rendering dependencies
-- `src/terminal/`: terminal rendering and tutorial interaction
-- `src/game/`: Phaser scenes and game-facing state/UI systems
-- `src/data/`: zone, dialogue, and command metadata
-- `features/`: BDD scenarios
-- `tests/`: unit, integration, and step definitions
-- `doc/`: active design and planning documents
-- `docs/`: preserved research, prompts, and reference material
+- `src/engine/`: deterministic tmux session/window/pane state; no DOM or Phaser
+- `src/terminal/`: xterm rendering, key handling, and challenge orchestration
+- `src/game/`: Phaser world, UI state, dialogue, and linear progression
+- `src/data/`: command curriculum, challenge scripts, dialogue, and zone metadata
+- `public/assets/`: runtime assets deployed by Vite
+- `features/` and `tests/`: Cucumber, Vitest, and Playwright coverage
+- `doc/`: active planning, handoff, engineering, and delivery documents
+- `docs/`: preserved research, prompts, and asset-generation references
 
-## Documentation
+## Delivery
 
-- [Project history](/Users/michael/Documents/dev/tmux-trek/history.md)
-- [TODO snapshot](/Users/michael/Documents/dev/tmux-trek/TODO.md)
-- [Agent workflow](/Users/michael/Documents/dev/tmux-trek/AGENTS.md)
-- [Delivery workflow](/Users/michael/Documents/dev/tmux-trek/doc/delivery-workflow.md)
-- [Gameplay plan](/Users/michael/Documents/dev/tmux-trek/doc/gameplay-plan.md)
-- [Software engineering guide](/Users/michael/Documents/dev/tmux-trek/doc/software-engineering-practices.md)
+Deployable changes must go through a branch and pull request. CI runs lint, unit tests, Playwright, BDD, and build. Merging to `main` triggers GitHub Pages deployment.
 
-## Roadmap Tracking
-
-GitHub Issues are the canonical roadmap. `TODO.md` is a checked-in snapshot for quick repo orientation, but issues should be treated as the source of truth for planning and status.
-
-## Planned Direction
-
-- Move the opening to the CLULIX bridge and treat the planet as session `0`
-- Replace world navigation with vim-style `h/j/k/l`
-- Expand the session lesson into the overflow-buffer and armory loop
-- Add fog of war to exploration
-- Generate and integrate real artwork with Google Gemini / Nano Banana
-
-## Handoff State
-
-- The repo is currently clean and runnable with a limited feature set.
-- The implemented slice is intentionally small but verified by unit, BDD, and Playwright GUI tests.
-- The next LLM should read [doc/gameplay-plan.md](/Users/michael/Documents/dev/tmux-trek/doc/gameplay-plan.md), [TODO.md](/Users/michael/Documents/dev/tmux-trek/TODO.md), and the open GitHub Issues before changing scope.
-
-## Contributing
-
-Use Conventional Commits. Keep tmux behavior in `src/engine/` pure and test-first. Preserve the teaching model: every new mechanic should introduce context, give a concrete instruction, and reinforce the command through action.
+Use Conventional Commits and keep tmux behavior pure and testable in `src/engine/`.
