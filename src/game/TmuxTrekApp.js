@@ -41,7 +41,8 @@ export class TmuxTrekApp {
 
     this.terminal = new TmuxEmulator({
       container: document.querySelector("#terminal-root"),
-      onInstructionChange: (instruction) => this.state.setInstruction(instruction),
+      onInstructionChange: (instruction) =>
+        this.state.setInstruction(instruction),
       onCommandUnlocked: (command) => this.state.unlockCommand(command),
       onStatusChange: (status) => this.state.syncStatus(status),
       onChallengeComplete: (challengeId) => this.completeChallenge(challengeId),
@@ -102,14 +103,21 @@ export class TmuxTrekApp {
     const activeNpc = this.zone.npcs[this.currentNpcIndex];
 
     if (!activeNpc || npcId !== activeNpc.id) {
-      this.state.setInstruction(
-        "That mentor is waiting. Follow the highlighted lesson order so tmux builds cleanly.",
-      );
+      this.handleInactiveInteraction("That mentor", activeNpc?.name);
       return;
     }
 
     const dialogue = dialogueById[activeNpc.dialogueFile];
-    this.ui.showDialogue(dialogue, () => this.#startChallenge(activeNpc.challengeId));
+    this.ui.showDialogue(dialogue, () =>
+      this.#startChallenge(activeNpc.challengeId),
+    );
+  }
+
+  handleInactiveInteraction(targetName, activeName) {
+    const nextTarget = activeName ? ` Find ${activeName}.` : "";
+    this.state.setInstruction(
+      `${targetName} has nothing to say yet.${nextTarget}`,
+    );
   }
 
   setWorldPrompt(prompt) {
@@ -129,7 +137,9 @@ export class TmuxTrekApp {
         },
       ],
       () => {
-        this.state.setMission("Lesson complete. Extend the prototype toward the next act.");
+        this.state.setMission(
+          "Lesson complete. Extend the prototype toward the next act.",
+        );
         this.state.setInstruction(
           "The current slice ends here. Keep the player's next instruction visible as new commands are added.",
         );
@@ -147,7 +157,9 @@ export class TmuxTrekApp {
     this.currentNpcIndex += 1;
 
     if (this.currentNpcIndex >= this.zone.npcs.length) {
-      this.state.setMission("Return to the CLULIX beacon to close the training loop.");
+      this.state.setMission(
+        "Return to the CLULIX beacon to close the training loop.",
+      );
       this.state.setInstruction(
         "Walk to the beacon. The game should always close the loop by showing what the command changed.",
       );
