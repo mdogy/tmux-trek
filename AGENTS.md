@@ -1,40 +1,41 @@
-# AGENTS
+# Repository Guidelines
 
-## Mission
+## Project Structure & Module Organization
 
-Build TMUX Trek as an educational game that teaches tmux through use, not exposition. Every feature should strengthen two outcomes:
+TMUX Trek is a Vite/Phaser browser game with an xterm.js teaching overlay. Core code lives in `src/`:
 
-- the player always knows what to do next
-- the player learns real tmux muscle memory by performing the action
+- `src/engine/`: deterministic tmux state and parsing only. No DOM, Phaser, or xterm dependencies.
+- `src/terminal/`: xterm rendering, key handling, and challenge orchestration.
+- `src/game/`: Phaser scenes, UI state, world presentation, and progression.
+- `src/data/`: command curriculum, dialogue, and zone metadata.
+- `public/assets/`: deployable image assets, including tile sheets.
+- `tests/` and `features/`: Playwright, Vitest, and Cucumber coverage.
+- `doc/`: planning and workflow documentation. Read `doc/gameplay-plan.md` before changing curriculum or flow.
 
-## Working Rules
+## Build, Test, and Development Commands
 
-- Read the design documents in `doc/` before changing curriculum or game flow.
-- The primary narrative/planning document is [doc/gameplay-plan.md](/Users/michael/Documents/dev/tmux-trek/doc/gameplay-plan.md).
-- Keep tmux behavior deterministic and testable in `src/engine/`.
-- Treat the terminal overlay as the teaching surface and the Phaser world as the motivation layer.
-- Prefer guided instruction, immediate feedback, and short reinforcement loops over dense tutorial text.
-- When adding a new command, update the codex, the challenge script, and at least one automated test.
-- Preserve Conventional Commits and small, reviewable commits.
+- `npm install`: install dependencies.
+- `npm run dev`: start the local Vite server at port `4173`.
+- `npm run build`: produce the production build in `dist/`.
+- `npm run lint`: run ESLint.
+- `npm run test`: run Vitest unit tests.
+- `npm run test:e2e`: run Playwright browser acceptance tests.
+- `npm run bdd`: run Cucumber feature scenarios.
 
-## Architecture Boundaries
+Playwright may require `npx playwright install chromium` on a fresh machine.
 
-- `src/engine/`: tmux state and parsing only. No DOM, Phaser, or xterm code.
-- `src/terminal/`: xterm rendering, key handling, and tutorial challenge orchestration.
-- `src/game/`: world presentation, dialogue triggers, UI state, and progression.
-- `src/data/`: curriculum definitions, dialogue, and zone metadata.
+## Coding Style & Naming Conventions
 
-## Delivery Standard
+Use modern JavaScript ES modules and keep formatting compatible with Prettier. Prefer clear class and method names such as `TmuxEngine`, `SessionManager`, and `openChallenge`. Keep files in the architecture boundary that matches their responsibility. Use JSON data files for curriculum and dialogue rather than hardcoding lesson text into scenes.
 
-Any game-development change should aim to leave the project with:
+## Testing Guidelines
 
-- one clearer instruction to the player
-- one stronger reinforcement loop
-- passing `lint`, `test`, `bdd`, and `build` when feasible
+Add or update tests for behavior changes. Engine behavior belongs in Vitest unit tests under `tests/unit/`. Player-facing browser flows belong in `tests/e2e/`. Tmux learning contracts belong in Gherkin files under `features/` with step definitions in `tests/step-definitions/`. Preserve keyboard-only acceptance coverage unless the underlying player flow intentionally changes.
 
-## Handoff
+## Commit & Pull Request Guidelines
 
-- The current implementation is a limited but runnable vertical slice.
-- Before changing gameplay direction, read [doc/gameplay-plan.md](/Users/michael/Documents/dev/tmux-trek/doc/gameplay-plan.md) and [TODO.md](/Users/michael/Documents/dev/tmux-trek/TODO.md).
-- Treat GitHub Issues as canonical for future feature work and `TODO.md` as the checked-in summary.
-- Preserve the current browser acceptance tests unless the underlying player flow intentionally changes.
+Use Conventional Commits, for example `feat(assets): add terrain atlas` or `fix(game): prevent queued overlay movement`. Deployable changes follow the standard workflow in `doc/delivery-workflow.md`: branch from `main`, open a PR, wait for CI, merge, then verify GitHub Pages. PRs should describe the player impact, list completed checks, and link related issues when applicable.
+
+## Agent-Specific Instructions
+
+The game should teach tmux through action, not exposition. Every change should make the next player instruction clearer or strengthen a real tmux muscle-memory loop.

@@ -1,6 +1,8 @@
 node_modules/
+.claude/
 dist/
 coverage/
 reports/
+test-results/
 .DS_Store
 .vite/
