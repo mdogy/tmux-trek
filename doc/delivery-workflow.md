@@ -2,6 +2,9 @@
 
 TMUX Trek deploys its test build through GitHub Pages from `main`.
 
+Current live URL: <https://mdogy.github.io/tmux-trek/>
+Current-state handoff: [session-handoff.md](session-handoff.md)
+
 Canonical delivery path:
 
 1. Start from current `main`.
@@ -12,6 +15,7 @@ Canonical delivery path:
 6. Merge only after CI passes.
 7. Let the `Deploy` workflow publish `main` to GitHub Pages.
 8. Verify the deployed page at <https://mdogy.github.io/tmux-trek/>.
+9. Update `history.md`, `TODO.md`, and `doc/session-handoff.md` when the change alters the resume state.
 
 ## Local Checks
 
@@ -40,3 +44,13 @@ npx playwright install chromium
 
 Do not push directly to `main` for ordinary work. The pull request is the gate
 that proves the game is still runnable before the test build changes.
+
+## Handoff Requirements
+
+A gameplay PR is not fully handed off until its documentation states:
+
+- what the player can now do
+- which engine commands/keybindings were added or changed
+- which tests prove the flow
+- any known limitations or intentionally deferred work
+- the highest-value next task if priorities changed

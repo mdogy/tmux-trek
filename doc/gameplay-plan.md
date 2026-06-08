@@ -1,5 +1,7 @@
 # TMUX Trek Gameplay Plan
 
+> Current implementation status is tracked in [Session Handoff](session-handoff.md). This document defines the intended narrative and curriculum direction; some sections remain aspirational.
+
 ## Goal
 
 TMUX Trek should teach tmux by making each command the only sensible way to solve a story problem. The player should not feel like they are stopping the game to do a tutorial. The command should be the action.
@@ -191,17 +193,18 @@ Copy mode should exist because the player must retrieve or move information betw
 
 ## Implementation Guidance
 
-- The current prototype is not yet aligned with this narrative frame.
-- Do not add more commands until the opening loop has a coherent story reason for each one.
+- The current prototype implements compact session, window, and pane drills on one Landing Crater map, but it is not yet aligned with the full bridge/armory narrative frame.
+- Prioritize replacing the abstract opening drills with the bridge, surface session `0`, overflow-buffer, and armory loop before broadening command coverage.
 - Prefer destinations, resources, hazards, and system dependencies over abstract "use this command now" lesson text.
 
 ## Near-Term Planned Features
 
-- Start on the bridge instead of the planet surface
+- Start on the bridge instead of the planet surface and make `tmux` cause the world transition
+- Build the overflow-buffer and armory loop
+- Separate locations/acts into real zones or scenes
 - Replace overworld navigation with vim `h/j/k/l`
 - Add fog of war so unexplored territory feels unknown
-- Generate real art to replace placeholder geometry
-- Build the overflow buffer and armory loop before expanding into later acts
+- Replace generated character textures with maintainable sprite-sheet animation
 
 ## Mid-Term Planned Story Beats
 
@@ -213,6 +216,7 @@ Copy mode should exist because the player must retrieve or move information betw
 
 ## Implemented Act Prototypes
 
+- The current session lesson teaches create/name/detach/list/attach through Zrix, Vrex, and Archivist Orin.
 - Act 2 now introduces Ensign Redshirt's rescue through window creation, view inspection, and previous-window navigation.
 - Act 3 now introduces Commander Sock's scanner through vertical and horizontal pane splits, followed by closing a corrupted pane.
-- These are compact teaching prototypes inside the landing-crater vertical slice. Future work should expand them into larger multi-Rift and fog-of-war missions.
+- These are compact teaching prototypes inside one Landing Crater vertical slice. They prove the command loops but do not yet provide the multi-location story consequences described above.

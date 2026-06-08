@@ -12,6 +12,8 @@ TMUX Trek is a Vite/Phaser browser game with an xterm.js teaching overlay. Core 
 - `tests/` and `features/`: Playwright, Vitest, and Cucumber coverage.
 - `doc/`: planning and workflow documentation. Read `doc/gameplay-plan.md` before changing curriculum or flow.
 
+Before starting a new development session, read `doc/session-handoff.md`, `TODO.md`, and `history.md`. The handoff records current implementation truth; documents under `docs/` are primarily preserved research and prompts.
+
 ## Build, Test, and Development Commands
 
 - `npm install`: install dependencies.
@@ -21,6 +23,7 @@ TMUX Trek is a Vite/Phaser browser game with an xterm.js teaching overlay. Core 
 - `npm run test`: run Vitest unit tests.
 - `npm run test:e2e`: run Playwright browser acceptance tests.
 - `npm run bdd`: run Cucumber feature scenarios.
+- `npm run format:check`: inspect repository formatting drift; this is not currently a clean CI gate.
 
 Playwright may require `npx playwright install chromium` on a fresh machine.
 
@@ -39,3 +42,5 @@ Use Conventional Commits, for example `feat(assets): add terrain atlas` or `fix(
 ## Agent-Specific Instructions
 
 The game should teach tmux through action, not exposition. Every change should make the next player instruction clearer or strengthen a real tmux muscle-memory loop.
+
+When a change materially alters playable scope, architecture, tests, or the recommended next task, update `doc/session-handoff.md`, `TODO.md`, and `history.md` in the same PR.

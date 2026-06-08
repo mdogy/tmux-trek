@@ -13,3 +13,4 @@ labels: feature
 - [ ] Player instruction is clear
 - [ ] Learning is reinforced through action
 - [ ] Tests updated
+- [ ] Resume documentation impact considered

@@ -1,5 +1,7 @@
 <img src="https://r2cdn.perplexity.ai/pplx-full-logo-primary-dark%402x.png" style="height:64px;margin-right:32px"/>
 
+> Preserved design exploration. The active narrative direction is [`doc/gameplay-plan.md`](../../doc/gameplay-plan.md), and current implementation truth is [`doc/session-handoff.md`](../../doc/session-handoff.md).
+
 # Sketch three options for the high level design of this game based on VIM adventures or ideas from Duolingo ... or other educational games.
 
 Here are three distinct high-level designs for a tmux learning game, each with a different philosophy about how learning should feel.
@@ -131,4 +133,3 @@ The most ambitious design, inspired by [Zachtronics](https://www.zachtronics.com
 [^14]: https://www.reddit.com/r/ErgoMechKeyboards/comments/mkv1z6/seeking_advice_learning_a_new_layout_how_to_build/
 
 [^15]: https://dev.to/pocket_linguist/why-duolingos-gamification-works-and-when-it-doesnt-1d4
-

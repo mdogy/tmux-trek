@@ -1,47 +1,49 @@
 # Project History
 
+## 2026-06-08
+
+The vertical slice expanded from session basics into compact playable Act 2 and Act 3 prototypes:
+
+- Act 2 added Ensign Redshirt's rescue using `Ctrl+b c`, `Ctrl+b w`, and `Ctrl+b p`.
+- Act 3 added Commander Sock's scanner using `Ctrl+b %`, `Ctrl+b "`, and `Ctrl+b x`.
+- `SessionManager` and `TmuxEngine` gained deterministic window and pane state operations.
+- Redshirt and Sock received distinct generated character textures, dialogue, map positions, and progression steps.
+- Unit, BDD, and keyboard-only Playwright coverage expanded through the end of Act 3.
+- PR [#12](https://github.com/mdogy/tmux-trek/pull/12) passed CI, merged to `main`, and deployed to GitHub Pages.
+
+Documentation was then consolidated for context-free session resumption:
+
+- `doc/session-handoff.md` became the current implementation and resume source of truth.
+- README, TODO, history, gameplay, delivery, engineering, asset, and contributor docs were synchronized.
+- Preserved research and autonomous prompts were explicitly labeled as references rather than current instructions.
+- PR and feature templates gained resume-documentation checks.
+
+The immediately preceding gameplay/art pass also:
+
+- made NPCs and the beacon solid collision objects
+- required horizontal adjacency and a visible highlight before `E` interaction
+- added useful "nothing to say yet" feedback for inactive characters
+- built the crater from terrain tiles and replaced square actor markers with distinct sprites
+- integrated the generated `z-shell-terrain.png` runtime atlas
+- standardized PR CI and GitHub Pages deployment
+
 ## 2026-05-09
 
-The project reached a cleaner playable prototype state on 2026-05-09:
+The project reached a cleaner playable prototype state:
 
-- GitHub Pages deployment was fixed by correcting the production asset base path
-- tile-based movement was restored and the captain now stays centered on tiles
-- browser GUI regression tests were added with Playwright
-- keyboard-only acceptance coverage now reaches from Zrix to Vrex
-- terminal font readability and focus handoff between world, dialogue, and terminal were improved
-- obstacle collisions were added and the CLULIX beacon was made visually legible
-
-The roadmap was also synchronized with the current design direction:
-
-- GitHub Issues were expanded to track the next planned features
-- a root `TODO.md` snapshot was added for quick orientation while keeping GitHub Issues canonical
-- the next narrative/gameplay step is to move the opening to the CLULIX bridge and teach session `0` as descent to the planet
-- future design work includes vim navigation, fog of war, an overflow-buffer story loop, and generated art integration
+- GitHub Pages deployment was fixed by correcting the production asset base path.
+- Tile movement, obstacle collisions, and a legible CLULIX beacon were added.
+- Browser regression tests covered movement, focus handoff, proximity prompts, and the Zrix-to-Vrex flow.
+- GitHub Issues and `TODO.md` were established as roadmap surfaces.
 
 ## 2026-05-08
 
-TMUX Trek began this repository as a planning bundle rather than a runnable codebase. The original folder contained only design and research documents covering:
+TMUX Trek began as a planning bundle and was normalized into a runnable project:
 
-- the narrative concept and full curriculum for a tmux-learning game
-- the desired software engineering process for building it
-- architecture notes on simulating tmux in the browser
-- art prompt material and references for educational game patterns
+- Vite, Phaser, xterm.js, Vitest, Cucumber, ESLint, Prettier, Husky, and commitlint were configured.
+- Source, tests, features, active docs, and preserved research were separated into maintainable directories.
+- Development began with a session-focused educational vertical slice.
 
-On 2026-05-08 the repository was normalized into a real project structure:
+## Preserved Source Material
 
-- initialized as a git repository
-- original planning files moved into `docs/` and renamed consistently
-- contributor instructions, README, and workflow docs added at the repo root
-- Vite, Phaser, xterm.js, Vitest, Cucumber, ESLint, Prettier, Husky, and commitlint wired in
-- development continued as an executable vertical slice focused on teaching tmux sessions
-
-## Source Material Preserved
-
-The original planning documents are preserved in:
-
-- `doc/`
-- `docs/research/`
-- `docs/prompts/`
-- `docs/assets/`
-
-Those files are the historical basis for the implementation now in progress.
+Active documents live in `doc/`. Historical research, autonomous prompts, and asset prompts live in `docs/`. Those reference files may describe aspirational architecture or obsolete workflows; use [Session Handoff](doc/session-handoff.md) for current truth.

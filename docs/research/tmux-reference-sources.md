@@ -1,5 +1,7 @@
 <img src="https://r2cdn.perplexity.ai/pplx-full-logo-primary-dark%402x.png" style="height:64px;margin-right:32px"/>
 
+> Preserved tmux source research. Use it to validate semantics, while tracking the game's supported command surface in [`doc/session-handoff.md`](../../doc/session-handoff.md).
+
 # I want to build such a game as vim adventures for learning tmux. I want to give context for all the tmux commands. Provide the documentation website which perplexity can read, as wll as some excellend tutorials.
 
 Here are the best documentation sources and tutorials to build your tmux-teaching game, organized by usefulness for your project.
@@ -74,4 +76,3 @@ Copy mode is especially compelling since it already uses vim keybindings — mak
 [^14]: https://www.pluralsight.com/resources/blog/cloud/tmux-cheat-sheet
 
 [^15]: https://blog.shadabmohammad.com/getting-started-with-tmux-for-beginners-and-advanced-users-f712c76672f6
-
