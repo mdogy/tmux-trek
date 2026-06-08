@@ -50,4 +50,30 @@ describe("SessionManager", () => {
 
     expect(manager.getSession("clulix")).toBeUndefined();
   });
+
+  it("creates and switches between windows in the active session", () => {
+    manager.createSession("clulix");
+    manager.attachSession("clulix");
+
+    const created = manager.createWindow();
+    const previous = manager.selectNextWindow(-1);
+
+    expect(created.id).toBe(1);
+    expect(manager.listWindows()).toHaveLength(2);
+    expect(previous.id).toBe(0);
+  });
+
+  it("splits and closes panes without closing the active window", () => {
+    manager.createSession("clulix");
+    manager.attachSession("clulix");
+
+    manager.splitActivePane("vertical");
+    manager.splitActivePane("horizontal");
+    const closed = manager.closeActivePane();
+    const activeWindow = manager.getActiveSession().windows[0];
+
+    expect(closed.id).toBe(2);
+    expect(activeWindow.panes).toHaveLength(2);
+    expect(activeWindow.activePaneId).toBe(1);
+  });
 });

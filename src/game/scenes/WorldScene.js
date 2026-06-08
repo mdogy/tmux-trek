@@ -13,6 +13,8 @@ const SPRITE_KEYS = {
   zrix: "zrix-sprite",
   vrex: "vrex-sprite",
   orin: "orin-sprite",
+  redshirt: "redshirt-sprite",
+  sock: "sock-sprite",
 };
 const CRATER_FLOOR_TILES = [
   [3, 1],
@@ -252,6 +254,18 @@ export class WorldScene extends Phaser.Scene {
     if (!this.textures.exists(SPRITE_KEYS.orin)) {
       this.#drawArchivistSprite(SPRITE_KEYS.orin);
     }
+
+    if (!this.textures.exists(SPRITE_KEYS.redshirt)) {
+      this.#drawHumanoidSprite(SPRITE_KEYS.redshirt, {
+        suit: 0xb33a42,
+        trim: 0xf2e8be,
+        visor: 0x0a1628,
+      });
+    }
+
+    if (!this.textures.exists(SPRITE_KEYS.sock)) {
+      this.#drawScientistSprite(SPRITE_KEYS.sock);
+    }
   }
 
   #drawHumanoidSprite(key, { suit, trim, visor }) {
@@ -300,6 +314,22 @@ export class WorldScene extends Phaser.Scene {
     graphics.fillStyle(0xf2e8be);
     graphics.fillCircle(20, 17, 2);
     graphics.fillCircle(28, 17, 2);
+    graphics.generateTexture(key, 48, 48);
+    graphics.destroy();
+  }
+
+  #drawScientistSprite(key) {
+    const graphics = this.add.graphics();
+    graphics.fillStyle(0xdde6e5);
+    graphics.fillRoundedRect(13, 9, 22, 30, 5);
+    graphics.fillStyle(0x46d9c4);
+    graphics.fillRoundedRect(17, 4, 14, 13, 5);
+    graphics.fillStyle(0x07131f);
+    graphics.fillRect(19, 9, 10, 4);
+    graphics.fillStyle(0xffb300);
+    graphics.fillCircle(31, 28, 5);
+    graphics.lineStyle(2, 0xffb300);
+    graphics.strokeCircle(31, 28, 8);
     graphics.generateTexture(key, 48, 48);
     graphics.destroy();
   }

@@ -39,6 +39,24 @@
       "color": 4649412,
       "challengeId": "return-to-rift",
       "dialogueFile": "zone-01-orin"
+    },
+    {
+      "id": "redshirt",
+      "name": "Ensign Redshirt",
+      "column": 6,
+      "row": 11,
+      "color": 13382451,
+      "challengeId": "redshirt-window-rescue",
+      "dialogueFile": "zone-01-redshirt"
+    },
+    {
+      "id": "sock",
+      "name": "Commander Sock",
+      "column": 12,
+      "row": 11,
+      "color": 16248506,
+      "challengeId": "sock-pane-scanner",
+      "dialogueFile": "zone-01-sock"
     }
   ],
   "beacon": {

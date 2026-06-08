@@ -13,7 +13,7 @@ Primary planning documents:
 - The repository is initialized, documented, tested, and deployed through GitHub Actions and GitHub Pages.
 - The current vertical slice is feature-incomplete but playable.
 - The world is tile-based, keyboard-driven, collision-aware, and covered by browser acceptance tests.
-- The current implemented lesson arc reaches from spawn near the CLULIX beacon through Zrix and into Vrex's interaction flow.
+- The current implemented lesson arc runs through session basics, Act 2's Redshirt window rescue, and Act 3's Commander Sock pane scanner.
 - The GitHub Pages test build deploys from `main` after pull-request CI passes and the PR is merged.
 
 ## Open Roadmap Issues
@@ -37,8 +37,8 @@ Primary planning documents:
 - World navigation should migrate from WASD to vim `h/j/k/l`.
 - Fog of war should limit visibility and improve exploration readability.
 - Generated art should progressively replace placeholder visuals.
-- Ensign Redshirt should become an early companion and then be captured in Act 2, shaping a Rift-based rescue arc.
-- Commander Sock should join in Act 3, and obtaining her scanner may itself need to be a mission.
+- Expand Act 2's implemented Redshirt window rescue into a larger multi-Rift mission.
+- Expand Act 3's implemented Commander Sock pane scanner into a fog-of-war mission.
 - Before the scanner is acquired, the party should suffer from limited visibility so the upgrade feels meaningful.
 - Once acquired, Sock's scanner should reveal threats through fog of war and sense activity in other Rifts.
 - Vrex should eventually be rescued and become guide and protector for the expedition party.

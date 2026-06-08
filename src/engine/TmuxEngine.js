@@ -35,7 +35,7 @@ export class TmuxEngine {
         return this.#ok(
           sessions.map((session) => {
             const suffix = session.attached ? " (attached)" : " (detached)";
-            return `${session.name}: 1 windows${suffix}`;
+            return `${session.name}: ${session.windows.length} windows${suffix}`;
           }),
         );
       }
@@ -77,6 +77,45 @@ export class TmuxEngine {
         return this.execute("tmux ls");
       }
 
+      if (key === "c") {
+        const window = this.sessionManager.createWindow();
+        return this.#ok([
+          `Created window ${window.id}: ${window.name}.`,
+          "HELIX: a second rescue view is now active.",
+        ]);
+      }
+
+      if (key === "w") {
+        const activeWindowId =
+          this.sessionManager.getActiveSession().activeWindowId;
+        return this.#ok(
+          this.sessionManager.listWindows().map((window) => {
+            const active = window.id === activeWindowId ? " (active)" : "";
+            return `${window.id}: ${window.name}${active}`;
+          }),
+        );
+      }
+
+      if (key === "n" || key === "p") {
+        const direction = key === "n" ? 1 : -1;
+        const window = this.sessionManager.selectNextWindow(direction);
+        return this.#ok([`Switched to window ${window.id}: ${window.name}.`]);
+      }
+
+      if (key === "%" || key === '"') {
+        const direction = key === "%" ? "vertical" : "horizontal";
+        const pane = this.sessionManager.splitActivePane(direction);
+        return this.#ok([
+          `Split ${direction} pane ${pane.id}.`,
+          "HELIX: both operations remain visible.",
+        ]);
+      }
+
+      if (key === "x") {
+        const pane = this.sessionManager.closeActivePane();
+        return this.#ok([`Closed pane ${pane.id}.`]);
+      }
+
       return this.#fail(`unsupported keybinding: Ctrl+b ${key}`);
     } catch (error) {
       return this.#fail(error.message);
@@ -84,8 +123,15 @@ export class TmuxEngine {
   }
 
   getStatus() {
+    const activeSession = this.sessionManager.getActiveSession();
+    const activeWindow = activeSession?.windows.find(
+      (window) => window.id === activeSession.activeWindowId,
+    );
+
     return {
-      activeSessionName: this.sessionManager.getActiveSession()?.name ?? null,
+      activeSessionName: activeSession?.name ?? null,
+      activeWindowId: activeSession?.activeWindowId ?? null,
+      activePaneId: activeWindow?.activePaneId ?? null,
       sessions: this.sessionManager.listSessions(),
     };
   }

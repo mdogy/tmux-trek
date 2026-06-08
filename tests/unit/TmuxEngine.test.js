@@ -49,4 +49,28 @@ describe("TmuxEngine", () => {
     expect(result.ok).toBe(false);
     expect(engine.getLastError()).toContain("no session named ghost");
   });
+
+  it("creates, lists, and switches windows for the Act 2 rescue", () => {
+    engine.execute("tmux new -s clulix");
+
+    const created = engine.handleKeybinding("c");
+    const listing = engine.handleKeybinding("w");
+    const previous = engine.handleKeybinding("p");
+
+    expect(created.status.activeWindowId).toBe(1);
+    expect(listing.output).toHaveLength(2);
+    expect(previous.status.activeWindowId).toBe(0);
+  });
+
+  it("splits and closes panes for the Act 3 scanner", () => {
+    engine.execute("tmux new -s clulix");
+
+    engine.handleKeybinding("%");
+    const split = engine.handleKeybinding('"');
+    const closed = engine.handleKeybinding("x");
+
+    expect(split.status.sessions[0].windows[0].panes).toHaveLength(3);
+    expect(closed.status.sessions[0].windows[0].panes).toHaveLength(2);
+    expect(closed.status.activePaneId).toBe(1);
+  });
 });

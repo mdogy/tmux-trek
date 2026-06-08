@@ -210,3 +210,9 @@ Copy mode should exist because the player must retrieve or move information betw
 - Add Commander Sock as scanner specialist for fog-of-war and anomaly detection
 - Rescue Vrex later so she becomes the party's guide and protector
 - Develop Rift storms as a recurring cause of cross-Rift rescues and multi-pane coordination
+
+## Implemented Act Prototypes
+
+- Act 2 now introduces Ensign Redshirt's rescue through window creation, view inspection, and previous-window navigation.
+- Act 3 now introduces Commander Sock's scanner through vertical and horizontal pane splits, followed by closing a corrupted pane.
+- These are compact teaching prototypes inside the landing-crater vertical slice. Future work should expand them into larger multi-Rift and fog-of-war missions.

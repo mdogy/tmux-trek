@@ -54,5 +54,61 @@
         "helix": "Attach is how you step back into suspended work."
       }
     ]
+  },
+  {
+    "id": "redshirt-window-rescue",
+    "title": "Act 2: Rescue Redshirt across live views",
+    "successMessage": "Redshirt steps through the rescue view. The party is reunited.",
+    "steps": [
+      {
+        "kind": "keybinding",
+        "expected": "c",
+        "unlockCommand": "Ctrl+b c",
+        "instruction": "Press Ctrl+b, then c to open a rescue view without leaving this Rift.",
+        "helix": "A window is another live view inside the same session. Open one for Redshirt's signal."
+      },
+      {
+        "kind": "keybinding",
+        "expected": "w",
+        "unlockCommand": "Ctrl+b w",
+        "instruction": "Press Ctrl+b, then w to inspect every live view.",
+        "helix": "Inspect the available views before choosing where to act."
+      },
+      {
+        "kind": "keybinding",
+        "expected": "p",
+        "unlockCommand": "Ctrl+b p",
+        "instruction": "Press Ctrl+b, then p to return to the previous view and pull Redshirt through.",
+        "helix": "Previous and next let you move between tasks without abandoning the session."
+      }
+    ]
+  },
+  {
+    "id": "sock-pane-scanner",
+    "title": "Act 3: Assemble Commander Sock's scanner",
+    "successMessage": "Sock's scanner resolves the hidden Rift storm. Parallel monitoring is online.",
+    "steps": [
+      {
+        "kind": "keybinding",
+        "expected": "%",
+        "unlockCommand": "Ctrl+b %",
+        "instruction": "Press Ctrl+b, then % to split a vertical scanner pane.",
+        "helix": "Panes keep simultaneous operations visible inside one view."
+      },
+      {
+        "kind": "keybinding",
+        "expected": "\"",
+        "unlockCommand": "Ctrl+b \"",
+        "instruction": "Press Ctrl+b, then \" to split a horizontal threat-monitor pane.",
+        "helix": "A second split gives the party another live instrument without losing the first."
+      },
+      {
+        "kind": "keybinding",
+        "expected": "x",
+        "unlockCommand": "Ctrl+b x",
+        "instruction": "Press Ctrl+b, then x to close the corrupted pane while preserving the scanner.",
+        "helix": "Close only the failed subprocess. The rest of the operation must survive."
+      }
+    ]
   }
 ]
