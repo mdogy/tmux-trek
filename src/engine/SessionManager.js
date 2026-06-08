@@ -15,10 +15,12 @@ export class SessionManager {
     const session = {
       name: resolvedName,
       attached: false,
+      activeWindowId: 0,
       windows: [
         {
           id: 0,
           name: "main",
+          activePaneId: 0,
           panes: [{ id: 0, title: "shell" }],
         },
       ],
@@ -88,6 +90,68 @@ export class SessionManager {
     }
   }
 
+  createWindow() {
+    const session = this.#requireActiveSession();
+    const id = Math.max(...session.windows.map((window) => window.id)) + 1;
+    const window = {
+      id,
+      name: `view-${id}`,
+      activePaneId: 0,
+      panes: [{ id: 0, title: "shell" }],
+    };
+
+    session.windows.push(window);
+    session.activeWindowId = id;
+    return this.#clone(window);
+  }
+
+  listWindows() {
+    const session = this.#requireActiveSession();
+    return session.windows.map((window) => this.#clone(window));
+  }
+
+  selectNextWindow(direction = 1) {
+    const session = this.#requireActiveSession();
+    const activeIndex = session.windows.findIndex(
+      (window) => window.id === session.activeWindowId,
+    );
+    const nextIndex =
+      (activeIndex + direction + session.windows.length) %
+      session.windows.length;
+
+    session.activeWindowId = session.windows[nextIndex].id;
+    return this.#clone(session.windows[nextIndex]);
+  }
+
+  splitActivePane(direction) {
+    const window = this.#requireActiveWindow();
+    const id = Math.max(...window.panes.map((pane) => pane.id)) + 1;
+    const pane = {
+      id,
+      title: `${direction}-scanner-${id}`,
+    };
+
+    window.panes.push(pane);
+    window.activePaneId = id;
+    return this.#clone(pane);
+  }
+
+  closeActivePane() {
+    const window = this.#requireActiveWindow();
+
+    if (window.panes.length === 1) {
+      throw new Error("cannot close the only pane");
+    }
+
+    const activeIndex = window.panes.findIndex(
+      (pane) => pane.id === window.activePaneId,
+    );
+    const [closedPane] = window.panes.splice(activeIndex, 1);
+    window.activePaneId =
+      window.panes[Math.max(0, activeIndex - 1)]?.id ?? window.panes[0].id;
+    return this.#clone(closedPane);
+  }
+
   getSession(name) {
     const session = this.sessions.get(name);
     return session ? this.#clone(session) : undefined;
@@ -109,6 +173,21 @@ export class SessionManager {
     this.sessions.clear();
     this.activeSessionName = null;
     this.nextUnnamedSession = 0;
+  }
+
+  #requireActiveSession() {
+    if (!this.activeSessionName) {
+      throw new Error("no active session");
+    }
+
+    return this.sessions.get(this.activeSessionName);
+  }
+
+  #requireActiveWindow() {
+    const session = this.#requireActiveSession();
+    return session.windows.find(
+      (window) => window.id === session.activeWindowId,
+    );
   }
 
   #allocateUnnamedSession() {

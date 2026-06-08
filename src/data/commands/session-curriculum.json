@@ -23,5 +23,35 @@
     "id": "tmux attach -t clulix",
     "label": "tmux attach -t clulix",
     "summary": "Re-enter a named session."
+  },
+  {
+    "id": "Ctrl+b c",
+    "label": "Ctrl+b c",
+    "summary": "Create another live window inside the active session."
+  },
+  {
+    "id": "Ctrl+b w",
+    "label": "Ctrl+b w",
+    "summary": "Inspect the windows available in the active session."
+  },
+  {
+    "id": "Ctrl+b p",
+    "label": "Ctrl+b p",
+    "summary": "Move to the previous window."
+  },
+  {
+    "id": "Ctrl+b %",
+    "label": "Ctrl+b %",
+    "summary": "Split the active window into vertical panes."
+  },
+  {
+    "id": "Ctrl+b \"",
+    "label": "Ctrl+b \"",
+    "summary": "Split the active window into horizontal panes."
+  },
+  {
+    "id": "Ctrl+b x",
+    "label": "Ctrl+b x",
+    "summary": "Close the active pane while preserving the others."
   }
 ]

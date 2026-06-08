@@ -33,3 +33,19 @@ Then("the output should mention {string}", (text) => {
 Then("the active session should be {string}", (name) => {
   expect(engine.getStatus().activeSessionName).toBe(name);
 });
+
+Then("the active session should have {int} windows", (count) => {
+  const activeSession = engine
+    .getStatus()
+    .sessions.find((session) => session.attached);
+  expect(activeSession.windows).toHaveLength(count);
+});
+
+Then("the active window should have {int} panes", (count) => {
+  const status = engine.getStatus();
+  const activeSession = status.sessions.find((session) => session.attached);
+  const activeWindow = activeSession.windows.find(
+    (window) => window.id === status.activeWindowId,
+  );
+  expect(activeWindow.panes).toHaveLength(count);
+});

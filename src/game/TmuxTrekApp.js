@@ -2,6 +2,8 @@ import Phaser from "phaser";
 import sessionCurriculum from "../data/commands/session-curriculum.json";
 import zone01Challenges from "../data/commands/zone-01-session-challenges.json";
 import orinDialogue from "../data/dialogue/zone-01-orin.json";
+import redshirtDialogue from "../data/dialogue/zone-01-redshirt.json";
+import sockDialogue from "../data/dialogue/zone-01-sock.json";
 import vrexDialogue from "../data/dialogue/zone-01-vrex.json";
 import zrixDialogue from "../data/dialogue/zone-01-zrix.json";
 import zone01 from "../data/zones/zone-01.json";
@@ -15,6 +17,8 @@ const dialogueById = {
   "zone-01-zrix": zrixDialogue,
   "zone-01-vrex": vrexDialogue,
   "zone-01-orin": orinDialogue,
+  "zone-01-redshirt": redshirtDialogue,
+  "zone-01-sock": sockDialogue,
 };
 
 export class TmuxTrekApp {
@@ -129,19 +133,19 @@ export class TmuxTrekApp {
       [
         {
           speaker: "HELIX",
-          text: "Beacon stable. You opened, named, detached, listed, and reattached a session. The CLULIX can now remember work across interruptions.",
+          text: "Beacon stable. Redshirt is recovered, and Commander Sock's scanner is monitoring the Rift storm across parallel panes.",
         },
         {
           speaker: "HELIX",
-          text: "Next implementation target: expand Act 1 so the village and session-management puzzles deepen through repetition and timed drills.",
+          text: "Acts 1 through 3 are operational: sessions preserve places, windows navigate live views, and panes keep simultaneous threats visible.",
         },
       ],
       () => {
         this.state.setMission(
-          "Lesson complete. Extend the prototype toward the next act.",
+          "Act 3 complete. The expedition is ready for deeper Rift storms.",
         );
         this.state.setInstruction(
-          "The current slice ends here. Keep the player's next instruction visible as new commands are added.",
+          "Training complete. Redshirt and Commander Sock are ready for the next expedition.",
         );
         this.focusGame();
       },
@@ -167,7 +171,7 @@ export class TmuxTrekApp {
     }
 
     const nextNpc = this.zone.npcs[this.currentNpcIndex];
-    this.state.setMission(`Meet ${nextNpc.name} for the next session lesson.`);
+    this.state.setMission(`Meet ${nextNpc.name} for the next Rift lesson.`);
     this.state.setInstruction(
       `Follow the highlighted mentor and continue learning with ${nextNpc.name}.`,
     );
