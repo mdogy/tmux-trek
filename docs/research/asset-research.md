@@ -1,6 +1,6 @@
 <img src="https://r2cdn.perplexity.ai/pplx-full-logo-primary-dark%402x.png" style="height:64px;margin-right:32px"/>
 
-> Preserved research, not current implementation guidance. See [`doc/session-handoff.md`](../../doc/session-handoff.md) for the runtime asset state and next tasks.
+> Preserved research, not current implementation guidance. See [`session-handoff.md`](../session-handoff.md) for the runtime asset state and next tasks.
 
 # If I were to build TMUX Adventures lets call it TMUX Trek and make it a bit more science viction with exploration of a strange planet. collect resources for tile assets.
 

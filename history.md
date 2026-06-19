@@ -1,5 +1,17 @@
 # Project History
 
+## 2026-06-19
+
+A research-grounded redesign was authored and the documentation set was consolidated for context-free restart:
+
+- Produced three June 19 design artifacts: a current-build descriptive summary (with critical evaluation), a research-grounded redesign plan, and a redesign brief with a phased implementation plan. These were committed as a checkpoint, then consolidated.
+- Added a browser-persistence design (`docs/design/save-manager-strategy.md`) specifying a versioned `localStorage` `SaveManager` — the redesign named the component but never defined its storage mechanism.
+- Consolidated the documentation into an authoritative, self-contained set under `docs/`: `session-handoff.md` (resume entry), `game-design.md` (design bible), `architecture.md` (technical), `implementation-plan.md` (roadmap, replacing root `TODO.md`), plus a `docs/README.md` index.
+- Eliminated the `doc/` folder, moving `delivery-workflow.md` and `software-engineering-practices.md` (renamed `engineering-practices.md`) into `docs/`.
+- Archived superseded material under `docs/archive/` (the redesign drafts, the descriptive summary, the old `gameplay-plan.md`, and the historical autonomous-build prompt) with an archive index explaining where each one's content now lives.
+- Rewrote the root `README.md` as a front door pointing into `docs/`, fixed all `doc/` references in `AGENTS.md`, `scripts/README.md`, and research files, and removed the now-redundant root `TODO.md`.
+- No code changed in this pass; the verified baseline from PR #12 still stands.
+
 ## 2026-06-08
 
 The vertical slice expanded from session basics into compact playable Act 2 and Act 3 prototypes:
@@ -46,4 +58,4 @@ TMUX Trek began as a planning bundle and was normalized into a runnable project:
 
 ## Preserved Source Material
 
-Active documents live in `doc/`. Historical research, autonomous prompts, and asset prompts live in `docs/`. Those reference files may describe aspirational architecture or obsolete workflows; use [Session Handoff](doc/session-handoff.md) for current truth.
+As of the 2026-06-19 consolidation, all documentation lives under `docs/` (the former `doc/` folder was eliminated). `docs/README.md` is the index; preserved research lives in `docs/research/` and superseded material in `docs/archive/`. Use [Session Handoff](docs/session-handoff.md) for current truth.

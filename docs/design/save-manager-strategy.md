@@ -6,7 +6,7 @@
 
 ## What the Redesign Documents Say
 
-The redesign brief (`docs/Redesign-summary-05-19.md`) lists `SaveManager.js` in the recommended additions:
+The redesign brief (now [`../archive/redesign-summary.md`](../archive/redesign-summary.md)) lists `SaveManager.js` in the recommended additions:
 
 > `SaveManager.js` (new) — checkpoint-based save/load; serializes GameState + MissionSystem state
 

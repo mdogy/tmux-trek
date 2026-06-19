@@ -1,5 +1,7 @@
 # TMUX Trek — Descriptive Summary
 
+> **ARCHIVED.** Folded into [`../session-handoff.md`](../session-handoff.md) and [`../architecture.md`](../architecture.md). Kept for the detailed current-build snapshot and critical evaluation; not current.
+
 *Written June 19, 2026. Based on the codebase at commit `d363076` (main branch).*
 
 ---

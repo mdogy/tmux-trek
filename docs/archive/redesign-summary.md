@@ -1,5 +1,7 @@
 # TMUX Trek — Redesign Brief & Coding Agent Implementation Plan
 
+> **ARCHIVED.** Consolidated into [`../game-design.md`](../game-design.md), [`../architecture.md`](../architecture.md), and [`../implementation-plan.md`](../implementation-plan.md). Kept for long-form rationale; not current.
+
 *Written June 19, 2026. Research-grounded revision drawing on tmux tutorials, VIM Adventures analysis, Portal/Metroidvania game-design principles, and sci-fi narrative structures.*
 
 ---

@@ -1,6 +1,6 @@
 <img src="https://r2cdn.perplexity.ai/pplx-full-logo-primary-dark%402x.png" style="height:64px;margin-right:32px"/>
 
-> Preserved architecture research. The implemented engine surface and current boundaries are documented in [`doc/session-handoff.md`](../../doc/session-handoff.md).
+> Preserved architecture research. The implemented engine surface and current boundaries are documented in [`session-handoff.md`](../session-handoff.md) and [`architecture.md`](../architecture.md).
 
 # Is there a javascript library that could simulate or run tmux and basic bash in a browser window locally running in web assembly. There obvisoulsy would no local access but it would allow onew to play around with tmux as part of the adventure. The key is to build"mustle memory" to switch between windows and sessions and generally learn tmux. What js librarys would be important in building this game?
 

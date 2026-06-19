@@ -1,6 +1,6 @@
 # TMUX Trek Gameplay Plan
 
-> Current implementation status is tracked in [Session Handoff](session-handoff.md). This document defines the intended narrative and curriculum direction; some sections remain aspirational.
+> **ARCHIVED.** This plan is superseded by [`../game-design.md`](../game-design.md). Current implementation status is in [`../session-handoff.md`](../session-handoff.md). Kept for history; some sections remain aspirational.
 
 ## Goal
 

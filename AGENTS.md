@@ -10,9 +10,9 @@ TMUX Trek is a Vite/Phaser browser game with an xterm.js teaching overlay. Core 
 - `src/data/`: command curriculum, dialogue, and zone metadata.
 - `public/assets/`: deployable image assets, including tile sheets.
 - `tests/` and `features/`: Playwright, Vitest, and Cucumber coverage.
-- `doc/`: planning and workflow documentation. Read `doc/gameplay-plan.md` before changing curriculum or flow.
+- `docs/`: all design, architecture, planning, workflow, research, and archived documentation. `docs/README.md` is the index. Read `docs/game-design.md` before changing curriculum or flow.
 
-Before starting a new development session, read `doc/session-handoff.md`, `TODO.md`, and `history.md`. The handoff records current implementation truth; documents under `docs/` are primarily preserved research and prompts.
+Before starting a new development session, read `docs/session-handoff.md` (the resume entry), then `docs/game-design.md`, `docs/architecture.md`, and `docs/implementation-plan.md`. The handoff records current implementation truth; `docs/research/` and `docs/archive/` hold preserved, non-current material.
 
 ## Build, Test, and Development Commands
 
@@ -37,10 +37,10 @@ Add or update tests for behavior changes. Engine behavior belongs in Vitest unit
 
 ## Commit & Pull Request Guidelines
 
-Use Conventional Commits, for example `feat(assets): add terrain atlas` or `fix(game): prevent queued overlay movement`. Deployable changes follow the standard workflow in `doc/delivery-workflow.md`: branch from `main`, open a PR, wait for CI, merge, then verify GitHub Pages. PRs should describe the player impact, list completed checks, and link related issues when applicable.
+Use Conventional Commits, for example `feat(assets): add terrain atlas` or `fix(game): prevent queued overlay movement`. Deployable changes follow the standard workflow in `docs/delivery-workflow.md`: branch from `main`, open a PR, wait for CI, merge, then verify GitHub Pages. PRs should describe the player impact, list completed checks, and link related issues when applicable.
 
 ## Agent-Specific Instructions
 
 The game should teach tmux through action, not exposition. Every change should make the next player instruction clearer or strengthen a real tmux muscle-memory loop.
 
-When a change materially alters playable scope, architecture, tests, or the recommended next task, update `doc/session-handoff.md`, `TODO.md`, and `history.md` in the same PR.
+When a change materially alters playable scope, architecture, tests, or the recommended next task, update `docs/session-handoff.md`, `docs/implementation-plan.md`, and `history.md` in the same PR.

@@ -1,6 +1,6 @@
 <img src="https://r2cdn.perplexity.ai/pplx-full-logo-primary-dark%402x.png" style="height:64px;margin-right:32px"/>
 
-> Preserved tmux source research. Use it to validate semantics, while tracking the game's supported command surface in [`doc/session-handoff.md`](../../doc/session-handoff.md).
+> Preserved tmux source research. Use it to validate semantics, while tracking the game's supported command surface in [`session-handoff.md`](../session-handoff.md).
 
 # I want to build such a game as vim adventures for learning tmux. I want to give context for all the tmux commands. Provide the documentation website which perplexity can read, as wll as some excellend tutorials.
 

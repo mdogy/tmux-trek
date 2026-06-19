@@ -1,10 +1,10 @@
 # TMUX Trek — Sprite and Tile Asset Generation Prompts
 
-> Reference prompt catalog. The current runtime uses the terrain atlas documented in `public/assets/tiles/README.md` and Phaser-generated character textures. See [`doc/session-handoff.md`](../../doc/session-handoff.md) before planning asset integration.
+> Reference prompt catalog. The current runtime uses the terrain atlas documented in `public/assets/tiles/README.md` and Phaser-generated character textures. See [`session-handoff.md`](../session-handoff.md) before planning asset integration.
 
 This document is the canonical list of sprite and tile prompts to feed to Nano Banana (or any equivalent pixel-art generator) for TMUX Trek. Each prompt is written for **16×16 or 32×32 pixel art** in a consistent sci-fi alien-planet aesthetic, top-down view, with no anti-aliasing.
 
-The asset list is derived directly from the [gameplay plan](../../doc/gameplay-plan.md). Anything new in that document should produce a corresponding prompt here. Anything removed from the narrative should be removed (or recast) here.
+The asset list is derived directly from the [game design](../game-design.md). Anything new in that document should produce a corresponding prompt here. Anything removed from the narrative should be removed (or recast) here.
 
 After generation, organize files into:
 
@@ -390,7 +390,7 @@ There should be one glyph per command listed in the gameplay plan's command-to-n
 
 When the gameplay plan changes:
 
-1. Re-read [doc/gameplay-plan.md](../../doc/gameplay-plan.md) end-to-end.
+1. Re-read [game-design.md](../game-design.md) end-to-end.
 2. Add a prompt here for any new location, character, hostile entity, item, glyph, VFX, UI element, or background that the new beat introduces.
 3. Remove or rewrite prompts that no longer match the narrative (do not leave retired NPCs or mechanics in this file — they will silently get generated).
 4. Keep the section structure and style stable so the file stays trivially scannable when feeding prompts to a generator one at a time.

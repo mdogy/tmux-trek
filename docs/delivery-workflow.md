@@ -3,7 +3,7 @@
 TMUX Trek deploys its test build through GitHub Pages from `main`.
 
 Current live URL: <https://mdogy.github.io/tmux-trek/>
-Current-state handoff: [session-handoff.md](session-handoff.md)
+Current-state handoff: [session-handoff.md](session-handoff.md). Documentation index: [README.md](README.md).
 
 Canonical delivery path:
 
@@ -15,7 +15,7 @@ Canonical delivery path:
 6. Merge only after CI passes.
 7. Let the `Deploy` workflow publish `main` to GitHub Pages.
 8. Verify the deployed page at <https://mdogy.github.io/tmux-trek/>.
-9. Update `history.md`, `TODO.md`, and `doc/session-handoff.md` when the change alters the resume state.
+9. Update `../history.md`, `implementation-plan.md`, and `session-handoff.md` when the change alters the resume state.
 
 ## Local Checks
 

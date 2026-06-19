@@ -1,5 +1,7 @@
 # TMUX Trek — Research-Grounded Redesign Plan
 
+> **ARCHIVED.** Its principles are folded into [`../game-design.md`](../game-design.md) §2 and §7. Kept for sourcing and rationale; not current.
+
 *Synthesizing tmux tutorials, VIM Adventures analysis, Portal/Metroidvania design, and sci-fi narrative structures into a revised game design brief and coding-agent implementation plan.*
 
 ***

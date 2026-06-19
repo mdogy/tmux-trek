@@ -1,6 +1,6 @@
 # TMUX Trek — Autonomous Build Prompt for Perplexity Computer
 
-> Historical bootstrap prompt. The repository is already implemented beyond portions of this prompt. Do not execute it as a current build plan; use [`doc/session-handoff.md`](../../doc/session-handoff.md), [`TODO.md`](../../TODO.md), and live GitHub Issues instead.
+> **ARCHIVED — historical bootstrap prompt.** The repository is implemented well beyond this prompt. Do not execute it. Use [`../session-handoff.md`](../session-handoff.md), [`../implementation-plan.md`](../implementation-plan.md), and live GitHub Issues instead.
 
 > **Context**: This prompt is designed for maximum autonomy. Read every section before taking any action. Make all decisions independently; only pause if a blocking ambiguity cannot be resolved from context.
 

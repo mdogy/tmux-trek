@@ -1,6 +1,6 @@
 <img src="https://r2cdn.perplexity.ai/pplx-full-logo-primary-dark%402x.png" style="height:64px;margin-right:32px"/>
 
-> Preserved design exploration. The active narrative direction is [`doc/gameplay-plan.md`](../../doc/gameplay-plan.md), and current implementation truth is [`doc/session-handoff.md`](../../doc/session-handoff.md).
+> Preserved design exploration. The active design is [`game-design.md`](../game-design.md), and current implementation truth is [`session-handoff.md`](../session-handoff.md).
 
 # Sketch three options for the high level design of this game based on VIM adventures or ideas from Duolingo ... or other educational games.
 

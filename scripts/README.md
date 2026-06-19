@@ -10,7 +10,7 @@ These scripts parse the prompt catalog and provide an experimental Google Gemini
 - Gemini selectors and authorization behavior may change; treat the generator as experimental.
 - Character art is currently generated at runtime in `src/game/scenes/WorldScene.js`, not loaded from sprite sheets.
 
-See [Session Handoff](../doc/session-handoff.md) and [Asset Prompt Catalog](../docs/assets/image-generation-prompts.md) before changing the pipeline.
+See [Session Handoff](../docs/session-handoff.md) and [Asset Prompt Catalog](../docs/assets/image-generation-prompts.md) before changing the pipeline.
 
 ## Commands
 
