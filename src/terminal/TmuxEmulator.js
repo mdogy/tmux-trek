@@ -1,3 +1,4 @@
+import { playError, playKeystroke, playSuccess } from "../game/systems/AudioSystem.js";
 import { TmuxEngine } from "../engine/TmuxEngine.js";
 import { TerminalRenderer } from "./TerminalRenderer.js";
 
@@ -120,6 +121,7 @@ export class TmuxEmulator {
     if (key.length === 1 && !domEvent.metaKey && !domEvent.ctrlKey) {
       this.inputBuffer += key;
       this.renderer.write(key);
+      playKeystroke();
     }
   }
 
@@ -167,6 +169,7 @@ export class TmuxEmulator {
 
     if (step.kind === kind && input !== step.expected) {
       this.renderer.writeln(this.#categorizeError(kind, input, step));
+      playError();
     }
 
     this.renderer.writeln("");
@@ -238,6 +241,7 @@ export class TmuxEmulator {
     if (this.activeStepIndex >= this.activeChallenge.steps.length) {
       this.renderer.writeln("");
       this.renderer.writeln(`SUCCESS: ${this.activeChallenge.successMessage}`);
+      playSuccess();
       this.onChallengeComplete(this.activeChallenge.id);
       return;
     }

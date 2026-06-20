@@ -73,6 +73,7 @@ export class GridScene extends Phaser.Scene {
     this.#bindKeys();
     this.#handleTileArrival();
     this.#syncDebugState();
+    this.cameras.main.fadeIn(450, 70, 217, 196);
     if (!this.app.isOverlayOpen()) {
       this.app.focusGame();
     }
@@ -194,6 +195,18 @@ export class GridScene extends Phaser.Scene {
         item.item === "RIFT_CODE" ? SPRITE_KEYS.riftCode : SPRITE_KEYS.weapon;
       const glowColor = item.item === "RIFT_CODE" ? 0x46d9c4 : 0xffb300;
       const glow = this.add.circle(center.x, center.y, 18, glowColor, 0.2);
+      if (item.item === "RIFT_CODE") {
+        this.tweens.add({
+          targets: glow,
+          alpha: { from: 0.1, to: 0.55 },
+          scaleX: { from: 1, to: 1.5 },
+          scaleY: { from: 1, to: 1.5 },
+          duration: 850,
+          ease: "Sine.InOut",
+          yoyo: true,
+          repeat: -1,
+        });
+      }
       const sprite = this.add.image(center.x, center.y, spriteKey);
       const label = this.add.text(center.x - 42, center.y + 28, item.name, {
         color: "#f2e8be",

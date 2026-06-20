@@ -1,3 +1,4 @@
+import { startAmbient, stopAmbient } from "../systems/AudioSystem.js";
 import { GridScene } from "./GridScene.js";
 
 export class BridgeScene extends GridScene {
@@ -19,6 +20,8 @@ export class BridgeScene extends GridScene {
       fontFamily: '"Press Start 2P"',
       fontSize: "16px",
     });
+    startAmbient("bridge");
+    this.events.once("shutdown", stopAmbient);
   }
 
   getIdlePrompt() {
