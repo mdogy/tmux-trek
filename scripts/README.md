@@ -8,7 +8,7 @@ These scripts parse the prompt catalog and provide an experimental Google Gemini
 - The current game loads `public/assets/tiles/z-shell-terrain.png`.
 - `generate-assets.js` currently writes generated files to root `assets/`, so generated output is **not automatically integrated into the game**.
 - Gemini selectors and authorization behavior may change; treat the generator as experimental.
-- Character art is currently generated at runtime in `src/game/scenes/WorldScene.js`, not loaded from sprite sheets.
+- Character and prop sprites are currently generated at runtime in `src/game/scenes/GridScene.js` via `#createSpriteTextures()`, not loaded from sprite sheets. `WorldScene.js` is legacy code and is not in the active scene flow.
 
 See [Session Handoff](../docs/session-handoff.md) and [Asset Prompt Catalog](../docs/assets/image-generation-prompts.md) before changing the pipeline.
 

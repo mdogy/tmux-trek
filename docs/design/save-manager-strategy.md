@@ -2,6 +2,8 @@
 
 *Written June 19, 2026. Answers the gap in the redesign documents, which specify that `SaveManager.js` should exist but do not define the storage mechanism or serialization contract.*
 
+> **Status: implemented.** `src/game/systems/SaveManager.js` is live with `SAVE_VERSION = 2`. The save snapshot covers engine state, `MissionSystem`, `InventorySystem`, unlocked commands, and current zone — the "Future layers" section below is now complete. The "Implementation Checklist" at the end is fully checked. This document is retained as design rationale; for current truth see [`../session-handoff.md`](../session-handoff.md).
+
 ---
 
 ## What the Redesign Documents Say

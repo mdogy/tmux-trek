@@ -26,7 +26,7 @@ This document describes the technical stack, how the code is structured today, t
 | Lint / format | **ESLint 10**, **Prettier 3** | `npm run lint`, `npm run format:check`. |
 | Commit hooks | **Husky + commitlint** | Conventional Commits enforced; pre-commit runs lint + test. |
 
-> **Note (June 2026):** the local `commit-msg` (commitlint) hook can hang in sandboxed environments. If a commit stalls after lint+test pass, the hook — not the change — is the cause.
+> **Note (June 2026):** `.husky/commit-msg` calls `node_modules/.bin/commitlint` directly (not `npx commitlint`) to avoid hangs in sandboxed environments. Commit messages must follow conventional-commits format with a **lowercase** subject line.
 
 ### Considered but NOT in use
 
@@ -110,8 +110,9 @@ tmux-trek/
 │           └── zone-armory.json
 │
 ├── tests/
-│   ├── unit/                       TmuxEngine.test.js, SessionManager.test.js
-│   ├── e2e/                        gameplay.spec.js (movement, collision, adjacency, full flow)
+│   ├── unit/                       TmuxEngine, SessionManager, MissionSystem, InventorySystem,
+│   │                               SaveManager, TransitionSystem (35 tests total)
+│   ├── e2e/                        gameplay.spec.js (full vertical-slice flow + reload/restore)
 │   ├── step-definitions/           sessions.steps.js
 │   └── integration/                (present, empty)
 │

@@ -6,16 +6,18 @@ Live build: <https://mdogy.github.io/tmux-trek/>
 
 ## Current State
 
-A single **Landing Crater vertical slice** is playable end to end:
+The **Phase 0 + Phase 1 vertical slice** is complete on branch `codex/phase0-phase1-vertical-slice` (not yet merged to `main`). The live build on `main` still shows the older one-map prototype (PR #12). The new loop is:
 
-1. Zrix teaches `tmux` and `tmux new -s clulix`.
-2. Vrex teaches `Ctrl+b d` (detach).
-3. Archivist Orin teaches `tmux ls` and `tmux attach -t clulix`.
-4. Act 2 rescues Ensign Redshirt with windows: `Ctrl+b c`, `Ctrl+b w`, `Ctrl+b p`.
-5. Act 3 assembles Commander Sock's scanner with panes: `Ctrl+b %`, `Ctrl+b "`, `Ctrl+b x`.
-6. The player returns to the CLULIX beacon to close the loop.
+1. Start on the CLULIX **bridge** — the only exit is the Rift terminal.
+2. Type `tmux` → descend into surface session `0` (Starfall Village).
+3. Navigate to the **Rift Code** glyph → collect it.
+4. Talk to Zrix → type `tmux new -s armory` → enter the Armory.
+5. Pick up the bracket cannon.
+6. Type `Ctrl+b d` → detach back to the bridge.
+7. Use `tmux ls` to inspect the Rift Manifest, then `tmux attach -t 0` to return to the surface.
+8. Walk to the overflow front → press `E` → defeat it with the weapon.
 
-This proves the command loops but does **not** yet implement the central metaphor — sessions as travel between distinct places. The redesign rebuilds that (a CLULIX bridge opening, named-Rift destinations, collectible command items, multiple scenes). What's built, what's wrong, and what's next are all in the docs below.
+This implements the central metaphor: **sessions as travel between distinct places**. What's built, what's wrong, and what's next are all in the docs below.
 
 ## Documentation
 
@@ -48,14 +50,15 @@ npm run bdd
 npm run build
 ```
 
-Verified baseline (PR #12): 14 unit tests, 2 BDD scenarios, 11 Playwright tests, lint, and production build all pass. `npm run format:check` reports pre-existing formatting drift and is not yet a clean CI gate.
+Verified baseline (feature branch): 35 unit tests, 2 BDD scenarios, 1 Playwright vertical-slice test, lint, and production build all pass. `npm run format:check` reports pre-existing formatting drift and is not yet a clean CI gate.
 
 ## Repository Layout
 
-- `src/engine/` — deterministic tmux session/window/pane state; no DOM or Phaser.
+- `src/engine/` — deterministic tmux state (`TmuxEvents`, `TmuxEngine`, `SessionManager`); no DOM or Phaser.
 - `src/terminal/` — xterm rendering, key handling, and challenge orchestration.
-- `src/game/` — Phaser world, UI state, dialogue, and progression.
-- `src/data/` — command curriculum, challenge scripts, dialogue, and zone metadata.
+- `src/game/scenes/` — Phaser scenes (`BridgeScene`, `SurfaceScene`, `ArmoryScene`, shared `GridScene`).
+- `src/game/systems/` — `MissionSystem`, `InventorySystem`, `TransitionSystem`, `SaveManager`, `GameState`, `UIController`.
+- `src/data/` — act definitions, challenge scripts, dialogue, and zone metadata (all JSON).
 - `public/assets/` — runtime assets deployed by Vite.
 - `features/` and `tests/` — Cucumber, Vitest, and Playwright coverage.
 - `docs/` — all design, planning, workflow, research, and archived documents.
