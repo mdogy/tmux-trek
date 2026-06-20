@@ -76,4 +76,17 @@ describe("SessionManager", () => {
     expect(activeWindow.panes).toHaveLength(2);
     expect(activeWindow.activePaneId).toBe(1);
   });
+
+  it("serializes and restores session snapshots", () => {
+    manager.createSession();
+    manager.createSession("armory");
+    manager.attachSession("armory");
+
+    const restored = new SessionManager();
+    restored.restore(manager.toSnapshot());
+
+    expect(restored.getActiveSession()?.name).toBe("armory");
+    expect(restored.getSession("0")).toBeDefined();
+    expect(restored.getSession("armory")).toBeDefined();
+  });
 });

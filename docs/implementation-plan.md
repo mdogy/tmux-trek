@@ -11,9 +11,10 @@ GitHub Issues remain the canonical *per-task* surface; this document is the cano
 ## Where We Are
 
 - `main` is deployed at <https://mdogy.github.io/tmux-trek/>.
-- A single Landing Crater vertical slice is playable: session basics (Zrix, Vrex, Orin), Act 2 window rescue (Redshirt), Act 3 pane scanner (Sock), closing at the CLULIX beacon.
+- Phase 0 foundation is implemented: `TmuxEvents`, `MissionSystem`, `InventorySystem`, `TransitionSystem`, and `SaveManager` now exist and are wired into the live app.
+- A new Act 0 + Act 1 loop is playable: bridge → `tmux` → surface session `0` → Rift Code → `tmux new -s armory` → armory pickup → `Ctrl+b d` → bridge → `tmux ls` → `tmux attach -t 0` → clear overflow.
 - The pure engine supports session create/attach/detach/list/kill, window create/list/next/previous, pane split, and active-pane close.
-- The core interaction loop is correct and the test baseline is green. See [`session-handoff.md`](session-handoff.md) for the exact baseline and critical evaluation.
+- Current local baseline is green: `npm run lint`, `npm run test` (25 unit tests), `npm run bdd` (2 scenarios / 17 steps), `npm run test:e2e` (1 end-to-end vertical-slice flow), and `npm run build`.
 
 The redesign's premise: the current build is a working *loop prototype* but does not yet implement the central metaphor (sessions as travel between places). The phases below rebuild the relationship between world and command, then extend act by act.
 
@@ -32,6 +33,8 @@ The redesign's premise: the current build is a working *loop prototype* but does
 
 Establish the skeleton that makes all later work possible. No new scene content in this phase.
 
+Status: complete.
+
 - Add `src/engine/TmuxEvents.js` (event emitter). Emit: `session:created`, `session:attached`, `session:detached`, `session:killed`, `window:created`, `window:named`, `window:closed`, `pane:split`, `pane:closed`, `pane:zoomed`.
 - Add `src/game/systems/MissionSystem.js` (JSON-driven state machine; loads `src/data/acts/`). Interface: `loadAct(id)`, `completeObjective(id)`, `getCurrentObjective()`, `isUnlocked(commandId)`.
 - Add `src/game/systems/InventorySystem.js`. Items: `RIFT_CODE`, `CHANNEL_TOKEN`, `SCANNER_ARRAY`, `ARCHIVE_CRYSTAL`. Methods: `has(item)`, `collect(item)`.
@@ -45,16 +48,18 @@ Establish the skeleton that makes all later work possible. No new scene content 
 
 The primary product target: replace the single-map prototype with the ship → village → armory loop.
 
+Status: mostly complete. The bridge/surface/armory loop is live, save/restore works, and end-to-end coverage passes. Two intentional deviations remain: the implementation uses `tmux attach -t 0` instead of `tmux attach -t village`, and the overflow buffer is cleared through a contextual weapon interaction rather than explicitly teaching `tmux kill-session -t name`.
+
 - `BridgeScene.js`: ship interior, one interactive Rift terminal, HELIX opening. Only action: `tmux`. Trigger `session:created` (session 0) → `SurfaceScene` (village).
 - `SurfaceScene.js` (replacing `WorldScene.js`): accepts a zone config from `src/data/zones/zone-village.json`; enable Phaser camera scrolling (`setBounds` + `startFollow`); village map ≥ 40×30 tiles, maze-like, with one impassable blocker (the overflow buffer).
 - Place the **Rift Code** glyph as a collectible at the map edge; on collection `InventorySystem.collect(RIFT_CODE)` and `TmuxEmulator` accepts `tmux new -s <name>`.
 - `ArmoryScene.js`: weapon pickup → `MissionSystem.completeObjective('get-weapon')`.
-- Wire `Ctrl+b d` → `session:detached` → bridge; `tmux attach -t village` → `session:attached` → village.
+- Wire `Ctrl+b d` → `session:detached` → bridge; `tmux attach -t 0` → `session:attached` → village.
 - Wire `tmux ls` to a styled Rift Manifest overlay/HUD panel.
 - Use evocative session names (`starfall-village`, not `zone-01`).
 
 **Acceptance for Phase 1:**
-- The opening loop is completable end-to-end (Bridge → `tmux` → Village → collect Rift Code → `tmux new -s armory` → Armory → weapon → `Ctrl+b d` → Bridge → `tmux ls` → `tmux attach -t village` → defeat overflow).
+- The opening loop is completable end-to-end (Bridge → `tmux` → Village → collect Rift Code → `tmux new -s armory` → Armory → weapon → `Ctrl+b d` → Bridge → `tmux ls` → `tmux attach -t 0` → defeat overflow).
 - `tmux` visibly changes the map; `Ctrl+b d` visibly returns to the bridge; `tmux ls` shows a populated manifest.
 - The village map is larger than the screen and the camera follows the player.
 

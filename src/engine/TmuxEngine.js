@@ -1,8 +1,10 @@
 import { SessionManager } from "./SessionManager.js";
+import { TmuxEvents } from "./TmuxEvents.js";
 
 export class TmuxEngine {
-  constructor(sessionManager = new SessionManager()) {
-    this.sessionManager = sessionManager;
+  constructor(events = new TmuxEvents(), sessionManager = null) {
+    this.events = events;
+    this.sessionManager = sessionManager ?? new SessionManager(events);
     this.lastError = "";
   }
 
@@ -27,6 +29,7 @@ export class TmuxEngine {
 
       if (command === "tmux ls") {
         const sessions = this.sessionManager.listSessions();
+        this.events.emit("session:listed", { sessions });
 
         if (sessions.length === 0) {
           return this.#ok(["no server running on /tmp/tmux-trek"]);
@@ -138,6 +141,21 @@ export class TmuxEngine {
 
   getLastError() {
     return this.lastError;
+  }
+
+  on(eventName, listener) {
+    return this.events.on(eventName, listener);
+  }
+
+  getSnapshot() {
+    return {
+      engine: this.sessionManager.toSnapshot(),
+    };
+  }
+
+  restore(snapshot) {
+    this.lastError = "";
+    this.sessionManager.restore(snapshot?.engine ?? snapshot);
   }
 
   reset() {

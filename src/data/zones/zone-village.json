@@ -1,0 +1,68 @@
+{
+  "id": "surface",
+  "name": "Starfall Village",
+  "map": {
+    "width": 1920,
+    "height": 1440,
+    "tileSize": 48,
+    "columns": 40,
+    "rows": 30
+  },
+  "playerStart": {
+    "column": 3,
+    "row": 15
+  },
+  "npcs": [
+    {
+      "id": "zrix",
+      "name": "Zrix",
+      "column": 7,
+      "row": 15
+    }
+  ],
+  "items": [
+    {
+      "id": "rift-code",
+      "name": "Rift Code",
+      "item": "RIFT_CODE",
+      "column": 14,
+      "row": 15
+    }
+  ],
+  "blockers": [
+    {
+      "id": "overflow",
+      "name": "Overflow Buffer",
+      "column": 23,
+      "row": 15,
+      "clearedByObjective": "clear-overflow",
+      "tiles": [
+        [24, 14],
+        [25, 14],
+        [26, 14],
+        [24, 15],
+        [25, 15],
+        [26, 15],
+        [24, 16],
+        [25, 16],
+        [26, 16]
+      ]
+    }
+  ],
+  "obstacles": {
+    "tiles": [
+      [10, 13],
+      [10, 14],
+      [10, 16],
+      [10, 17],
+      [18, 12],
+      [18, 13],
+      [18, 17],
+      [18, 18],
+      [30, 13],
+      [30, 14],
+      [30, 16],
+      [30, 17]
+    ]
+  }
+}

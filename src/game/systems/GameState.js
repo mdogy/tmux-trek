@@ -25,6 +25,10 @@ export class GameState {
     this.#update({ missionText: text });
   }
 
+  setZoneName(text) {
+    this.#update({ zoneName: text });
+  }
+
   setInstruction(text) {
     this.#update({ instructionText: text });
   }
@@ -50,6 +54,10 @@ export class GameState {
 
   clearToast() {
     this.#update({ toast: "" });
+  }
+
+  restoreUnlockedCommands(commands = []) {
+    this.#update({ unlockedCommands: [...commands] });
   }
 
   syncStatus(status) {

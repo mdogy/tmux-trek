@@ -1,0 +1,65 @@
+[
+  {
+    "id": "bridge-open-rift",
+    "title": "Bring the Rift system online",
+    "successMessage": "The bridge viewport blooms with a stable Rift corridor.",
+    "steps": [
+      {
+        "kind": "command",
+        "expected": "tmux",
+        "unlockCommand": "tmux",
+        "instruction": "Type tmux and press Enter to open the surface Rift.",
+        "helix": "The ship has one way down. Start tmux and the surface session will answer."
+      }
+    ]
+  },
+  {
+    "id": "village-open-armory",
+    "title": "Open a named armory Rift",
+    "successMessage": "The armory destination stabilizes as a named session.",
+    "steps": [
+      {
+        "kind": "command",
+        "expected": "tmux new -s armory",
+        "unlockCommand": "tmux new -s armory",
+        "instruction": "Type tmux new -s armory to open the armory destination.",
+        "helix": "Names turn panic into navigation. The armory must be called deliberately."
+      }
+    ]
+  },
+  {
+    "id": "armory-detach",
+    "title": "Leave the armory without collapsing it",
+    "successMessage": "The armory remains alive while the captain steps back to the bridge.",
+    "steps": [
+      {
+        "kind": "keybinding",
+        "expected": "d",
+        "unlockCommand": "Ctrl+b d",
+        "instruction": "Press Ctrl+b, then d to detach from the armory session.",
+        "helix": "Detach is controlled absence. Leave the room, not the work."
+      }
+    ]
+  },
+  {
+    "id": "bridge-manifest-return",
+    "title": "Read the manifest and return to session 0",
+    "successMessage": "The surface Rift answers with the bracket cannon now in hand.",
+    "steps": [
+      {
+        "kind": "command",
+        "expected": "tmux ls",
+        "unlockCommand": "tmux ls",
+        "instruction": "Type tmux ls to inspect the active sessions on the Rift Manifest.",
+        "helix": "List first. Jump second. Orientation always comes before motion."
+      },
+      {
+        "kind": "command",
+        "expected": "tmux attach -t 0",
+        "unlockCommand": "tmux attach -t 0",
+        "instruction": "Type tmux attach -t 0 to return to the surface Rift.",
+        "helix": "Session 0 is still the surface. Reattach with intent."
+      }
+    ]
+  }
+]

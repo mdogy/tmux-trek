@@ -1,0 +1,44 @@
+{
+  "id": "armory",
+  "name": "Kesh Armory",
+  "map": {
+    "width": 960,
+    "height": 720,
+    "tileSize": 48,
+    "columns": 20,
+    "rows": 15
+  },
+  "playerStart": {
+    "column": 3,
+    "row": 7
+  },
+  "npcs": [
+    {
+      "id": "armorer",
+      "name": "Armorer Kesh",
+      "column": 14,
+      "row": 7
+    }
+  ],
+  "items": [
+    {
+      "id": "weapon-stand",
+      "name": "Bracket Cannon",
+      "item": "ARMORY_WEAPON",
+      "column": 10,
+      "row": 7
+    }
+  ],
+  "obstacles": {
+    "tiles": [
+      [6, 5],
+      [6, 6],
+      [6, 8],
+      [6, 9],
+      [12, 5],
+      [12, 6],
+      [12, 8],
+      [12, 9]
+    ]
+  }
+}

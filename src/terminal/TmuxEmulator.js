@@ -4,12 +4,14 @@ import { TerminalRenderer } from "./TerminalRenderer.js";
 export class TmuxEmulator {
   constructor({
     container,
+    inventory,
     onInstructionChange,
     onCommandUnlocked,
     onStatusChange,
     onChallengeComplete,
   }) {
     this.container = container;
+    this.inventory = inventory;
     this.onInstructionChange = onInstructionChange;
     this.onCommandUnlocked = onCommandUnlocked;
     this.onStatusChange = onStatusChange;
@@ -66,7 +68,7 @@ export class TmuxEmulator {
   }
 
   #prompt() {
-    const activeSession = this.engine.getStatus().activeSessionName ?? "surface";
+    const activeSession = this.engine.getStatus().activeSessionName ?? "bridge";
     this.renderer.write(`[${activeSession}] $ `);
   }
 
@@ -126,6 +128,14 @@ export class TmuxEmulator {
       return;
     }
 
+    const blockedMessage = this.#getBlockedCommandMessage(command);
+    if (blockedMessage) {
+      this.renderer.writeln(blockedMessage);
+      this.renderer.writeln("");
+      this.#prompt();
+      return;
+    }
+
     const result = this.engine.execute(command);
     result.output.forEach((line) => this.renderer.writeln(line));
     this.onStatusChange(result.status);
@@ -141,6 +151,17 @@ export class TmuxEmulator {
 
     this.renderer.writeln("");
     this.#prompt();
+  }
+
+  #getBlockedCommandMessage(command) {
+    if (
+      /^tmux new -s \S+$/.test(command) &&
+      !this.inventory?.has("RIFT_CODE")
+    ) {
+      return "HELIX: no Rift Code loaded. Find the glyph before naming a new destination.";
+    }
+
+    return null;
   }
 
   #handleKeybinding(key) {

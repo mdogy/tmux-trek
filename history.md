@@ -2,6 +2,16 @@
 
 ## 2026-06-19
 
+Phase 0 and the first redesign gameplay slice were implemented on the active feature branch:
+
+- Added the new foundation systems: `TmuxEvents`, `MissionSystem`, `InventorySystem`, `TransitionSystem`, and `SaveManager`.
+- Extended `SessionManager` and `TmuxEngine` with event emission plus snapshot export/restore so tmux state survives scene transitions and reloads.
+- Replaced the live one-map mentor chain with a bridge → surface → armory → bridge → surface loop built from `BridgeScene`, `SurfaceScene`, `ArmoryScene`, and shared `GridScene` logic.
+- Added act, challenge, dialogue, and zone JSON for the new vertical slice; updated the session curriculum to teach `tmux new -s armory` and `tmux attach -t 0`.
+- Added browser save/restore of engine, mission, inventory, unlocked commands, and current zone.
+- Rewrote Playwright coverage around the new end-to-end vertical slice, including reload/restore verification.
+- Chose `tmux attach -t 0` as the canonical re-entry command for the surface session and intentionally deferred explicit `tmux kill-session -t name` teaching; overflow is currently cleared through contextual world interaction.
+
 A research-grounded redesign was authored and the documentation set was consolidated for context-free restart:
 
 - Produced three June 19 design artifacts: a current-build descriptive summary (with critical evaluation), a research-grounded redesign plan, and a redesign brief with a phased implementation plan. These were committed as a checkpoint, then consolidated.

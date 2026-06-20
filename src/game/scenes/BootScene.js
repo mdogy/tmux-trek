@@ -6,6 +6,9 @@ export class BootScene extends Phaser.Scene {
   }
 
   create() {
+    const app = this.registry.get("app") ?? window.__tmuxTrekApp;
+    const nextScene =
+      app.currentZoneId === "surface" ? "surface" : app.currentZoneId;
     this.cameras.main.setBackgroundColor("#07131f");
     this.add
       .text(480, 360, "TMUX TREK\nBooting CLULIX training sim...", {
@@ -16,8 +19,13 @@ export class BootScene extends Phaser.Scene {
       })
       .setOrigin(0.5);
 
-    window.setTimeout(() => {
-      this.scene.start("world");
-    }, 600);
+    if (window.__TMUX_TREK_DISABLE_AUTOSAVE) {
+      this.scene.start(nextScene);
+      return;
+    }
+
+    this.time.delayedCall(600, () => {
+      this.scene.start(nextScene);
+    });
   }
 }

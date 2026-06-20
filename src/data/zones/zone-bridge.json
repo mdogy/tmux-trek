@@ -1,0 +1,35 @@
+{
+  "id": "bridge",
+  "name": "CLULIX Bridge",
+  "map": {
+    "width": 960,
+    "height": 720,
+    "tileSize": 48,
+    "columns": 20,
+    "rows": 15
+  },
+  "playerStart": {
+    "column": 4,
+    "row": 7
+  },
+  "terminals": [
+    {
+      "id": "rift-terminal",
+      "name": "Rift Terminal",
+      "column": 8,
+      "row": 7
+    }
+  ],
+  "obstacles": {
+    "tiles": [
+      [2, 5],
+      [2, 6],
+      [2, 8],
+      [2, 9],
+      [16, 5],
+      [16, 6],
+      [16, 8],
+      [16, 9]
+    ]
+  }
+}

@@ -2,7 +2,7 @@
 
 *Authoritative technical reference. Last consolidated June 19, 2026.*
 
-This document describes the technical stack, how the code is structured today, the file map, the supported engine surface, and the target architecture the redesign introduces. For the design intent behind it, read [`game-design.md`](game-design.md). For build order, read [`implementation-plan.md`](implementation-plan.md). For what is actually built and its known gaps, read [`session-handoff.md`](session-handoff.md).
+This document describes the technical stack, how the code is structured today, the file map, the supported engine surface, and the current architecture after the Phase 0 + Phase 1 migration work. For the design intent behind it, read [`game-design.md`](game-design.md). For build order, read [`implementation-plan.md`](implementation-plan.md). For what is actually built and its known gaps, read [`session-handoff.md`](session-handoff.md).
 
 ---
 
@@ -60,38 +60,54 @@ tmux-trek/
 │   ├── styles.css                   Dark sci-fi palette; all layout and HUD
 │   │
 │   ├── engine/                      Pure tmux state — no DOM, no Phaser
+│   │   ├── TmuxEvents.js            Small event emitter for state changes
 │   │   ├── TmuxEngine.js            Parses commands + keybindings; delegates to SessionManager;
-│   │   │                            returns { ok, output, status }
+│   │   │                            exposes snapshots and event subscriptions
 │   │   └── SessionManager.js        Mutable model: sessions (Map), windows, panes;
-│   │                                all operations return structuredClone
+│   │                                emits state events; supports snapshot restore
 │   │
 │   ├── terminal/
 │   │   ├── TerminalRenderer.js      xterm.js wrapper; mount/dispose; FitAddon + WebLinksAddon
-│   │   ├── TmuxEmulator.js          Owns one TmuxEngine across challenges; key events,
-│   │   │                            Ctrl+b prefix arming, step validation, completion callbacks
+│   │   ├── TmuxEmulator.js          Owns one TmuxEngine across scenes; key events,
+│   │   │                            Ctrl+b prefix arming, step validation, inventory-gated commands
 │   │   └── BashEmulator.js          Minimal bash stub — present but not used in the main flow
 │   │
 │   ├── game/
-│   │   ├── TmuxTrekApp.js           Top-level coordinator: owns zone, challenge list, NPC sequence
-│   │   │                            index, GameState, UIController, TmuxEmulator, Phaser.Game
+│   │   ├── TmuxTrekApp.js           Top-level coordinator: owns mission/inventory/transition/save wiring,
+│   │   │                            current zone, UI state, TmuxEmulator, Phaser.Game
 │   │   ├── scenes/
-│   │   │   ├── BootScene.js         ~600ms splash, then WorldScene
-│   │   │   └── WorldScene.js        Tile rendering, generated actor textures, WASD movement,
-│   │   │                            collision, adjacency highlight, E-interaction, debug data attrs
+│   │   │   ├── BootScene.js         Splash, save restore, then current zone scene
+│   │   │   ├── GridScene.js         Shared tile, collision, movement, highlight, and interaction logic
+│   │   │   ├── BridgeScene.js       Act 0 bridge terminal scene
+│   │   │   ├── SurfaceScene.js      Session `0` village scene with overflow blocker
+│   │   │   ├── ArmoryScene.js       Weapon pickup scene
+│   │   │   └── WorldScene.js        Legacy one-map scene; still present, not in active flow
 │   │   └── systems/
 │   │       ├── GameState.js         Observable state store (mission, instruction, codex, sessions, flags, toast)
-│   │       └── UIController.js      Subscribes to GameState; renders HUD, codex, session list,
-│   │                                dialogue cards, toasts
+│   │       ├── UIController.js      Subscribes to GameState; renders HUD, codex, session list,
+│   │       │                        dialogue cards, toasts
+│   │       ├── MissionSystem.js     Objective progression and active mission state
+│   │       ├── InventorySystem.js   Collected item state and gating
+│   │       ├── TransitionSystem.js  Scene routing by tmux/world events
+│   │       └── SaveManager.js       Versioned browser snapshot persistence
 │   │
 │   └── data/
+│       ├── acts/
+│       │   └── act-01-sessions.json               Opening loop act definition
 │       ├── commands/
-│       │   ├── session-curriculum.json          11 command entries for the Codex panel
-│       │   └── zone-01-session-challenges.json   5 challenges, each with ordered steps
+│       │   ├── session-curriculum.json              Codex entries updated for `armory` / `0`
+│       │   └── phase-01-vertical-slice-challenges.json
 │       ├── dialogue/
-│       │   ├── zone-01-zrix.json   zone-01-vrex.json   zone-01-orin.json
-│       │   └── zone-01-redshirt.json   zone-01-sock.json   (2 lines each)
+│       │   ├── bridge-rift-terminal.json
+│       │   ├── bridge-manifest-terminal.json
+│       │   ├── surface-zrix-arrival.json
+│       │   ├── surface-zrix-armory.json
+│       │   ├── armory-armorer.json
+│       │   └── armory-detach.json
 │       └── zones/
-│           └── zone-01.json        Map 960×720 (20×15 tiles), player start, NPC + beacon positions, obstacles
+│           ├── zone-bridge.json
+│           ├── zone-village.json
+│           └── zone-armory.json
 │
 ├── tests/
 │   ├── unit/                       TmuxEngine.test.js, SessionManager.test.js
@@ -152,54 +168,54 @@ Not yet supported (required by the design): window numbering/rename/close (`Ctrl
 
 ## 5. Key Decisions in the Current Build
 
-- **One engine instance persists across all challenges.** `TmuxEmulator` creates one `TmuxEngine` at startup, so a session created in challenge 1 is visible to `tmux ls` in challenge 3. This correctly simulates a session that grows as the player learns.
-- **NPC sequencing is an array index.** `TmuxTrekApp.currentNpcIndex` points to the active NPC; only that NPC accepts interaction. This is a known limitation (see §6).
-- **Dialogue and terminal are mutually exclusive overlays** controlled by `GameState` flags; `WorldScene` suppresses movement while an overlay is open.
+- **One engine instance persists across all scenes.** `TmuxEmulator` creates one `TmuxEngine` at startup, so sessions survive world transitions and reloads via save snapshots.
+- **World progression is now event-driven at the engine boundary.** `TmuxEvents` lets `TmuxTrekApp` and `TransitionSystem` react to `session:created`, `session:attached`, `session:detached`, and `session:listed` without coupling Phaser code into the engine.
+- **Dialogue and terminal are mutually exclusive overlays** controlled by `GameState` flags; `GridScene` suppresses movement while an overlay is open.
 - **Debug state lives on DOM data attributes** (`#game-root[data-player-grid]`, `[data-active-npc]`, `[data-active-challenge]`, etc.). Playwright asserts on these rather than pixel positions, keeping tests resilient to layout changes.
+- **Save/restore is app-level composition.** `SaveManager` persists a versioned snapshot that includes engine state, mission state, inventory state, unlocked commands, and current zone.
 
 ---
 
-## 6. Target Architecture (the redesign)
+## 6. Migration State and Remaining Architecture Work
 
-The redesign keeps the entire stack and the layer separation, and adds five new systems plus multiple scenes. **None of this is built yet** — it is the plan the [`implementation-plan.md`](implementation-plan.md) sequences. It is recorded here so any agent knows the intended shape before writing code.
+The redesign kept the stack and the layer separation, and the first migration tranche is now built. The table below distinguishes what is live from what is still deferred.
 
 ### New engine/system components
 
 | Component | Layer | Responsibility |
 |---|---|---|
-| `TmuxEvents.js` | `src/engine/` | Event emitter firing on every meaningful state change (`session:created`, `session:detached`, `window:created`, `pane:split`, …). The missing link that lets the world react to tmux without coupling the engine to Phaser. |
-| `MissionSystem.js` | `src/game/systems/` | Data-driven progression state machine loaded from `src/data/acts/*.json`. Replaces the hardcoded NPC index. Each mission defines objectives, triggers (`{event, name}`), and rewards. Adding an act = adding JSON. |
-| `InventorySystem.js` | `src/game/systems/` | Tracks collected items (`RIFT_CODE`, `CHANNEL_TOKEN`, `SCANNER_ARRAY`, `ARCHIVE_CRYSTAL`). `TmuxEmulator` checks `has(item)` before allowing gated commands — the VIM Adventures gate. |
-| `TransitionSystem.js` | `src/game/systems/` | Subscribes to `TmuxEvents`; triggers Phaser scene transitions and VFX. `session:created` matching a zone → load that zone; `session:detached` → return to the bridge. |
-| `AudioSystem.js` | `src/game/systems/` | Wraps Phaser audio; ambient, SFX, music layers. |
-| `SaveManager.js` | `src/game/systems/` | Checkpoint save/load to `localStorage`. See [`design/save-manager-strategy.md`](design/save-manager-strategy.md) for the full contract. |
-| `DialogueSystem.js` | `src/game/systems/` | Upgraded multi-line / branching dialogue; an NPC↔player exchange before the terminal opens. |
+| `TmuxEvents.js` | `src/engine/` | Implemented. Event emitter firing on meaningful state changes (`session:created`, `session:detached`, `window:created`, `pane:split`, …). |
+| `MissionSystem.js` | `src/game/systems/` | Implemented. Manages current objective progression and snapshot restore, but scene interaction logic is still partly custom in `TmuxTrekApp.js`. |
+| `InventorySystem.js` | `src/game/systems/` | Implemented. Tracks collectibles and gates `tmux new -s ...` behind `RIFT_CODE`. |
+| `TransitionSystem.js` | `src/game/systems/` | Implemented. Handles scene routing decisions tied to events and explicit world actions. |
+| `AudioSystem.js` | `src/game/systems/` | Not implemented. |
+| `SaveManager.js` | `src/game/systems/` | Implemented. Checkpoint save/load to `localStorage`; restores the active loop correctly. |
+| `DialogueSystem.js` | `src/game/systems/` | Not implemented as a separate system; dialogue remains scene/app-driven. |
 
 ### New scenes
 
-`BridgeScene` (Act 0 opening; `tmux`), `SurfaceScene` (replaces/extends `WorldScene`, scrolling camera, accepts a zone config), `ArmoryScene`, `StormZoneScene` (Act 2/3, fog of war), `ArchiveScene` (Act 4 copy mode).
+`BridgeScene`, `SurfaceScene`, and `ArmoryScene` are implemented. `StormZoneScene` and `ArchiveScene` are still future work. `WorldScene` remains as legacy code from the older one-map prototype.
 
-### Target data layout
+### Current and target data layout
 
 ```
 src/data/
-├── acts/        act-00-bridge.json … act-04-archives.json   (objectives, triggers, rewards)
-├── missions/    one JSON per mission (references zone, dialogue, challenges)
+├── acts/        act-01-sessions.json today; later acts still to add
 ├── commands/    session-curriculum.json + per-act challenge JSONs
-├── dialogue/    per-NPC, per-act files (4+ lines each)
-├── inventory/   items.json (collectibles, tile positions, unlock effects)
-└── zones/       zone-bridge / zone-village (scrollable, maze) / zone-armory / zone-storm / zone-archive
+├── dialogue/    bridge / surface / armory JSON files today
+├── inventory/   (not yet split into separate data files)
+└── zones/       zone-bridge / zone-village / zone-armory live; storm/archive future
 ```
 
 ### Enabling techniques
 
-- **Phaser camera scrolling** — `cameras.main.setBounds(0,0,w,h)` + `startFollow(player)` unlocks maps larger than the viewport (one-line change, essential for Metroidvania layouts).
-- **Tiled tilemaps** — move from hardcoded tile arrays to Tiled-exported JSON consumed by Phaser's tilemap system.
+- **Phaser camera scrolling** — now used by the new scene flow to support maps larger than the viewport.
+- **Tiled tilemaps** — still future work; current zones are still code/data-defined rather than Tiled-authored.
 - **JSON schema validation** at build time (`scripts/validate-content.js`) for act/zone/dialogue files.
 
 ### Migration principles
 
-1. Build and unit-test `TmuxEvents`, `MissionSystem`, `InventorySystem`, `TransitionSystem`, `SaveManager` **before** writing new scene content.
-2. Gate commands by inventory only **after** the core loop is verified fun (avoid adding gating complexity before the loop works).
-3. Thoroughly test `TransitionSystem` before the scene count grows beyond two.
-4. Preserve the engine's purity and the existing Act 2/3 prototypes during migration.
+1. Preserve engine purity: no Phaser, DOM, or xterm dependencies in `src/engine/`.
+2. Keep the event boundary between tmux state and world state explicit through `TmuxEvents`.
+3. Reintroduce later acts on top of the new scene/system structure rather than extending the legacy one-map flow.
+4. Keep testing proportional: unit-test engine/system behavior, use one browser flow for the current slice, then split e2e by act as content grows.

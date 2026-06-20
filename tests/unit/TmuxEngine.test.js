@@ -73,4 +73,16 @@ describe("TmuxEngine", () => {
     expect(closed.status.sessions[0].windows[0].panes).toHaveLength(2);
     expect(closed.status.activePaneId).toBe(1);
   });
+
+  it("restores persisted engine state", () => {
+    engine.execute("tmux");
+    engine.execute("tmux new -s armory");
+    const snapshot = engine.getSnapshot();
+
+    const restored = new TmuxEngine();
+    restored.restore(snapshot);
+
+    expect(restored.getStatus().activeSessionName).toBe("armory");
+    expect(restored.getStatus().sessions).toHaveLength(2);
+  });
 });

@@ -28,34 +28,42 @@ Build TMUX Trek as an educational game where the story makes real tmux actions n
 
 ## What Is Built Today
 
-The game uses **one map (`Landing Crater`)** and a hardcoded linear mentor sequence. All five mentors share that map; there are no separate bridge, armory, or act scenes yet.
+The live implementation now has a **three-scene Act 0 + Act 1 vertical slice** driven by engine events, mission state, inventory state, and browser save/restore.
 
-| Order | Mentor | Lesson | Required actions |
+| Order | Scene | Lesson | Required actions |
 |---|---|---|---|
-| 1 | Zrix | Session creation | `tmux`, `tmux new -s clulix` |
-| 2 | Vrex | Detach | `Ctrl+b d` |
-| 3 | Archivist Orin | Persistence | `tmux ls`, `tmux attach -t clulix` |
-| 4 | Ensign Redshirt | Act 2 window rescue | `Ctrl+b c`, `Ctrl+b w`, `Ctrl+b p` |
-| 5 | Commander Sock | Act 3 pane scanner | `Ctrl+b %`, `Ctrl+b "`, `Ctrl+b x` |
-| 6 | CLULIX beacon | Completion | contextual `E` interaction |
+| 1 | Bridge | Open the Rift terminal | `tmux` |
+| 2 | Surface | Unlock named session creation | collect `RIFT_CODE`, `tmux new -s armory` |
+| 3 | Armory | Detach back to the bridge | collect weapon, `Ctrl+b d` |
+| 4 | Bridge | Inspect and re-enter the manifest | `tmux ls`, `tmux attach -t 0` |
+| 5 | Surface | Clear the overflow blocker | contextual `E` interaction with the weapon equipped |
 
-Movement is WASD/arrows. NPCs, obstacles, and the beacon block movement. Only the tile immediately left or right of a character/place highlights and allows `E`. Inactive characters give a "nothing to say yet" hint.
+The current gameplay loop is:
 
-The pure engine supports more than is taught: session create/attach/detach/list/kill, window create/list/next/previous, pane split, and active-pane close. Full surface is in [`architecture.md`](architecture.md) §4.
+1. Start on the CLULIX bridge.
+2. Use `tmux` to descend into session `0` on the surface.
+3. Pick up the Rift Code so `tmux new -s NAME` is accepted.
+4. Create and enter the `armory` session.
+5. Pick up the weapon and detach with `Ctrl+b d`.
+6. Use `tmux ls` on the bridge to inspect the Rift Manifest.
+7. Reattach with `tmux attach -t 0`.
+8. Clear the overflow blocker and finish the slice.
 
-Character art is drawn at runtime with Phaser graphics (no sprite sheets). Terrain uses `public/assets/tiles/z-shell-terrain.png`. There is **no audio, no VFX, no save system, no fog of war, no companion following, and no animated atlas.**
+Movement is still WASD/arrows. NPCs, terminals, and blockers use the existing adjacency/highlight interaction model. The shared engine still supports session create/attach/detach/list/kill, window create/list/next/previous, pane split, and active-pane close, but the current taught flow only uses the session subset plus detach.
+
+The architecture foundation from the redesign is now partially live: `TmuxEvents`, `MissionSystem`, `InventorySystem`, `TransitionSystem`, and `SaveManager` are implemented; snapshots restore engine, mission, inventory, unlocked commands, and current zone from `localStorage`.
 
 ---
 
 ## Verification Baseline
 
-Last verified locally and in PR #12 CI:
+Last verified locally on the Phase 0 + Phase 1 feature branch:
 
 ```bash
 npm run lint       # pass
-npm run test       # 14 unit tests pass
+npm run test       # 25 unit tests pass
 npm run bdd        # 2 scenarios / 17 steps pass
-npm run test:e2e   # 11 Playwright tests pass
+npm run test:e2e   # 1 Playwright end-to-end vertical-slice flow passes
 npm run build      # pass
 ```
 
@@ -67,25 +75,24 @@ Playwright may need `npx playwright install chromium` on a fresh machine. `npm r
 
 ## Critical Evaluation (what's wrong now)
 
-**What works:** the core loop is functionally correct. The tmux engine is behaviorally accurate, session state persists across challenges, prefix-key handling works, and the JSON-data architecture is a sound foundation.
+**What works:** the new story loop is functionally complete end to end. The tmux engine is behaviorally accurate, session state persists across scene transitions and reloads, prefix-key handling works, and the new systems are sufficient to support a data-backed multi-scene structure.
 
 **Structural problems:**
 
-- **The central metaphor is not implemented.** Sessions should be destinations; all mentors are on one flat map, so tmux-as-travel is invisible. This is the #1 thing the redesign fixes.
-- **Progression is hardcoded.** `TmuxTrekApp.js` imports all five dialogue files by name and uses a numeric NPC index. New content needs code changes — should become data-driven (`MissionSystem`).
-- **No inventory/collectible system**, so the VIM Adventures key-as-collectible pattern can't exist; commands appear from nowhere.
-- **The HUD shows sessions but not windows or panes.** Creating a window or splitting a pane produces no visual confirmation.
+- **The session-as-travel metaphor is now visible, but only for the opening slice.** Bridge, surface, and armory work; later acts are still on the older structure and need to be reintroduced on top of the new scene model.
+- **Progression is less hardcoded than before, but not fully data-driven.** `MissionSystem` and zone data exist, but scene interactions and some routing still live directly in `TmuxTrekApp.js`.
+- **The HUD still shows sessions only.** Window and pane state exist in the engine but are not rendered, so later tmux commands still lack strong world feedback.
+- **Overflow resolution changed shape.** The design issue described `tmux kill-session -t ...`, but the implemented slice resolves the blocker through a world interaction after the weapon is collected. That keeps the loop coherent, but it means kill-session is still untaught.
 
 **Gameplay/UX problems:**
 
-- Open-rectangle map with scattered icons creates zero exploration tension; no camera scrolling.
-- Movement is WASD; the design calls for vim `h/j/k/l`.
-- Interaction adjacency (exact same row, one column) is brittle and undiscoverable.
-- Dialogue is two lines, then straight to the terminal — no story setup before the command is requested.
-- HELIX error feedback is generic ("not yet"); it should name the specific error.
-- No save/resume; no restart-challenge mechanism.
+- Movement is still WASD; the design still calls for vim `h/j/k/l`.
+- Interaction adjacency is still narrow and brittle.
+- Dialogue remains compact and scene-specific rather than a richer shared system.
+- HELIX error feedback is still generic ("not yet") rather than specific to the mistake type.
+- Restart-challenge UX does not exist yet.
 
-**Asset problems:** no animation of any kind; no audio (game feels inert); no Rift VFX (the central metaphor is invisible).
+**Asset problems:** no animation of any kind; no audio (game feels inert); no Rift VFX beyond scene changes.
 
 Full detail is preserved in [`archive/descriptive-summary-05-19.md`](archive/descriptive-summary-05-19.md).
 
@@ -93,21 +100,24 @@ Full detail is preserved in [`archive/descriptive-summary-05-19.md`](archive/des
 
 ## Known Gaps (concrete)
 
-- All five mentors occupy one map; no bridge/armory/separate act scenes.
-- Window and pane changes are engine/terminal-only; the HUD renders sessions only.
-- `tmux kill-session -t name` and `Ctrl+b n` work in the engine but are not taught.
-- Later window/pane/copy-mode commands from the design are unsupported.
-- The Playwright acceptance path is keyboard-only but long and coupled to map coordinates.
+- The opening bridge/surface/armory loop is live, but Acts 2 and 3 are not yet migrated into the new scene architecture.
+- Window and pane changes are still engine/terminal-only; the HUD renders sessions only.
+- `tmux kill-session -t name` and `Ctrl+b n` work in the engine but are not taught in the new slice.
+- Later window/pane/copy-mode commands from the design are still unsupported or not wired into world progression.
+- The Playwright acceptance path is now one long keyboard-only vertical-slice test rather than per-act coverage.
 - `npm run format:check` is not a clean repository-wide gate.
 - The Gemini asset generator is experimental and writes to root `assets/`, not runtime `public/assets/`.
+- `WorldScene.js` is still in the repo as legacy code but is no longer part of the active scene flow.
 
 ---
 
 ## Immediate Next Task
 
-Implement **Phase 0 + Phase 1** from [`implementation-plan.md`](implementation-plan.md): build the foundation systems (`TmuxEvents`, `MissionSystem`, `InventorySystem`, `TransitionSystem`, `SaveManager`), then the Act 0 + Act 1 vertical slice (CLULIX bridge → `tmux` → village → Rift Code → `tmux new -s armory` → weapon → `Ctrl+b d` → `tmux ls` → `tmux attach -t village` → defeat the overflow buffer). This corresponds to GitHub issues #5 and #2.
+Phase 0 and the core of Phase 1 are now implemented. The immediate next task is to finish the highest-value follow-through from [`implementation-plan.md`](implementation-plan.md):
 
-This replaces abstract mentor drills with story consequences while preserving the Act 2/3 prototypes for later expansion.
+- Phase 2 UX fixes: vim `h/j/k/l`, broader interaction radius, stronger HELIX error specificity, restart-challenge support, richer HUD hierarchy.
+- Reintroduce Act 2 and Act 3 on top of the new bridge/surface/armory architecture instead of the legacy one-map mentor chain.
+- Decide whether the overflow lesson should stay as a world interaction or be revised to explicitly teach `tmux kill-session -t name`.
 
 ---
 

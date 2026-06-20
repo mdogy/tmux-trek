@@ -22,7 +22,7 @@ export class UIController {
     this.instructionText.textContent = snapshot.instructionText;
     this.activeSession.textContent = snapshot.activeSessionName
       ? `Active: ${snapshot.activeSessionName}`
-      : "Active: surface";
+      : "Active: bridge";
 
     this.codexList.replaceChildren(
       ...snapshot.commands.map((command) => {

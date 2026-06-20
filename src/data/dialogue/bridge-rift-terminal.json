@@ -1,0 +1,10 @@
+[
+  {
+    "speaker": "HELIX",
+    "text": "The shuttle bay is sealed. Z-shell only responds to the Zshellian Rift protocol."
+  },
+  {
+    "speaker": "HELIX",
+    "text": "The bridge terminal is the only exit. Open tmux and the ship will descend through session 0."
+  }
+]
