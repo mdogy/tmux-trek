@@ -2,7 +2,7 @@
 
 *Written June 19, 2026. Answers the gap in the redesign documents, which specify that `SaveManager.js` should exist but do not define the storage mechanism or serialization contract.*
 
-> **Status: implemented.** `src/game/systems/SaveManager.js` is live with `SAVE_VERSION = 2`. The save snapshot covers engine state, `MissionSystem`, `InventorySystem`, unlocked commands, and current zone — the "Future layers" section below is now complete. The "Implementation Checklist" at the end is fully checked. This document is retained as design rationale; for current truth see [`../session-handoff.md`](../session-handoff.md).
+> **Status: implemented (single-slot); multi-slot planned.** `src/game/systems/SaveManager.js` is live with `SAVE_VERSION = 2`, one `localStorage` slot covering engine state, `MissionSystem`, `InventorySystem`, unlocked commands, and current zone — the "Future layers" section below is complete and the "Implementation Checklist" is fully checked. The [Planned: Multi-Slot Saves (Phase 4)](#planned-multi-slot-saves-phase-4) section below specifies the next refactor to named, multiple saves. For current truth see [`../session-handoff.md`](../session-handoff.md).
 
 ---
 
@@ -261,6 +261,42 @@ The save format should include a version number from day one. When the game's da
 The current `SAVE_VERSION = 1` means: "this save format is valid while the game has one zone, five NPCs, and no inventory system." When `MissionSystem` and `InventorySystem` are added, bump to `SAVE_VERSION = 2` and add migration logic or simply discard v1 saves.
 
 Discarding a stale save is always safe — the player starts fresh. The alternative (trying to migrate mismatched state) is fragile. Keep migration logic only if acts have shipped to real users who would lose real progress.
+
+---
+
+## Planned: Multi-Slot Saves (Phase 4)
+
+The current implementation is a **single** slot under one key (`tmux-trek-save`, `SAVE_VERSION = 2`). [`../implementation-plan.md`](../implementation-plan.md) Phase 4 refactors this to **named, multiple saves** so a learner can keep separate runs (personal, classroom, demo). This refactor is deliberately scheduled *before* scoring, progress, and review-result state (Phase 5) so the persistence shape is settled once rather than migrated twice.
+
+### Storage layout
+
+Keep `localStorage`; change the key layout from one blob to an index plus per-slot blobs:
+
+```
+tmux-trek:saves        → { "version": 3, "activeId": "abc123", "slots": [ { "id": "abc123", "name": "Classroom run", "updatedAt": 1718841600000 } ] }
+tmux-trek:save:abc123  → { ...the existing snapshot (engine, mission, inventory, unlocked, zone) plus score/progress }
+```
+
+The index holds only metadata (id, display name, timestamp) so the menu can render the slot list without parsing every blob. The per-slot key holds the same snapshot shape already in use, extended with the Phase 5 score/progress fields.
+
+### Operations the menu needs
+
+| Operation | Effect |
+|---|---|
+| New Game | create a slot (uuid + name), write an empty snapshot, set `activeId` |
+| Continue | load the `activeId` slot |
+| Select | switch `activeId` to a chosen slot and load it |
+| Rename | update `name` in the index entry only |
+| Delete | remove `tmux-trek:save:<id>` and its index entry; clear `activeId` if it pointed there |
+| Clear All | remove every per-slot key and reset the index |
+
+### Migration to v3
+
+On first load after the bump, if a legacy `tmux-trek-save` (v2) key exists, wrap it as a slot named `default`, move it to `tmux-trek:save:<newid>`, set it active, and remove the old key. A v2 save that fails to parse is discarded (starting fresh is always safe, per *Version Handling* above). Bump `SAVE_VERSION` → 3.
+
+### What stays the same
+
+The snapshot *contents*, the "save between challenges, not inside them" rule, the `beforeunload` defensive save, and the no-timer-saves rule all carry over unchanged. Only the keying and the menu surface are new.
 
 ---
 

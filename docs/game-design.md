@@ -204,6 +204,12 @@ These are non-negotiable UX commitments derived from educational-game research (
 - **Wrong-command feedback is specific.** "Session names are case-sensitive — you typed CLULIX but the session is named clulix," not a generic "not yet."
 - **The HUD shows the full tmux hierarchy** (sessions, windows, panes) in real time, so the player can always confirm what their command changed.
 - **The game can be paused and resumed** without losing progress (see [`design/save-manager-strategy.md`](design/save-manager-strategy.md)).
+- **Multiple named saves are first-class.** A learner may keep a personal run, a classroom run, and a "show a friend" run; the front-of-game menu manages them (new / continue / rename / delete / clear all). Resuming is travel, not setup.
+- **Assessment is part of the fiction, never a quiz interruption.** Two distinct surfaces, both optional-feeling:
+  - *Flash cards* — an optional self-check the player can open at any time to review every command unlocked so far (story prompt on the front, command + reason on the back). No score, no gate; pure recall practice.
+  - *Review gates* — a brief in-fiction "readiness check" (HELIX certifying the crew) at an act boundary, passing at 70%, with retry and review on failure. The gate exists to guarantee the muscle memory is real before the next concept layers on — consistent with "one concept before the next."
+- **Progress and competence are visible.** A level-complete beat and a progress indicator mark each act's close, and a light score rewards correct, confident, hint-free execution — feedback that reinforces mastery without turning the game into a leaderboard grind.
+- **The keyboard is the instrument.** The skill being taught lives in physical keys and chords (`Ctrl+b` then a key). Execution requires a real keyboard; this is a feature, not a limitation. On touch-only devices the game offers honest review (flash cards, multiple-choice, codex), never a simulated-keyboard substitute that would teach tapping instead of muscle memory. See [`design/mobile-web-strategy.md`](design/mobile-web-strategy.md).
 - **Every zone has at least one visible-but-locked area** that rewards a return visit.
 
 ---
@@ -222,3 +228,9 @@ The design is realized when all of the following are true:
 - [ ] The game can be paused and resumed without losing progress.
 - [ ] Movement keys are `h/j/k/l` with WASD as secondary.
 - [ ] The HUD shows the full tmux hierarchy in real time.
+- [ ] The player can keep multiple named saves and switch between them from the menu.
+- [ ] Flash-card review covers exactly the commands unlocked so far and never blocks play.
+- [ ] An act boundary can require a 70% review pass before the next concept unlocks, with retry on failure.
+- [ ] Each act closes with a visible level-complete beat, and progress survives reload.
+
+> **Design scope note (June 20, 2026):** the save-menu, flash cards, review gates, scoring, progress/level-complete, splash, and optional auth are scheduled in [`implementation-plan.md`](implementation-plan.md) Phases 4–5 (frameworks) with per-act content wired through Phases 6–9. The fixed-password auth is a *soft* gate for a public link, not a security control.

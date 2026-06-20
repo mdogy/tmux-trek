@@ -1,5 +1,63 @@
 # Project History
 
+## 2026-06-20 — Roadmap expansion (planning only, no code)
+
+Scheduled eight additional features and decided their phase placement by
+implementation impact and code churn. No implementation — documentation only.
+
+**Two new phases inserted before the content acts** (the churn-reducing
+decision): data-model and transition-flow changes must precede the acts that
+build on them, so the persistence shape and progression hooks are settled once
+rather than migrated/retrofitted per act.
+
+- **Phase 4 — Game Shell, Auth & Save Slots:** splash/title scene, optional
+  fixed-password soft-gate (documented as *not* security), and a multi-slot
+  `SaveManager` refactor (new / continue / rename / delete / clear all, v3
+  migration). Placed first because every later persisted feature writes into the
+  save blob.
+- **Phase 5 — Progression & Assessment Systems:** `ScoreSystem`, progress
+  indicator + level-complete, a 70% multiple-choice review gate wired into
+  `TransitionSystem`, and optional flash cards. Frameworks built here; per-act
+  content (question banks, score events, decks, progress nodes) wired through the
+  acts.
+
+**Renumbering:** former Acts 2–5 (Phases 4–7) became Phases 6–9. The first live
+review gate is the Act 1 → Act 2 boundary in Phase 6.
+
+**Deployment (#8):** treated as a recurring per-phase Definition-of-Done plus a
+near-term milestone to merge the redesign branch so Pages stops showing the old
+one-map prototype.
+
+**Docs updated:** `implementation-plan.md` (new phases, Feature → Phase Map,
+Deployment & Release section, risks, issues), `game-design.md` (assessment and
+save-menu design principles + acceptance criteria), `architecture.md` (planned
+`ScoreSystem` / `ReviewSystem` / multi-slot `SaveManager` / `TitleScene` /
+`src/data/reviews/`), `design/save-manager-strategy.md` (multi-slot Phase 4
+design), and `session-handoff.md` (roadmap note + known gaps).
+
+**Mobile-web evaluation:** added [`design/mobile-web-strategy.md`](docs/design/mobile-web-strategy.md).
+Conclusion: optional mobile support is viable but must be **tiered on input
+capability, not device class** — a touch soft keyboard cannot produce `Ctrl+b`
+chords, so the execution curriculum (Acts 2–4) needs a real keyboard. Tier 1:
+responsive layout → any keyboard-equipped device plays the full game. Tier 2:
+touch-only "Review Mode" free-riding on the Phase 5 assessment systems. Tier 3
+(on-screen control bar): deferred, as it teaches tapping not muscle memory.
+Churn note: build Phase 4–5 UIs responsive from day one rather than retrofit.
+Added a "keyboard is the instrument" design principle, an implementation-plan
+mobile section, and risk rows; flagged in `session-handoff.md`.
+
+Tiered proposal approved. Refined so early tiers anticipate later ones without
+churn: a Forward-Compatibility section (§5) defines five seams — one engine
+input-intent path, a shared capability service, capability-based (not
+hardware-based) gating, a reserved safe-area band for a future key bar, and a
+single keybinding registry. Tier 3 is now **research-gated**: a note on how
+terminal apps (Termius, Blink, a-Shell, Prompt) solve mobile input — accessory
+key bars + sticky modifiers — is a prerequisite, since the input mechanism is a
+solved problem to copy rather than reinvent (the unsolved part is pedagogical,
+not technical).
+
+---
+
 ## 2026-06-20 — Phase 2 player experience, coverage, and refactoring
 
 **Phase 2 — Player Experience Fixes (all 6 items complete):**

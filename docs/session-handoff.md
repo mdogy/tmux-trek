@@ -107,6 +107,10 @@ Full detail is preserved in [`archive/descriptive-summary-05-19.md`](archive/des
 - `npm run format:check` is not a clean repository-wide gate.
 - The Gemini asset generator is experimental and writes to root `assets/`, not runtime `public/assets/`.
 - `WorldScene.js` is still in the repo as legacy code but is no longer part of the active scene flow.
+- No front-of-game shell yet: no splash/title scene, no main menu, single-slot saves only (no named saves / new-game / delete / rename / clear). Scheduled for Phase 4.
+- No scoring, progress indicator, level-complete screen, flash cards, or review gates yet. Scheduled for Phase 5.
+- The live Pages build on `main` still shows the old one-map prototype; the redesign exists only on this feature branch until merged.
+- The UI is desktop-fixed and not responsive. Mobile-web is evaluated in [`design/mobile-web-strategy.md`](design/mobile-web-strategy.md): supportable in tiers (full game only with a keyboard, since touch soft keyboards have no `Ctrl+b`; touch-only gets a review companion). The decision is to build Phases 4–5 UIs responsive from the start rather than retrofit.
 
 ---
 
@@ -121,7 +125,9 @@ After merge, the next body of work is **Phase 3 — Audio & VFX Minimum** from [
 3. Particle glow animation on the Rift Code glyph.
 4. Ship-interior ambient layer on `BridgeScene`.
 
-After Phase 3, the loop should feel alive enough to evaluate the overflow/kill-session gap and plan Act 2 (windows).
+**Roadmap note (expanded June 20, 2026):** eight further features are now scheduled. Two new phases land *before* the content acts because they reshape data models the acts depend on: **Phase 4 — Game Shell, Auth & Save Slots** (splash, fixed-password soft-gate, multi-slot saves) and **Phase 5 — Progression & Assessment Systems** (scoring, progress/level-complete, 70% multiple-choice gate, optional flash cards). The former Acts 2–5 renumber to Phases 6–9, and each wires its own per-act score events, review question bank, flashcards, and progress node. GitHub Pages deployment is a recurring per-phase step plus a near-term "merge the redesign to replace the prototype" milestone. See the implementation plan's [Feature → Phase Map](implementation-plan.md#feature--phase-map).
+
+After Phase 3, the loop should feel alive enough to evaluate the overflow/kill-session gap; Phases 4–5 then establish the shell and progression frameworks before Act 2 (Phase 6).
 
 ---
 

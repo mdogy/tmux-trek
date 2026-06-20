@@ -189,13 +189,16 @@ The redesign kept the stack and the layer separation, and the first migration tr
 | `MissionSystem.js` | `src/game/systems/` | Implemented. Manages current objective progression and snapshot restore, but scene interaction logic is still partly custom in `TmuxTrekApp.js`. |
 | `InventorySystem.js` | `src/game/systems/` | Implemented. Tracks collectibles and gates `tmux new -s ...` behind `RIFT_CODE`. |
 | `TransitionSystem.js` | `src/game/systems/` | Implemented. Handles scene routing decisions tied to events and explicit world actions. |
-| `AudioSystem.js` | `src/game/systems/` | Not implemented. |
-| `SaveManager.js` | `src/game/systems/` | Implemented. Checkpoint save/load to `localStorage`; restores the active loop correctly. |
+| `AudioSystem.js` | `src/game/systems/` | Not implemented (Phase 3). |
+| `SaveManager.js` | `src/game/systems/` | Implemented as a single `localStorage` slot (`SAVE_VERSION = 2`). **Planned (Phase 4):** refactor to multi-slot — slot index + per-slot blobs, with new / continue / rename / delete / clear-all and a v3 migration. See [`design/save-manager-strategy.md`](design/save-manager-strategy.md). |
 | `DialogueSystem.js` | `src/game/systems/` | Not implemented as a separate system; dialogue remains scene/app-driven. |
+| `ScoreSystem.js` | `src/game/systems/` | **Planned (Phase 5).** Points model fed by mission/challenge/quiz events; aggregates per act and total; persists in the active save slot. |
+| `ReviewSystem.js` | `src/game/systems/` | **Planned (Phase 5).** Two surfaces: an optional flash-card self-assessment over unlocked commands, and a blocking multiple-choice gate (70% pass) wired into `TransitionSystem` at act boundaries. Question banks live in `src/data/reviews/`. |
+| Progress / level-complete | `src/game/systems/` + HUD | **Planned (Phase 5).** A `mission:act-completed` event drives a HUD progress widget and a level-complete overlay (score, time, next up). |
 
 ### New scenes
 
-`BridgeScene`, `SurfaceScene`, and `ArmoryScene` are implemented. `StormZoneScene` and `ArchiveScene` are still future work. `WorldScene` remains as legacy code from the older one-map prototype.
+`BridgeScene`, `SurfaceScene`, and `ArmoryScene` are implemented. A `TitleScene` (splash + main menu + optional auth gate) is **planned (Phase 4)**, either as a new scene or an extended `BootScene`. `StormZoneScene` and `ArchiveScene` are still future content work. `WorldScene` remains as legacy code from the older one-map prototype.
 
 ### Current and target data layout
 
@@ -205,6 +208,7 @@ src/data/
 ├── commands/    session-curriculum.json + per-act challenge JSONs
 ├── dialogue/    bridge / surface / armory JSON files today
 ├── inventory/   (not yet split into separate data files)
+├── reviews/     (planned, Phase 5) per-act multiple-choice question banks
 └── zones/       zone-bridge / zone-village / zone-armory live; storm/archive future
 ```
 

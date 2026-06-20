@@ -21,6 +21,8 @@ GitHub Issues remain the canonical *per-task* surface; this document is the cano
 
 The redesign's premise: the current build is a working *loop prototype* but does not yet implement the central metaphor (sessions as travel between places). The phases below rebuild the relationship between world and command, then extend act by act.
 
+> **Roadmap expanded June 20, 2026** to schedule eight additional features (save slots, flash-card review, multiple-choice gating, auth, splash, progress/level-complete, scoring, Pages deployment). Two new phases were inserted **before the content acts** — Phase 4 (Game Shell & Save Slots) and Phase 5 (Progression & Assessment Systems) — because they reshape the save model and the act-transition flow that every later act depends on. Doing them first avoids re-migrating saves and retrofitting score/gate hooks into already-built acts. The former Acts 2–5 (Phases 4–7) renumber to Phases 6–9. See the [Feature → Phase Map](#feature--phase-map) for the full placement table.
+
 ---
 
 ## Guiding Strategy
@@ -29,6 +31,7 @@ The redesign's premise: the current build is a working *loop prototype* but does
 2. **One fun loop before breadth.** Get Act 0 + Act 1 (bridge → village → armory → return → defeat) genuinely fun before building Acts 2–5.
 3. **Fix UX before adding acts.** The six highest-impact usability fixes come right after the first new loop.
 4. **Reuse, don't duplicate.** Every command should be used in multiple acts (see [`game-design.md`](game-design.md) §2).
+5. **Settle data models before they accrete content.** Save slots, the score model, and the gate hook all land (Phases 4–5) *before* Acts 2–5, so each act plugs into a stable persistence and progression contract instead of forcing a migration or a cross-act retrofit.
 
 ---
 
@@ -89,22 +92,61 @@ The game must no longer feel inert.
 - Rift transition VFX: a ~500ms portal-flash tween on `session:created` before the destination scene loads.
 - Particle glow on the Rift Code glyph (draws the player toward it).
 - Ship-interior ambient layer on `BridgeScene`.
+- Title/menu audio stem (consumed by the Phase 4 splash) and a success chime reused by the Phase 5 score and level-complete screens.
 
 ---
 
-## Phase 4 — Act 2: Windows
+## Phase 4 — Game Shell, Auth & Save Slots *(new)*
 
-Only begin after Phase 1 is stable and fun.
+**Why here:** the multi-slot save model is the single biggest churn reducer in the new work. Scoring (Phase 5), progress, and quiz results all persist into the save blob; if those land on the current single-slot model and the slots refactor comes afterward, that is two `SAVE_VERSION` migrations instead of one. Settle the persistence shape *before* anything new writes to it. The splash, auth gate, and save-slot menu form one cohesive "front door" deliverable, so they ship together. Extends [`design/save-manager-strategy.md`](design/save-manager-strategy.md).
+
+**Features delivered:** #5 splash screen, #4 auth, #1 named save management.
+
+- **Splash / title scene** (new `TitleScene`, or an extended `BootScene`): logo, tagline, and a main menu — New Game, Continue, Saves, Review (flash cards, wired in Phase 5), Settings. Title art + the Phase 3 title music stem.
+- **Simple auth gate** (#4): a fixed-password prompt in front of the menu, unlock flag held in `sessionStorage`, behind a build flag so it can be disabled. **Security caveat:** this is client-side only — the password ships in the bundle and anyone can read it. It is a soft gate for a public Pages URL (e.g., a classroom link), *not* a security control. Do not use it to protect anything sensitive.
+- **Multi-slot SaveManager** (#1): refactor from the single `tmux-trek-save` key to a slot index plus per-slot blobs. Operations: New Game (create a named slot and set it active), Continue (load the active slot), list/select, Rename, Delete, Clear All. Bump `SAVE_VERSION` → 3 with a migration that wraps an existing v2 single save as a `default` slot (or discards it with notice).
+- **Save-slot menu UI** in the shell, plus an in-game "Save & Quit to Menu" path.
+
+**Acceptance for Phase 4:**
+- A cold load shows the title screen, optional password, then the menu.
+- The player can create multiple named saves, continue the active one, rename one, delete one, and clear all.
+- An existing v2 single-slot save migrates to a named `default` slot (or is safely discarded) on first load after the bump.
+
+---
+
+## Phase 5 — Progression & Assessment Systems *(new)*
+
+**Why here:** scoring, the progress indicator, the multiple-choice gate, and flash cards are cross-cutting systems that *wrap* content. Build their frameworks before the content acts so each new act plugs in its own data (score events, question bank, flashcard entries, progress node) as it ships — rather than forcing a retrofit edit across already-built acts. The gate in particular sits inside the act-transition flow; if Acts 2–5 are built first with direct transitions, adding gates later means editing every transition.
+
+**Features delivered:** #7 scoring, #6 progress / level-complete, #3 multiple-choice gate, #2 flash cards. Per-act *content* for each is wired in Phases 6–9 (see those phases).
+
+- **`ScoreSystem`** (#7): a points model emitted from existing events — objective completed, challenge passed first-try vs. after retries, hints used, quiz score. Aggregate per act and total; persist in the active save slot; render in the HUD and the level-complete screen. Define the event hooks now so each act emits them as it ships.
+- **Progress indicator + level-complete** (#6): standardize a `mission:act-completed` event; add a HUD progress widget (acts/objectives done) and a level-complete overlay (score, time, next up). Persist progress per slot.
+- **Multiple-choice review gate** (#3): a quiz mechanism with per-act question banks (`src/data/reviews/*.json`), a **70% pass threshold**, wired into `TransitionSystem` / `MissionSystem` so the next act stays locked until the player passes; allow retry and "review then retry." Persist pass state and score per slot. The framework lands here; the **first live gate is the Act 1 → Act 2 boundary, deployed in Phase 6**.
+- **Flash cards / `ReviewSystem`** (#2): an *optional* self-assessment overlay listing every command unlocked up to the player's current point (reads the curriculum/codex filtered by `MissionSystem` unlocked commands). Front = story prompt, back = command + explanation; "got it / review again" self-rating, no pass gate. Reachable from the main menu and a HUD button.
+
+**Acceptance for Phase 5:**
+- Completing an objective changes a visible score; the level-complete screen shows score and time.
+- The progress indicator reflects completed acts/objectives and survives reload.
+- A blocking multiple-choice review can be configured at an act boundary; <70% blocks and offers retry, ≥70% unlocks.
+- Flash cards list exactly the commands unlocked so far and can be reviewed at any time.
+
+---
+
+## Phase 6 — Act 2: Windows
+
+Only begin after Phase 1 is stable and fun, and the Phase 4–5 frameworks are in place.
 
 - `zone-storm.json`: large scrollable map, fog-of-war areas, a disconnected rescue corridor.
 - Gate `Ctrl+b c` behind `CHANNEL_TOKEN`; place the token in the storm debris.
 - Rescue narrative: `Ctrl+b c` opens a rescue view, `Ctrl+b w` lists, `Ctrl+b n/p` navigates, `Ctrl+b ,` renames "rescue"; the bridge window must remain open or the mission fails.
 - HUD window panel updates in real time.
 - Gherkin: `features/windows/window-navigation.feature`.
+- **Per-act integration (Phases 4–5 frameworks):** ship the Act 1 → Act 2 review gate question bank (`src/data/reviews/act-01.json`, the first *live* 70% gate); emit score events for window objectives; add Act 2 flashcard entries and a progress node.
 
 ---
 
-## Phase 5 — Act 3: Panes
+## Phase 7 — Act 3: Panes
 
 Only begin after Act 2 is complete.
 
@@ -113,25 +155,69 @@ Only begin after Act 2 is complete.
 - Pressure-plate cooperative puzzle: alternate pane focus with `Ctrl+b` arrows. **Introduce a solo pane exercise first** (same character, two corridors) before the cooperative version.
 - `Ctrl+b z` precision-disarm puzzle; `Ctrl+b x` closes a corrupted pane without losing the others.
 - Gherkin: `features/panes/pane-splitting.feature`.
+- **Per-act integration:** Act 2 → Act 3 review gate bank; pane-objective score events; Act 3 flashcards and progress node.
 
 ---
 
-## Phase 6 — Act 4: Copy Mode
+## Phase 8 — Act 4: Copy Mode
 
 - `ArchiveScene.js`: scrollable archive terminal; vault sealed until `ARCHIVE_CRYSTAL`.
 - Gate `Ctrl+b [` behind `ARCHIVE_CRYSTAL`. **Implement copy mode as read-only scroll first**, then add selection and search in a second pass — fidelity to the *workflow* matters more than perfect emulation.
 - Transmission log ≥ 150 lines with target coordinates near the middle, forcing `/` search.
 - Gherkin: `features/copy-mode/archive-recovery.feature`.
+- **Per-act integration:** Act 3 → Act 4 review gate bank; copy-mode score events; Act 4 flashcards and progress node.
 
 ---
 
-## Phase 7 — Act 5 & Final Polish
+## Phase 9 — Act 5 & Final Polish
 
 - Resolution act combining all commands in sequence.
 - Full sprite/animation pass using the prompt catalog (see [`assets/image-generation-prompts.md`](assets/image-generation-prompts.md)).
 - Music stems per zone.
 - Refactor Playwright tests to be data-attribute driven (not coordinate-coupled); one spec per act.
 - `scripts/validate-content.js` to validate all content JSON at build time.
+- **Per-act integration:** Act 4 → Act 5 review gate bank; final cumulative score and a completion summary on the level-complete screen; full flashcard deck reachable from the menu.
+
+---
+
+## Mobile-Web Support (cross-cutting decision)
+
+Evaluated June 20, 2026 — see [`design/mobile-web-strategy.md`](design/mobile-web-strategy.md). Optional mobile-web is worth supporting, but the game's core skill (tmux keyboard chords like `Ctrl+b d`) cannot be produced on a touch soft keyboard, so support is **tiered on input capability, not device class**:
+
+- **Tier 1 — keyboard-equipped devices play the full game.** Make the UI responsive; this is mostly CSS + Phaser `Scale` config + a `visualViewport` pass.
+- **Tier 2 — touch-only devices get a "Review Mode"** built from the Phase 5 assessment systems (flash cards, multiple-choice, codex, progress). Honest framing: review, not execution. Largely free-rides on Phase 5.
+- **Tier 3 — on-screen touch control bar** (D-pad + `Ctrl+b` button): optional, **research-gated**, with a hard caveat that it teaches tapping, not muscle memory. Terminal apps (Termius, Blink, a-Shell, Prompt) already solve the missing-`Ctrl` problem with accessory key bars + sticky modifiers; a short research note on their patterns is a prerequisite before any Tier-3 build. Deferred/declined until then.
+
+**Churn argument (decide before Phase 4):** like save slots and the gate hook, the cheap moment is *before* the UI exists. Build the Phase 4 shell (splash, menu, save slots) and Phase 5 assessment UIs **responsive from day one**, and add a capability check that routes touch-only sessions to Review Mode.
+
+**Anticipate Tier 3 while building Tiers 1–2** (so it stays additive, not a rewrite): route all input through one engine intent path (`execute` / `handleKeybinding`); make capability a shared service; gate `Ctrl+b` content on *can-send-prefix*, not *has-keyboard*; reserve a bottom safe-area band for a future key bar; and drive the codex/flash cards from a single keybinding registry the key bar can reuse. Full detail in [`design/mobile-web-strategy.md`](design/mobile-web-strategy.md) §5. A focused Tier-1 responsive/scale pass can ride alongside Phase 9 polish. **Do not** market touch-phone play as muscle-memory learning.
+
+---
+
+## Deployment & Release
+
+Feature #8 (GitHub Pages deployment) is a recurring milestone, not a one-time task. The mechanism is documented in [`delivery-workflow.md`](delivery-workflow.md): merging to `main` triggers the `Deploy` workflow, which publishes `dist/` to Pages.
+
+- **Near-term, independent of the features above:** the redesigned Phase 0–2 build currently lives only on the feature branch; `main` and the live Pages URL still show the old one-map prototype. Merging the current branch replaces the live build with the redesign. Do this once the branch is reviewed — it is the fastest way to get the new loop in front of players.
+- **Recurring Definition of Done:** every phase re-verifies the Pages deploy (build succeeds, the live URL loads the new state) before the phase is considered shipped.
+- The Phase 4 auth gate only soft-gates the public URL and is **not** a security control (see Phase 4).
+
+---
+
+## Feature → Phase Map
+
+Quick reference for the eight features scheduled June 20, 2026.
+
+| # | Feature | Lands in | New phase or integrated |
+|---|---|---|---|
+| 1 | Named save slots — new / continue / delete / rename / clear all | Phase 4 | New phase (Game Shell) |
+| 4 | Simple auth (fixed password) | Phase 4 | New phase (Game Shell) |
+| 5 | Splash screen | Phase 4 (title audio in Phase 3) | New phase (Game Shell) |
+| 7 | Scoring | Phase 5 framework; per-act events in 6–9 | New phase + per-act integration |
+| 6 | Level complete / progress indicator | Phase 5 framework; per-act nodes in 6–9 | New phase + per-act integration |
+| 3 | Multiple-choice review gate (70% to pass) | Phase 5 framework; first live gate in Phase 6 | New phase + per-act integration |
+| 2 | Flash-card self-assessment | Phase 5; per-act decks in 6–9 | New phase + per-act integration |
+| 8 | GitHub Pages deployment | Recurring DoD + near-term merge milestone | Integrated into every phase |
 
 ---
 
@@ -158,6 +244,12 @@ Free CC0/OFL sources are catalogued in [`research/asset-research.md`](research/a
 | The pane cooperative puzzle is cognitively demanding | Ship a solo pane exercise before the cooperative one |
 | Copy mode is hard to emulate faithfully in xterm.js | Read-only scroll first; selection/search second; target workflow recognition, not fidelity |
 | Vim-movement payoff weakens the longer WASD persists | Commit to `h/j/k/l` in Phase 2, not Phase 7 |
+| Adding scoring/quiz/progress state to saves later forces repeat `SAVE_VERSION` migrations | Refactor to multi-slot saves (Phase 4) before any new state persists; bump to v3 once |
+| Review gates retrofitted into already-built act transitions cause churn | Build the gate hook in `TransitionSystem` (Phase 5) before Act 2; acts register their own banks |
+| Fixed-password auth is mistaken for real security | Document it as a soft gate only; keep it behind a build flag; never gate sensitive data with it |
+| Mandatory quizzes frustrate players who already know the material | Make flash cards optional; allow gate retry + review; tune the 70% threshold against playtests |
+| Touch-phone play is mistaken for real tmux learning (no `Ctrl+b` on soft keyboards) | Tier support on input capability; full game only with a keyboard; touch-only gets honest Review Mode (see `design/mobile-web-strategy.md`) |
+| Desktop-fixed UI built in Phases 4–5 forces a second responsive rework | Decide the mobile stance now; build the shell and assessment screens responsive from day one |
 
 ---
 
@@ -167,11 +259,22 @@ Keep this list and GitHub Issues in sync after meaningful roadmap changes.
 
 - #1 Automate Nano Banana asset generation and download pipeline
 - #2 Add overflow buffer, armory session, and delete loop *(Phase 1)*
-- #3 Change world navigation from WASD to vim `h/j/k/l` *(Phase 2)*
-- #4 Add fog of war to exploration *(Phase 4)*
-- #5 Start on the CLULIX bridge and descend to session `0` *(Phase 1)*
+- #3 Change world navigation from WASD to vim `h/j/k/l` *(done, Phase 2)*
+- #4 Add fog of war to exploration *(Phase 6 — Act 2)*
+- #5 Start on the CLULIX bridge and descend to session `0` *(done, Phase 1)*
 - #6 Generate initial artwork with Google Gemini / Nano Banana
 - #7 Add Redshirt, Commander Sock, and Vrex companion arc
+
+New issues to file for the June 20 roadmap expansion (not yet on GitHub):
+
+- Multi-slot save management: new / continue / delete / rename / clear all *(Phase 4)*
+- Splash/title scene with main menu *(Phase 4)*
+- Optional fixed-password auth gate, build-flagged *(Phase 4)*
+- `ScoreSystem` with per-event scoring and level-complete display *(Phase 5)*
+- Progress indicator + `mission:act-completed` event *(Phase 5)*
+- Multiple-choice review gate (70% pass) with per-act question banks *(Phase 5, first gate Phase 6)*
+- Flash-card self-assessment overlay *(Phase 5)*
+- Merge redesign branch to replace the prototype on Pages *(Deployment & Release)*
 
 ---
 
