@@ -1,5 +1,48 @@
 # Project History
 
+## 2026-06-20 — Phase 2 player experience, coverage, and refactoring
+
+**Phase 2 — Player Experience Fixes (all 6 items complete):**
+- Vim `h/j/k/l` movement added as primary keys alongside WASD and arrows.
+  Prepays copy-mode muscle memory payoff.
+- Interaction radius broadened from exact same-row/one-column to Chebyshev
+  distance ≤ 2 (nearest target wins). Removes the precision tax on approaching
+  NPCs and terminals.
+- HELIX error feedback made specific: new `#categorizeError` method in
+  `TmuxEmulator` distinguishes wrong-case, right-command-wrong-argument,
+  right-tool-wrong-subcommand, and wrong-key-after-prefix instead of one
+  generic message.
+- Restart Challenge button (`↺ Restart`) added to the terminal overlay.
+  Snaps the engine back to the pre-challenge snapshot so the player starts
+  fresh without losing mission progress.
+- HUD hierarchy: active session now shows `"Active: 0  1w / 1p"` (window count
+  / pane count); session list items show window count. Uses `activeWindowId`
+  and `activePaneId` threaded through `GameState.syncStatus`.
+- NPC dialogue expanded from 2 to 4 cards across all 6 dialogue files, following
+  the who→what→why→how pattern. Each card makes the next command feel like the
+  only sensible answer to a story problem.
+- E2E test: replaced fixed `advanceDialogue×2` calls with a `clearDialogue`
+  helper that drains however many cards exist, making the test
+  dialogue-count-agnostic.
+
+**Refactoring (no behavior change):**
+- `TmuxEmulator.#renderChallengeHeader(title)` extracted: the 4-line terminal
+  banner duplicated in `openChallenge` and `#restart` is now one method.
+- `MissionSystem.#clone` wrapper removed: the 3-line helper called exactly once
+  in `getCurrentObjective` is inlined as a direct `structuredClone` call.
+
+**Coverage improvements:**
+- Engine layer (previously 86%/75%) raised to **99%/92%** statements/branches.
+- 18 new targeted tests added across `TmuxEngine` and `SessionManager`:
+  `kill-session`, unknown command, `tmux` reattach-first-detached branch,
+  `tmux ls` with no sessions, Ctrl+b s, unsupported keybinding, `engine.reset`,
+  `createSession` duplicate error, `detachSession` no-active error,
+  `killSession` non-existent, `killSession` clears active, `closeActivePane`
+  single-pane error, unnamed-session skip, `renameSession` errors, `createWindow`
+  no-active error, and `SessionManager.reset`. (35 tests → 53 total.)
+
+---
+
 ## 2026-06-19 (continued — Phase 0 review and refactoring)
 
 After the initial Phase 0 + Phase 1 implementation was committed, a review pass

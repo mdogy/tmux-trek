@@ -89,4 +89,63 @@ describe("SessionManager", () => {
     expect(restored.getSession("0")).toBeDefined();
     expect(restored.getSession("armory")).toBeDefined();
   });
+
+  it("reset clears all sessions and active state", () => {
+    manager.createSession("clulix");
+    manager.attachSession("clulix");
+    manager.reset();
+
+    expect(manager.listSessions()).toHaveLength(0);
+    expect(manager.getActiveSession()).toBeNull();
+  });
+
+  it("createSession throws for a duplicate name", () => {
+    manager.createSession("clulix");
+    expect(() => manager.createSession("clulix")).toThrow("duplicate session name");
+  });
+
+  it("detachSession throws when no session is active", () => {
+    expect(() => manager.detachSession()).toThrow("no active session");
+  });
+
+  it("killSession throws for a non-existent session", () => {
+    expect(() => manager.killSession("ghost")).toThrow("no session named ghost");
+  });
+
+  it("killSession clears the active session when the active session is killed", () => {
+    manager.createSession("clulix");
+    manager.attachSession("clulix");
+    manager.killSession("clulix");
+
+    expect(manager.getActiveSession()).toBeNull();
+    expect(manager.listSessions()).toHaveLength(0);
+  });
+
+  it("closeActivePane throws when the active window has only one pane", () => {
+    manager.createSession("clulix");
+    manager.attachSession("clulix");
+    expect(() => manager.closeActivePane()).toThrow("cannot close the only pane");
+  });
+
+  it("unnamed session allocation skips numbers already in use", () => {
+    manager.createSession("0");
+    manager.createSession("1");
+    manager.createSession();
+
+    expect(manager.getSession("2")).toBeDefined();
+  });
+
+  it("renameSession throws for a non-existent session", () => {
+    expect(() => manager.renameSession("ghost", "clulix")).toThrow("no session named ghost");
+  });
+
+  it("renameSession throws when the new name is already taken", () => {
+    manager.createSession("alpha");
+    manager.createSession("beta");
+    expect(() => manager.renameSession("alpha", "beta")).toThrow("duplicate session name");
+  });
+
+  it("createWindow throws when no session is active", () => {
+    expect(() => manager.createWindow()).toThrow("no active session");
+  });
 });

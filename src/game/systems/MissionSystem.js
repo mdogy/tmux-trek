@@ -81,11 +81,10 @@ export class MissionSystem {
   }
 
   getCurrentObjective() {
-    if (!this.currentActId || !this.currentObjectiveId) {
-      return null;
-    }
-
-    return this.#clone(this.#findObjective(this.currentObjectiveId));
+    const objective = this.currentActId && this.currentObjectiveId
+      ? this.#findObjective(this.currentObjectiveId)
+      : null;
+    return objective ? structuredClone(objective) : null;
   }
 
   isUnlocked(commandId) {
@@ -132,7 +131,4 @@ export class MissionSystem {
     this.listeners.forEach((listener) => listener(snapshot));
   }
 
-  #clone(value) {
-    return value ? structuredClone(value) : value;
-  }
 }

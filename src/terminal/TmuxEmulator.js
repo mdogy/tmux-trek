@@ -40,10 +40,7 @@ export class TmuxEmulator {
     this.renderer.clear();
     this.container.dataset.activeChallenge = challenge.id;
     this.container.dataset.activeStep = "0";
-    this.renderer.writeln("TMUX TREK / TERMINAL PLANE");
-    this.renderer.writeln("----------------------------------------");
-    this.renderer.writeln(challenge.title);
-    this.renderer.writeln("");
+    this.#renderChallengeHeader(challenge.title);
     this.#announceCurrentStep();
     this.#prompt();
     this.onStatusChange(this.engine.getStatus());
@@ -201,6 +198,13 @@ export class TmuxEmulator {
     return `HELIX: ${step.instruction}`;
   }
 
+  #renderChallengeHeader(title) {
+    this.renderer.writeln("TMUX TREK / TERMINAL PLANE");
+    this.renderer.writeln("----------------------------------------");
+    this.renderer.writeln(title);
+    this.renderer.writeln("");
+  }
+
   #addRestartButton() {
     this.restartButton?.remove();
     this.restartButton = document.createElement("button");
@@ -218,10 +222,7 @@ export class TmuxEmulator {
     this.prefixArmed = false;
     this.renderer.clear();
     this.container.dataset.activeStep = "0";
-    this.renderer.writeln("TMUX TREK / TERMINAL PLANE");
-    this.renderer.writeln("----------------------------------------");
-    this.renderer.writeln(this.activeChallenge.title);
-    this.renderer.writeln("");
+    this.#renderChallengeHeader(`${this.activeChallenge.title} [RESTARTED]`);
     this.#announceCurrentStep();
     this.#prompt();
     this.onStatusChange(this.engine.getStatus());

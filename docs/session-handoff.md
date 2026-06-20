@@ -6,7 +6,7 @@ This is the operational resume doc: what is built today, how to verify it, what 
 
 - Live build: <https://mdogy.github.io/tmux-trek/>
 - Latest gameplay baseline commit on `main`: `fb6041f` (merged PR #12)
-- Active feature branch: `codex/phase0-phase1-vertical-slice` (2 commits ahead of `main`, not yet PR'd)
+- Active feature branch: `codex/phase0-phase1-vertical-slice` (not yet PR'd)
 - Documentation index: [`README.md`](README.md)
 
 ---
@@ -50,9 +50,9 @@ The current gameplay loop is:
 7. Reattach with `tmux attach -t 0`.
 8. Clear the overflow blocker and finish the slice.
 
-Movement is still WASD/arrows. NPCs, terminals, and blockers use the existing adjacency/highlight interaction model. The shared engine still supports session create/attach/detach/list/kill, window create/list/next/previous, pane split, and active-pane close, but the current taught flow only uses the session subset plus detach.
+Movement is vim `h/j/k/l` (primary) plus WASD and arrows (secondary). Interaction radius is Chebyshev distance ≤ 2 (nearest target). HELIX error feedback is specific to the mistake type. A `↺ Restart` button in the terminal overlay restores the pre-challenge engine state. The HUD shows `"Active: name  1w / 1p"` hierarchy. NPC dialogue runs 4 cards (who→what→why→how). The engine layer has 99%/92% statement/branch coverage with 53 unit tests.
 
-The architecture foundation from the redesign is now partially live: `TmuxEvents`, `MissionSystem`, `InventorySystem`, `TransitionSystem`, and `SaveManager` are implemented; snapshots restore engine, mission, inventory, unlocked commands, and current zone from `localStorage`.
+The architecture foundation from the redesign is fully live: `TmuxEvents`, `MissionSystem`, `InventorySystem`, `TransitionSystem`, and `SaveManager` are implemented; snapshots restore engine, mission, inventory, unlocked commands, and current zone from `localStorage`.
 
 ---
 
@@ -62,7 +62,7 @@ Last verified locally on the Phase 0 + Phase 1 feature branch:
 
 ```bash
 npm run lint       # pass
-npm run test       # 35 unit tests pass
+npm run test       # 53 unit tests pass (99% stmt / 92% branch on engine layer)
 npm run bdd        # 2 scenarios / 17 steps pass
 npm run test:e2e   # 1 Playwright end-to-end vertical-slice flow passes
 npm run build      # pass
@@ -85,13 +85,11 @@ Playwright may need `npx playwright install chromium` on a fresh machine. `npm r
 - **The HUD still shows sessions only.** Window and pane state exist in the engine but are not rendered, so later tmux commands still lack strong world feedback.
 - **Overflow resolution changed shape.** The design called for `tmux kill-session -t ...`, but the implemented slice clears the blocker through a world interaction with the weapon. Kill-session is still untaught.
 
-**Gameplay/UX problems:**
+**Gameplay/UX (Phase 2 complete — remaining):**
 
-- Movement is still WASD; the design calls for vim `h/j/k/l` (Phase 2).
-- Interaction adjacency is still narrow and brittle (same-row, one-column check).
-- Dialogue is compact and scene-specific rather than a richer shared system.
-- HELIX error feedback is generic ("not yet") rather than specific to the mistake type.
-- No restart-challenge UX exists.
+- Dialogue is now 4 cards but still a simple linear sequence; no branching, no speaker portraits.
+- The `↺ Restart` button exists but has no keyboard shortcut and no confirmation UX.
+- No audio or VFX on any interaction (Phase 3).
 
 **Asset problems:** no animation; no audio; no Rift portal VFX beyond instant scene changes.
 
@@ -114,18 +112,16 @@ Full detail is preserved in [`archive/descriptive-summary-05-19.md`](archive/des
 
 ## Immediate Next Task
 
-Phase 0 and Phase 1 are complete (including review, tests, and refactoring). The branch `codex/phase0-phase1-vertical-slice` is ready to be PR'd and merged to `main`.
+Phases 0, 1, and 2 are complete (including review, tests, refactoring, and coverage). The branch `codex/phase0-phase1-vertical-slice` is ready to be PR'd and merged to `main`.
 
-After merge, the next body of work is **Phase 2 — Player Experience Fixes** from [`implementation-plan.md`](implementation-plan.md):
+After merge, the next body of work is **Phase 3 — Audio & VFX Minimum** from [`implementation-plan.md`](implementation-plan.md):
 
-1. Switch primary movement to vim `h/j/k/l` (keep WASD as secondary).
-2. Broaden interaction detection from same-row one-column to a 2–3 tile proximity radius.
-3. Expand NPC dialogue to 4–6 lines (who they are → what they need → why this command is the answer).
-4. Specific HELIX error feedback: categorize wrong-answer types in `TmuxEmulator` (wrong command, right command wrong flag, wrong session name, wrong case) with distinct responses.
-5. Add a "Restart Challenge" button in the terminal overlay.
-6. Update HUD to show the full hierarchy: session → window count → pane count.
+1. `AudioSystem.js`: terminal keystroke SFX, challenge-success chime, HELIX error tone.
+2. Rift transition flash tween (~500ms) before the destination scene loads on `session:created` / `session:attached`.
+3. Particle glow animation on the Rift Code glyph.
+4. Ship-interior ambient layer on `BridgeScene`.
 
-After Phase 2, re-evaluate whether to proceed to Act 2 (windows) or first decide what to do with the overflow/kill-session gap.
+After Phase 3, the loop should feel alive enough to evaluate the overflow/kill-session gap and plan Act 2 (windows).
 
 ---
 

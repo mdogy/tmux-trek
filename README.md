@@ -50,7 +50,7 @@ npm run bdd
 npm run build
 ```
 
-Verified baseline (feature branch): 35 unit tests, 2 BDD scenarios, 1 Playwright vertical-slice test, lint, and production build all pass. `npm run format:check` reports pre-existing formatting drift and is not yet a clean CI gate.
+Verified baseline (feature branch): 53 unit tests (99%/92% stmt/branch on engine layer), 2 BDD scenarios, 1 Playwright vertical-slice test, lint, and production build all pass. `npm run format:check` reports pre-existing formatting drift and is not yet a clean CI gate.
 
 ## Repository Layout
 

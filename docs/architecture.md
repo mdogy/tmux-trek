@@ -111,7 +111,7 @@ tmux-trek/
 │
 ├── tests/
 │   ├── unit/                       TmuxEngine, SessionManager, MissionSystem, InventorySystem,
-│   │                               SaveManager, TransitionSystem (35 tests total)
+│   │                               SaveManager, TransitionSystem (53 tests; 99%/92% engine coverage)
 │   ├── e2e/                        gameplay.spec.js (full vertical-slice flow + reload/restore)
 │   ├── step-definitions/           sessions.steps.js
 │   └── integration/                (present, empty)
@@ -171,7 +171,7 @@ Not yet supported (required by the design): window numbering/rename/close (`Ctrl
 
 - **One engine instance persists across all scenes.** `TmuxEmulator` creates one `TmuxEngine` at startup, so sessions survive world transitions and reloads via save snapshots.
 - **World progression is now event-driven at the engine boundary.** `TmuxEvents` lets `TmuxTrekApp` and `TransitionSystem` react to `session:created`, `session:attached`, `session:detached`, and `session:listed` without coupling Phaser code into the engine.
-- **Dialogue and terminal are mutually exclusive overlays** controlled by `GameState` flags; `GridScene` suppresses movement while an overlay is open.
+- **Dialogue and terminal are mutually exclusive overlays** controlled by `GameState` flags; `GridScene` suppresses movement while an overlay is open. Dialogue runs 4 cards (who→what→why→how); the terminal overlay includes a `↺ Restart` button that restores the pre-challenge engine snapshot.
 - **Debug state lives on DOM data attributes** (`#game-root[data-player-grid]`, `[data-active-npc]`, `[data-active-challenge]`, etc.). Playwright asserts on these rather than pixel positions, keeping tests resilient to layout changes.
 - **Save/restore is app-level composition.** `SaveManager` persists a versioned snapshot that includes engine state, mission state, inventory state, unlocked commands, and current zone.
 

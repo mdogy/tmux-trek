@@ -15,8 +15,9 @@ GitHub Issues remain the canonical *per-task* surface; this document is the cano
 - Phase 0 foundation: `TmuxEvents`, `MissionSystem`, `InventorySystem`, `TransitionSystem`, and `SaveManager` are implemented, tested, and wired into the live app.
 - Phase 1 vertical slice: the full bridge → `tmux` → surface → Rift Code → `tmux new -s armory` → armory → `Ctrl+b d` → bridge → `tmux ls` → `tmux attach -t 0` → clear overflow loop is playable end-to-end.
 - The pure engine supports session create/attach/detach/list/kill, window create/list/next/previous, pane split, and active-pane close.
-- Current local baseline: `npm run lint`, `npm run test` (35 unit tests), `npm run bdd` (2 scenarios / 17 steps), `npm run test:e2e` (1 end-to-end vertical-slice flow), and `npm run build` all pass.
-- A review-and-refactor pass was applied: `TransitionSystem` double-fire bug fixed, `TransitionSystem` unit tests added (7 cases), `MissionSystem` subscribe/notify coverage added, and six code simplifications made (see `history.md` for detail).
+- Current local baseline: `npm run lint`, `npm run test` (53 unit tests, 99%/92% stmt/branch on engine), `npm run bdd` (2 scenarios / 17 steps), `npm run test:e2e` (1 end-to-end vertical-slice flow), and `npm run build` all pass.
+- A review-and-refactor pass applied: `TransitionSystem` double-fire bug fixed, unit tests added, and six code simplifications made.
+- Phase 2 player experience complete: vim `h/j/k/l` movement, 2-tile interaction radius, specific HELIX error feedback, Restart Challenge button, HUD hierarchy, 4-card NPC dialogues. (see `history.md`)
 
 The redesign's premise: the current build is a working *loop prototype* but does not yet implement the central metaphor (sessions as travel between places). The phases below rebuild the relationship between world and command, then extend act by act.
 
@@ -69,14 +70,14 @@ Status: mostly complete. The bridge/surface/armory loop is live, save/restore wo
 
 ## Phase 2 — Player Experience Fixes
 
-The six highest-impact usability problems, before adding more content.
+Status: **complete.**
 
-- Switch primary movement to vim `h/j/k/l`; keep WASD as secondary; show `h/j/k/l` in the control reference. (GitHub issue #3; prepays copy mode.)
-- Expand NPC dialogue to 4–6 lines (who they are → what they need → why this command is the answer); open the terminal only after dialogue completes.
-- Specific HELIX error feedback: categorize wrong-answer types in `TmuxEmulator` (wrong command, right command wrong flag, wrong session name, wrong case) with distinct responses.
-- Add a "Restart Challenge" button in the terminal overlay.
-- Broaden interaction detection from exact same-row/one-column adjacency to a 2–3 tile proximity radius.
-- Update the HUD to show the full hierarchy: session → window count → pane count, not just session names.
+- vim `h/j/k/l` added as primary movement; WASD and arrows remain as secondary.
+- NPC dialogue expanded to 4 cards (who→what→why→how) across all 6 dialogue files.
+- HELIX error feedback categorized: `#categorizeError` in `TmuxEmulator` distinguishes wrong-case, right-command-wrong-argument, right-tool-wrong-subcommand, and wrong-key-after-prefix.
+- `↺ Restart` button added to the terminal overlay; restores the pre-challenge engine snapshot.
+- Interaction radius broadened to Chebyshev distance ≤ 2 (nearest target).
+- HUD updated to show `"Active: name  1w / 1p"` and per-session window count.
 
 ---
 
