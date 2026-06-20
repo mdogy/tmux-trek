@@ -1,6 +1,47 @@
 # Project History
 
-## 2026-06-19
+## 2026-06-19 (continued — Phase 0 review and refactoring)
+
+After the initial Phase 0 + Phase 1 implementation was committed, a review pass
+found and fixed two bugs and filled a test coverage gap, then a separate
+refactoring pass streamlined the code:
+
+**Review fixes:**
+- `TransitionSystem` was subscribing to both `session:created` and
+  `session:attached`. Because `TmuxEngine` calls `createSession` then
+  `attachSession` in sequence, every `tmux` or `tmux new -s` command caused
+  `onTransition` to fire twice. Removed the `session:created` subscription;
+  `session:attached` alone is correct and sufficient.
+- `.husky/commit-msg` called `npx commitlint`, which hangs in sandboxed shells.
+  Replaced with `node_modules/.bin/commitlint` (direct invocation).
+
+**Test coverage added:**
+- New `tests/unit/TransitionSystem.test.js` (7 cases): route lookup, bridge
+  fallback on detach, unknown session ignored, dispose clears all listeners,
+  single-fire guarantee, late route registration.
+- Extended `MissionSystem` tests with 3 new cases: subscriber called immediately
+  on subscribe, subscriber notified on objective completion, subscriber notified
+  on restore. (25 unit tests → 35 total.)
+
+**Refactoring (no behavior change):**
+- `SessionManager.#clone` wrapper removed; 14 call sites now use
+  `structuredClone` directly.
+- `TmuxEmulator.#evaluate` extracted: the near-identical tails of
+  `#handleCommand` and `#handleKeybinding` are now one method.
+- `GridScene.#generateTexture` helper extracted: `#createSpriteTextures` shrank
+  from 97 lines to 46 by collapsing the 7× exists/create/generate/destroy
+  pattern.
+- `GridScene.#syncDebugState` changed from 5 positional args to a named-options
+  object; call sites no longer need `undefined` placeholders.
+- `TmuxTrekApp.SESSION_ROUTES` constant introduced: the session→zone mapping is
+  now defined once and shared by `TransitionSystem.registerRoute` and
+  `#deriveZoneFromEngineState`.
+- Removed no-op `onComplete: () => {}` from player label tween.
+
+All checks still pass: lint, 35 unit tests, 2 BDD scenarios, 1 E2E vertical-slice
+test.
+
+---
 
 Phase 0 and the first redesign gameplay slice were implemented on the active feature branch:
 

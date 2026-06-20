@@ -6,6 +6,7 @@ This is the operational resume doc: what is built today, how to verify it, what 
 
 - Live build: <https://mdogy.github.io/tmux-trek/>
 - Latest gameplay baseline commit on `main`: `fb6041f` (merged PR #12)
+- Active feature branch: `codex/phase0-phase1-vertical-slice` (2 commits ahead of `main`, not yet PR'd)
 - Documentation index: [`README.md`](README.md)
 
 ---
@@ -61,7 +62,7 @@ Last verified locally on the Phase 0 + Phase 1 feature branch:
 
 ```bash
 npm run lint       # pass
-npm run test       # 25 unit tests pass
+npm run test       # 35 unit tests pass
 npm run bdd        # 2 scenarios / 17 steps pass
 npm run test:e2e   # 1 Playwright end-to-end vertical-slice flow passes
 npm run build      # pass
@@ -69,30 +70,30 @@ npm run build      # pass
 
 Playwright may need `npx playwright install chromium` on a fresh machine. `npm run format:check` reports pre-existing formatting drift and is **not** a clean CI gate yet.
 
-> Environment note: the local `commit-msg` (commitlint) hook can hang in sandboxed shells even though the change is fine. If a commit stalls after lint+test pass, the hook is the cause, not your work.
+> Environment note: `.husky/commit-msg` was updated to call `node_modules/.bin/commitlint` directly (instead of `npx commitlint`) to avoid hangs in sandboxed shells. Commit messages must follow conventional-commits format with a **lowercase** subject line.
 
 ---
 
 ## Critical Evaluation (what's wrong now)
 
-**What works:** the new story loop is functionally complete end to end. The tmux engine is behaviorally accurate, session state persists across scene transitions and reloads, prefix-key handling works, and the new systems are sufficient to support a data-backed multi-scene structure.
+**What works:** the new story loop is functionally complete end to end. The tmux engine is behaviorally accurate, session state persists across scene transitions and reloads, prefix-key handling works, the new systems are tested and cleanly separated, and the code was streamlined in a refactoring pass (see `history.md`).
 
 **Structural problems:**
 
 - **The session-as-travel metaphor is now visible, but only for the opening slice.** Bridge, surface, and armory work; later acts are still on the older structure and need to be reintroduced on top of the new scene model.
-- **Progression is less hardcoded than before, but not fully data-driven.** `MissionSystem` and zone data exist, but scene interactions and some routing still live directly in `TmuxTrekApp.js`.
+- **Progression is less hardcoded than before, but not fully data-driven.** `MissionSystem` and zone data exist, but scene interaction dispatch still lives in `TmuxTrekApp.js` as objective-ID branches rather than in the act JSON.
 - **The HUD still shows sessions only.** Window and pane state exist in the engine but are not rendered, so later tmux commands still lack strong world feedback.
-- **Overflow resolution changed shape.** The design issue described `tmux kill-session -t ...`, but the implemented slice resolves the blocker through a world interaction after the weapon is collected. That keeps the loop coherent, but it means kill-session is still untaught.
+- **Overflow resolution changed shape.** The design called for `tmux kill-session -t ...`, but the implemented slice clears the blocker through a world interaction with the weapon. Kill-session is still untaught.
 
 **Gameplay/UX problems:**
 
-- Movement is still WASD; the design still calls for vim `h/j/k/l`.
-- Interaction adjacency is still narrow and brittle.
-- Dialogue remains compact and scene-specific rather than a richer shared system.
-- HELIX error feedback is still generic ("not yet") rather than specific to the mistake type.
-- Restart-challenge UX does not exist yet.
+- Movement is still WASD; the design calls for vim `h/j/k/l` (Phase 2).
+- Interaction adjacency is still narrow and brittle (same-row, one-column check).
+- Dialogue is compact and scene-specific rather than a richer shared system.
+- HELIX error feedback is generic ("not yet") rather than specific to the mistake type.
+- No restart-challenge UX exists.
 
-**Asset problems:** no animation of any kind; no audio (game feels inert); no Rift VFX beyond scene changes.
+**Asset problems:** no animation; no audio; no Rift portal VFX beyond instant scene changes.
 
 Full detail is preserved in [`archive/descriptive-summary-05-19.md`](archive/descriptive-summary-05-19.md).
 
@@ -113,11 +114,18 @@ Full detail is preserved in [`archive/descriptive-summary-05-19.md`](archive/des
 
 ## Immediate Next Task
 
-Phase 0 and the core of Phase 1 are now implemented. The immediate next task is to finish the highest-value follow-through from [`implementation-plan.md`](implementation-plan.md):
+Phase 0 and Phase 1 are complete (including review, tests, and refactoring). The branch `codex/phase0-phase1-vertical-slice` is ready to be PR'd and merged to `main`.
 
-- Phase 2 UX fixes: vim `h/j/k/l`, broader interaction radius, stronger HELIX error specificity, restart-challenge support, richer HUD hierarchy.
-- Reintroduce Act 2 and Act 3 on top of the new bridge/surface/armory architecture instead of the legacy one-map mentor chain.
-- Decide whether the overflow lesson should stay as a world interaction or be revised to explicitly teach `tmux kill-session -t name`.
+After merge, the next body of work is **Phase 2 — Player Experience Fixes** from [`implementation-plan.md`](implementation-plan.md):
+
+1. Switch primary movement to vim `h/j/k/l` (keep WASD as secondary).
+2. Broaden interaction detection from same-row one-column to a 2–3 tile proximity radius.
+3. Expand NPC dialogue to 4–6 lines (who they are → what they need → why this command is the answer).
+4. Specific HELIX error feedback: categorize wrong-answer types in `TmuxEmulator` (wrong command, right command wrong flag, wrong session name, wrong case) with distinct responses.
+5. Add a "Restart Challenge" button in the terminal overlay.
+6. Update HUD to show the full hierarchy: session → window count → pane count.
+
+After Phase 2, re-evaluate whether to proceed to Act 2 (windows) or first decide what to do with the overflow/kill-session gap.
 
 ---
 

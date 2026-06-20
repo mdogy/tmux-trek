@@ -11,10 +11,12 @@ GitHub Issues remain the canonical *per-task* surface; this document is the cano
 ## Where We Are
 
 - `main` is deployed at <https://mdogy.github.io/tmux-trek/>.
-- Phase 0 foundation is implemented: `TmuxEvents`, `MissionSystem`, `InventorySystem`, `TransitionSystem`, and `SaveManager` now exist and are wired into the live app.
-- A new Act 0 + Act 1 loop is playable: bridge → `tmux` → surface session `0` → Rift Code → `tmux new -s armory` → armory pickup → `Ctrl+b d` → bridge → `tmux ls` → `tmux attach -t 0` → clear overflow.
+- Phase 0 and Phase 1 are complete on branch `codex/phase0-phase1-vertical-slice` (not yet merged to `main`).
+- Phase 0 foundation: `TmuxEvents`, `MissionSystem`, `InventorySystem`, `TransitionSystem`, and `SaveManager` are implemented, tested, and wired into the live app.
+- Phase 1 vertical slice: the full bridge → `tmux` → surface → Rift Code → `tmux new -s armory` → armory → `Ctrl+b d` → bridge → `tmux ls` → `tmux attach -t 0` → clear overflow loop is playable end-to-end.
 - The pure engine supports session create/attach/detach/list/kill, window create/list/next/previous, pane split, and active-pane close.
-- Current local baseline is green: `npm run lint`, `npm run test` (25 unit tests), `npm run bdd` (2 scenarios / 17 steps), `npm run test:e2e` (1 end-to-end vertical-slice flow), and `npm run build`.
+- Current local baseline: `npm run lint`, `npm run test` (35 unit tests), `npm run bdd` (2 scenarios / 17 steps), `npm run test:e2e` (1 end-to-end vertical-slice flow), and `npm run build` all pass.
+- A review-and-refactor pass was applied: `TransitionSystem` double-fire bug fixed, `TransitionSystem` unit tests added (7 cases), `MissionSystem` subscribe/notify coverage added, and six code simplifications made (see `history.md` for detail).
 
 The redesign's premise: the current build is a working *loop prototype* but does not yet implement the central metaphor (sessions as travel between places). The phases below rebuild the relationship between world and command, then extend act by act.
 
