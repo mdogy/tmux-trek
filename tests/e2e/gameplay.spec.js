@@ -1,11 +1,17 @@
 import { expect, test } from "@playwright/test";
 
+const GRID_READY_TIMEOUT = 15_000;
+
 async function waitForGrid(page, grid, zoneId) {
   await expect(page.locator("#game-root")).toHaveAttribute(
     "data-player-grid",
     `${grid[0]},${grid[1]}`,
+    { timeout: GRID_READY_TIMEOUT },
   );
-  await expect(page.locator("#game-root")).toHaveAttribute("data-zone-id", zoneId);
+  await expect(page.locator("#game-root")).toHaveAttribute(
+    "data-zone-id",
+    zoneId,
+  );
 }
 
 async function pressMove(page, key, expectedGrid) {
@@ -48,11 +54,7 @@ test("TMUX Trek completes the Phase 1 vertical slice and restores on reload", as
   page,
 }) => {
   test.setTimeout(60_000);
-  await page.addInitScript(() => {
-    window.__TMUX_TREK_DISABLE_AUTOSAVE = true;
-  });
-
-  await page.goto("/");
+  await page.goto("/?testMode=1");
   await page.evaluate(() => window.localStorage.clear());
   await page.reload();
   await waitForGrid(page, [4, 7], "bridge");
@@ -76,7 +78,9 @@ test("TMUX Trek completes the Phase 1 vertical slice and restores on reload", as
   await page.keyboard.press("Enter");
   await expect(page.locator("#terminal-root")).toHaveClass(/hidden/);
   await waitForGrid(page, [3, 15], "surface");
-  await expect(page.locator("#mission-text")).toContainText("Find the Rift Code");
+  await expect(page.locator("#mission-text")).toContainText(
+    "Find the Rift Code",
+  );
 
   await moveAlong(page, [
     ["KeyD", [4, 15]],

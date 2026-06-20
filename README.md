@@ -1,6 +1,6 @@
 # TMUX Trek
 
-TMUX Trek is a browser-based educational game that teaches real tmux muscle memory through story actions. A Phaser world motivates each lesson, and an xterm.js terminal overlay requires the player to perform the exact tmux command that advances the mission. The guiding rule: **every tmux command is the only sensible answer to a story problem** — the command *is* the action, never a separate tutorial.
+TMUX Trek is a browser-based educational game that teaches real tmux muscle memory through story actions. A Phaser world motivates each lesson, and an xterm.js terminal overlay requires the player to perform the exact tmux command that advances the mission. The guiding rule: **every tmux command is the only sensible answer to a story problem** — the command _is_ the action, never a separate tutorial.
 
 Live build: <https://mdogy.github.io/tmux-trek/>
 
@@ -50,14 +50,14 @@ npm run bdd
 npm run build
 ```
 
-Verified baseline (feature branch): 53 unit tests (99%/92% stmt/branch on engine layer), 2 BDD scenarios, 1 Playwright vertical-slice test, lint, and production build all pass. `npm run format:check` reports pre-existing formatting drift and is not yet a clean CI gate.
+Verified baseline (feature branch): 67 unit tests (99%/92% stmt/branch on engine layer), 2 BDD scenarios, 2 Playwright tests (vertical slice plus title/save-slot flow), lint, and production build all pass. `npm run format:check` reports pre-existing formatting drift and is not yet a clean CI gate.
 
 ## Repository Layout
 
 - `src/engine/` — deterministic tmux state (`TmuxEvents`, `TmuxEngine`, `SessionManager`); no DOM or Phaser.
 - `src/terminal/` — xterm rendering, key handling, and challenge orchestration.
-- `src/game/scenes/` — Phaser scenes (`BridgeScene`, `SurfaceScene`, `ArmoryScene`, shared `GridScene`).
-- `src/game/systems/` — `MissionSystem`, `InventorySystem`, `TransitionSystem`, `SaveManager`, `GameState`, `UIController`.
+- `src/game/scenes/` — Phaser scenes (`TitleScene`, `BridgeScene`, `SurfaceScene`, `ArmoryScene`, shared `GridScene`).
+- `src/game/systems/` — `MissionSystem`, `InventorySystem`, `TransitionSystem`, multi-slot `SaveManager`, `GameState`, `UIController`.
 - `src/data/` — act definitions, challenge scripts, dialogue, and zone metadata (all JSON).
 - `public/assets/` — runtime assets deployed by Vite.
 - `features/` and `tests/` — Cucumber, Vitest, and Playwright coverage.

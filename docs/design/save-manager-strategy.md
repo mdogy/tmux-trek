@@ -1,8 +1,8 @@
 # SaveManager: Browser Persistence Strategy
 
-*Written June 19, 2026. Answers the gap in the redesign documents, which specify that `SaveManager.js` should exist but do not define the storage mechanism or serialization contract.*
+_Written June 19, 2026. Updated June 20, 2026 after the multi-slot Phase 4 implementation._
 
-> **Status: implemented (single-slot); multi-slot planned.** `src/game/systems/SaveManager.js` is live with `SAVE_VERSION = 2`, one `localStorage` slot covering engine state, `MissionSystem`, `InventorySystem`, unlocked commands, and current zone — the "Future layers" section below is complete and the "Implementation Checklist" is fully checked. The [Planned: Multi-Slot Saves (Phase 4)](#planned-multi-slot-saves-phase-4) section below specifies the next refactor to named, multiple saves. For current truth see [`../session-handoff.md`](../session-handoff.md).
+> **Status: implemented (multi-slot).** `src/game/systems/SaveManager.js` is live with `SAVE_VERSION = 3`, a slot index at `tmux-trek:saves`, and per-slot blobs at `tmux-trek:save:<id>`. It supports new / continue / rename / delete / clear-all, validates malformed storage defensively, and migrates a v2 single-slot save to a named `default` slot when no v3 slots exist. For current truth see [`../session-handoff.md`](../session-handoff.md).
 
 ---
 
@@ -28,15 +28,15 @@ Nothing in either redesign document specifies how the save is stored or what the
 
 ### Why localStorage, not alternatives
 
-| Option | Verdict | Reason |
-|---|---|---|
-| `localStorage` | **Use this** | Synchronous, simple API, persists across tab close and browser restart, ~5–10MB quota (game state is <10KB), works on GitHub Pages with zero server |
-| `sessionStorage` | No | Cleared when the tab is closed — defeats the purpose |
-| Cookies | No | 4KB limit, sent over the network on every request, wrong tool for application state |
-| `IndexedDB` | No | Async, complex API, designed for large binary blobs — overkill for JSON game state |
-| URL hash / query | No | Limited length, exposes state in the URL, breaks sharing links |
+| Option           | Verdict      | Reason                                                                                                                                              |
+| ---------------- | ------------ | --------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `localStorage`   | **Use this** | Synchronous, simple API, persists across tab close and browser restart, ~5–10MB quota (game state is <10KB), works on GitHub Pages with zero server |
+| `sessionStorage` | No           | Cleared when the tab is closed — defeats the purpose                                                                                                |
+| Cookies          | No           | 4KB limit, sent over the network on every request, wrong tool for application state                                                                 |
+| `IndexedDB`      | No           | Async, complex API, designed for large binary blobs — overkill for JSON game state                                                                  |
+| URL hash / query | No           | Limited length, exposes state in the URL, breaks sharing links                                                                                      |
 
-`localStorage` is synchronous, which means save and load operations do not require async/await or error-callback patterns. The entire `SaveManager` can be implemented as four plain functions. The game state that needs persisting is small: a few session names, a list of completed challenge IDs, a list of collected items, and a current-act index. Under any realistic scenario this stays well under 50KB.
+`localStorage` is synchronous, which means save and load operations do not require async/await or error-callback patterns. `SaveManager` stays a small utility module rather than a class. The game state that needs persisting is small: a few sessions, mission progress, inventory, unlocked commands, current zone, and later score/review data. Under any realistic scenario this stays well under 50KB.
 
 ### Browser availability
 
@@ -63,6 +63,7 @@ The `SessionManager` holds the mutable tmux model. Its internal state is:
 `SessionManager` already uses `structuredClone` internally. Serializing to JSON is trivial since `Map` entries are plain objects.
 
 Snapshot shape:
+
 ```json
 {
   "sessions": [
@@ -71,7 +72,12 @@ Snapshot shape:
       "attached": false,
       "activeWindowId": 0,
       "windows": [
-        { "id": 0, "name": "main", "activePaneId": 0, "panes": [{ "id": 0, "title": "shell" }] }
+        {
+          "id": 0,
+          "name": "main",
+          "activePaneId": 0,
+          "panes": [{ "id": 0, "title": "shell" }]
+        }
       ]
     }
   ],
@@ -80,20 +86,19 @@ Snapshot shape:
 }
 ```
 
-### 2. Game progression state (`TmuxTrekApp`)
+### 2. Game progression state (`MissionSystem` / `InventorySystem` / `TmuxTrekApp`)
 
-Currently stored as two fields on `TmuxTrekApp`:
+Current snapshots store mission, inventory, unlocked commands, and view state:
 
-```js
-this.currentNpcIndex     // number — which NPC is active
-this.completedChallenges // Set<string> — completed challenge IDs
-```
-
-Snapshot shape:
 ```json
 {
-  "currentNpcIndex": 2,
-  "completedChallenges": ["session-init", "detach-drill"]
+  "mission": {
+    "currentActId": "act-01-sessions",
+    "completedObjectives": ["collect-rift-code"]
+  },
+  "inventory": { "items": ["RIFT_CODE"] },
+  "unlockedCommands": ["tmux", "tmux new -s armory"],
+  "view": { "currentZoneId": "surface" }
 }
 ```
 
@@ -102,20 +107,21 @@ Snapshot shape:
 The Codex panel tracks which commands have been unlocked. This must persist so the Codex shows the right state on resume.
 
 Snapshot shape:
+
 ```json
 {
   "unlockedCommands": ["tmux", "tmux new -s clulix", "Ctrl+b d"]
 }
 ```
 
-### Future layers (when redesign adds them)
+### Future layers
 
-When `MissionSystem` and `InventorySystem` are built, their state is added to the same snapshot:
+Phase 5 score/progress/review state will be added to the per-slot blob:
 
 ```json
 {
-  "mission": { "currentActId": "act-01-sessions", "completedObjectives": ["get-weapon"] },
-  "inventory": { "items": ["RIFT_CODE"] }
+  "score": { "total": 1200, "byAct": { "act-01-sessions": 1200 } },
+  "review": { "passedGates": ["act-01-sessions"], "flashCards": {} }
 }
 ```
 
@@ -123,44 +129,25 @@ When `MissionSystem` and `InventorySystem` are built, their state is added to th
 
 ## The SaveManager Interface
 
-`SaveManager.js` is a small utility module — no class, no constructor, four exported functions:
+`SaveManager.js` is a small utility module — no class, no constructor. Current exports:
 
 ```js
-// src/game/systems/SaveManager.js
-
-const SAVE_KEY = "tmux-trek-save";
-const SAVE_VERSION = 1;
-
-export function saveGame(snapshot) {
-  try {
-    localStorage.setItem(SAVE_KEY, JSON.stringify({ v: SAVE_VERSION, ...snapshot }));
-  } catch {
-    // Storage full or private browsing — silently fail; game continues without saving
-  }
-}
-
-export function loadGame() {
-  try {
-    const raw = localStorage.getItem(SAVE_KEY);
-    if (!raw) return null;
-    const parsed = JSON.parse(raw);
-    if (parsed.v !== SAVE_VERSION) return null;  // treat stale save as absent
-    return parsed;
-  } catch {
-    return null;
-  }
-}
-
-export function clearSave() {
-  localStorage.removeItem(SAVE_KEY);
-}
-
-export function hasSave() {
-  return localStorage.getItem(SAVE_KEY) !== null;
-}
+SAVE_VERSION;
+newSlot(name);
+listSlots();
+getActiveSlotId();
+setActiveSlotId(id);
+deleteSlot(id);
+renameSlot(id, name);
+clearAllSlots();
+hasSave();
+saveGame(snapshot);
+loadGame();
+migrate();
+clearSave(); // backward-compatible alias for clearAllSlots()
 ```
 
-No external dependencies. No async. No class hierarchy. Four functions.
+No external dependencies. No async. No class hierarchy.
 
 ---
 
@@ -170,13 +157,13 @@ No external dependencies. No async. No class hierarchy. Four functions.
 
 Save after every event that represents meaningful progress. The game should never make the player redo something they already completed:
 
-| Event | Where to hook |
-|---|---|
-| Challenge completed | `TmuxTrekApp.completeChallenge()` — already the central completion callback |
-| Command unlocked | `GameState.unlockCommand()` |
-| Beacon interaction (completion) | `TmuxTrekApp.handleBeaconInteraction()` |
-| (Future) Collectible picked up | `InventorySystem.collect()` |
-| (Future) Mission objective completed | `MissionSystem.completeObjective()` |
+| Event                                | Where to hook                                                               |
+| ------------------------------------ | --------------------------------------------------------------------------- |
+| Challenge completed                  | `TmuxTrekApp.completeChallenge()` — already the central completion callback |
+| Command unlocked                     | `GameState.unlockCommand()`                                                 |
+| Beacon interaction (completion)      | `TmuxTrekApp.handleBeaconInteraction()`                                     |
+| (Future) Collectible picked up       | `InventorySystem.collect()`                                                 |
+| (Future) Mission objective completed | `MissionSystem.completeObjective()`                                         |
 
 ### Defensive save on page exit
 
@@ -197,60 +184,20 @@ Do not save on an interval. Every save should be caused by a meaningful state ch
 
 ## Boot-Time Load Sequence
 
-In `TmuxTrekApp.constructor()`, after all subsystems are initialized but before `start()` is called:
+`TmuxTrekApp.start()` chooses the correct front-door path:
 
 ```js
-const saved = loadGame();
-if (saved) {
-  this.#restoreSnapshot(saved);
-}
-```
-
-`#restoreSnapshot` applies the saved data to each subsystem:
-
-```js
-#restoreSnapshot(saved) {
-  // 1. Restore SessionManager state
-  if (saved.engine) {
-    this.terminal.engine.sessionManager.restore(saved.engine);
-  }
-
-  // 2. Restore progression
-  if (saved.progression) {
-    this.currentNpcIndex = saved.progression.currentNpcIndex;
-    this.completedChallenges = new Set(saved.progression.completedChallenges);
-  }
-
-  // 3. Restore unlocked commands
-  if (saved.unlockedCommands) {
-    saved.unlockedCommands.forEach(cmd => this.state.unlockCommand(cmd));
-  }
-
-  // 4. Restore session status display
-  this.state.syncStatus(this.terminal.engine.getStatus());
-
-  // 5. Update mission/instruction text to match restored NPC index
-  const nextNpc = this.zone.npcs[this.currentNpcIndex];
-  if (nextNpc) {
-    this.state.setMission(`Meet ${nextNpc.name} for the next Rift lesson.`);
+if (new URLSearchParams(window.location.search).get("testMode") === "1") {
+  if (hasSave()) {
+    this.restoreActiveSave();
   } else {
-    this.state.setMission("Return to the CLULIX beacon to close the training loop.");
+    newSlot("test");
+    this.resetToNewGame();
   }
 }
 ```
 
-`SessionManager` needs one new method, `restore(snapshot)`, that rebuilds its `Map` from the serialized sessions array:
-
-```js
-restore(snapshot) {
-  this.sessions.clear();
-  this.activeSessionName = snapshot.activeSessionName;
-  this.nextUnnamedSession = snapshot.nextUnnamedSession;
-  for (const session of snapshot.sessions) {
-    this.sessions.set(session.name, structuredClone(session));
-  }
-}
-```
+Normal browser play enters through `TitleScene`, where New Game creates a slot and Continue / Manage Saves restore the selected slot. The Playwright vertical-slice path bypasses `TitleScene` with `?testMode=1` so reload assertions are deterministic without leaking a page-global flag into the title-flow spec.
 
 ---
 
@@ -258,15 +205,13 @@ restore(snapshot) {
 
 The save format should include a version number from day one. When the game's data model changes (new fields, renamed sessions, new acts), the version number is bumped and any save with a lower version is discarded on load.
 
-The current `SAVE_VERSION = 1` means: "this save format is valid while the game has one zone, five NPCs, and no inventory system." When `MissionSystem` and `InventorySystem` are added, bump to `SAVE_VERSION = 2` and add migration logic or simply discard v1 saves.
-
-Discarding a stale save is always safe — the player starts fresh. The alternative (trying to migrate mismatched state) is fragile. Keep migration logic only if acts have shipped to real users who would lose real progress.
+The current `SAVE_VERSION = 3` means: multi-slot saves with mission, inventory, unlocked commands, current zone, and engine state. `migrate()` converts a v2 single-slot save to a v3 `default` slot only if no v3 slots already exist. Corrupt or wrong-version data is treated as absent and removed where safe.
 
 ---
 
-## Planned: Multi-Slot Saves (Phase 4)
+## Current: Multi-Slot Saves (Phase 4)
 
-The current implementation is a **single** slot under one key (`tmux-trek-save`, `SAVE_VERSION = 2`). [`../implementation-plan.md`](../implementation-plan.md) Phase 4 refactors this to **named, multiple saves** so a learner can keep separate runs (personal, classroom, demo). This refactor is deliberately scheduled *before* scoring, progress, and review-result state (Phase 5) so the persistence shape is settled once rather than migrated twice.
+The current implementation uses **named, multiple saves** so a learner can keep separate runs (personal, classroom, demo). This refactor landed before scoring, progress, and review-result state (Phase 5) so the persistence shape is settled once rather than migrated twice.
 
 ### Storage layout
 
@@ -281,22 +226,22 @@ The index holds only metadata (id, display name, timestamp) so the menu can rend
 
 ### Operations the menu needs
 
-| Operation | Effect |
-|---|---|
-| New Game | create a slot (uuid + name), write an empty snapshot, set `activeId` |
-| Continue | load the `activeId` slot |
-| Select | switch `activeId` to a chosen slot and load it |
-| Rename | update `name` in the index entry only |
-| Delete | remove `tmux-trek:save:<id>` and its index entry; clear `activeId` if it pointed there |
-| Clear All | remove every per-slot key and reset the index |
+| Operation | Effect                                                                                 |
+| --------- | -------------------------------------------------------------------------------------- |
+| New Game  | create a slot (uuid + name), write an empty snapshot, set `activeId`                   |
+| Continue  | load the `activeId` slot                                                               |
+| Select    | switch `activeId` to a chosen slot and load it                                         |
+| Rename    | update `name` in the index entry only                                                  |
+| Delete    | remove `tmux-trek:save:<id>` and its index entry; clear `activeId` if it pointed there |
+| Clear All | remove every per-slot key and reset the index                                          |
 
 ### Migration to v3
 
-On first load after the bump, if a legacy `tmux-trek-save` (v2) key exists, wrap it as a slot named `default`, move it to `tmux-trek:save:<newid>`, set it active, and remove the old key. A v2 save that fails to parse is discarded (starting fresh is always safe, per *Version Handling* above). Bump `SAVE_VERSION` → 3.
+On first load after the bump, if a legacy `tmux-trek-save` (v2) key exists, wrap it as a slot named `default`, move it to `tmux-trek:save:<newid>`, set it active, and remove the old key. A v2 save that fails to parse is discarded (starting fresh is always safe, per _Version Handling_ above). Bump `SAVE_VERSION` → 3.
 
 ### What stays the same
 
-The snapshot *contents*, the "save between challenges, not inside them" rule, the `beforeunload` defensive save, and the no-timer-saves rule all carry over unchanged. Only the keying and the menu surface are new.
+The snapshot _contents_, the "save between challenges, not inside them" rule, the `beforeunload` defensive save, and the no-timer-saves rule all carry over unchanged. Only the keying and the menu surface are new.
 
 ---
 
@@ -317,69 +262,26 @@ The save/load path needs two test levels:
 
 ### Unit tests (Vitest)
 
-Test `SaveManager` in isolation with a `localStorage` mock:
-
-```js
-// tests/unit/SaveManager.test.js
-import { saveGame, loadGame, clearSave } from "../../src/game/systems/SaveManager.js";
-
-// Use jsdom's localStorage (already available via vitest's jsdom environment)
-
-test("returns null when no save exists", () => {
-  clearSave();
-  expect(loadGame()).toBeNull();
-});
-
-test("round-trips a snapshot", () => {
-  const snapshot = { progression: { currentNpcIndex: 2, completedChallenges: ["session-init"] } };
-  saveGame(snapshot);
-  expect(loadGame().progression.currentNpcIndex).toBe(2);
-});
-
-test("returns null for a wrong-version save", () => {
-  localStorage.setItem("tmux-trek-save", JSON.stringify({ v: 0, progression: {} }));
-  expect(loadGame()).toBeNull();
-});
-
-test("does not throw when localStorage is unavailable", () => {
-  const orig = localStorage.setItem.bind(localStorage);
-  localStorage.setItem = () => { throw new DOMException("QuotaExceededError"); };
-  expect(() => saveGame({ progression: {} })).not.toThrow();
-  localStorage.setItem = orig;
-});
-```
+`tests/unit/SaveManager.test.js` uses an injected storage mock so it can test the persistence boundary without jsdom. Coverage includes slot creation, active-slot switching, rename/delete/clear, snapshot round-trip, wrong-version and corrupt blobs, malformed index recovery, v2 migration, and "existing v3 index wins over legacy v2" behavior.
 
 ### End-to-end test (Playwright)
 
-Add one e2e test that verifies cross-reload persistence:
+Two Playwright specs now cover the browser layer:
 
-```js
-// In tests/e2e/gameplay.spec.js
-test("resumes after reload", async ({ page }) => {
-  await page.goto("http://localhost:4173/");
-  // Complete Zrix challenge
-  await completeZrixChallenge(page);
-  // Reload
-  await page.reload();
-  // NPC index should be restored; Vrex should now be active
-  await expect(page.locator("#game-root")).toHaveAttribute("data-active-npc", "vrex");
-});
-```
+- `tests/e2e/gameplay.spec.js` drives the full vertical slice and verifies reload/restore mid-act.
+- `tests/e2e/title-save-slots.spec.js` covers the front-door title flow: New Game, Continue, rename, and delete.
 
 ---
 
 ## Implementation Checklist
 
-This can be done in one focused session — the surface area is small:
+Current implementation checklist:
 
-- [ ] Add `restore(snapshot)` method to `SessionManager`
-- [ ] Add `#buildSnapshot()` and `#restoreSnapshot(saved)` to `TmuxTrekApp`
-- [ ] Write `src/game/systems/SaveManager.js` (four functions, ~40 lines)
-- [ ] Call `saveGame()` inside `TmuxTrekApp.completeChallenge()` and `GameState.unlockCommand()`
-- [ ] Call `loadGame()` at the end of `TmuxTrekApp.constructor()`
-- [ ] Register `beforeunload` listener in `TmuxTrekApp.start()`
-- [ ] Write unit tests for `SaveManager` (four cases above)
-- [ ] Write one Playwright reload test
-- [ ] Update `doc/session-handoff.md` with the new save mechanism
-
-Total new code: approximately 80 lines of production code, 40 lines of tests.
+- [x] `SessionManager.restore(snapshot)` restores serialized engine state.
+- [x] `TmuxTrekApp.#buildSnapshot()` and `#restoreSnapshot(saved)` compose engine, mission, inventory, unlocked commands, and view state.
+- [x] `SaveManager` stores a v3 slot index plus per-slot blobs.
+- [x] `TitleScene` exposes New Game, Continue, and Manage Saves.
+- [x] `migrate()` converts a v2 single-slot save to a v3 `default` slot when appropriate.
+- [x] `beforeunload` persists the active slot in normal browser play.
+- [x] Unit tests cover normal, corrupt, stale, and migration cases.
+- [x] Playwright covers vertical-slice reload/restore and title save-slot management.

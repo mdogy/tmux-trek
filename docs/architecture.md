@@ -1,6 +1,6 @@
 # TMUX Trek — Architecture
 
-*Authoritative technical reference. Last consolidated June 19, 2026.*
+_Authoritative technical reference. Last consolidated June 19, 2026._
 
 This document describes the technical stack, how the code is structured today, the file map, the supported engine surface, and the current architecture after the Phase 0 + Phase 1 migration work. For the design intent behind it, read [`game-design.md`](game-design.md). For build order, read [`implementation-plan.md`](implementation-plan.md). For what is actually built and its known gaps, read [`session-handoff.md`](session-handoff.md).
 
@@ -15,22 +15,22 @@ This document describes the technical stack, how the code is structured today, t
 
 ### Libraries and tooling
 
-| Role | Technology | Notes |
-|---|---|---|
-| Game engine | **Phaser 4** (`phaser`) | Scenes, tile rendering, camera, tweens, input. `Phaser.AUTO` renderer, `pixelArt: true`. |
-| Terminal renderer | **xterm.js 6** (`@xterm/xterm`) | In-browser terminal. Addons: `@xterm/addon-fit`, `@xterm/addon-web-links`. |
-| Bundler / dev server | **Vite 8** | `npm run dev` serves on port 4173; `npm run build` outputs to `dist/`. |
-| Unit tests | **Vitest 4** | Pure-engine tests in `tests/unit/`. |
-| Browser acceptance | **Playwright 1.59** | Keyboard-only e2e in `tests/e2e/`. |
-| BDD | **Cucumber.js 12** | Gherkin in `features/`, steps in `tests/step-definitions/`. |
-| Lint / format | **ESLint 10**, **Prettier 3** | `npm run lint`, `npm run format:check`. |
-| Commit hooks | **Husky + commitlint** | Conventional Commits enforced; pre-commit runs lint + test. |
+| Role                 | Technology                      | Notes                                                                                    |
+| -------------------- | ------------------------------- | ---------------------------------------------------------------------------------------- |
+| Game engine          | **Phaser 4** (`phaser`)         | Scenes, tile rendering, camera, tweens, input. `Phaser.AUTO` renderer, `pixelArt: true`. |
+| Terminal renderer    | **xterm.js 6** (`@xterm/xterm`) | In-browser terminal. Addons: `@xterm/addon-fit`, `@xterm/addon-web-links`.               |
+| Bundler / dev server | **Vite 8**                      | `npm run dev` serves on port 4173; `npm run build` outputs to `dist/`.                   |
+| Unit tests           | **Vitest 4**                    | Pure-engine tests in `tests/unit/`.                                                      |
+| Browser acceptance   | **Playwright 1.59**             | Keyboard-only e2e in `tests/e2e/`.                                                       |
+| BDD                  | **Cucumber.js 12**              | Gherkin in `features/`, steps in `tests/step-definitions/`.                              |
+| Lint / format        | **ESLint 10**, **Prettier 3**   | `npm run lint`, `npm run format:check`.                                                  |
+| Commit hooks         | **Husky + commitlint**          | Conventional Commits enforced; pre-commit runs lint + test.                              |
 
 > **Note (June 2026):** `.husky/commit-msg` calls `node_modules/.bin/commitlint` directly (not `npx commitlint`) to avoid hangs in sandboxed environments. Commit messages must follow conventional-commits format with a **lowercase** subject line.
 
 ### Considered but NOT in use
 
-The early research proposed a **WebAssembly bash (Wasmer WASI)** layer to run a real shell. This was **not adopted** — the game simulates the tmux *state machine* in pure JS and renders it through xterm.js, which is simpler, deterministic, and fully testable. `src/terminal/BashEmulator.js` is a minimal stub and is not in the main flow. Do not reintroduce a WASM shell without a concrete need.
+The early research proposed a **WebAssembly bash (Wasmer WASI)** layer to run a real shell. This was **not adopted** — the game simulates the tmux _state machine_ in pure JS and renders it through xterm.js, which is simpler, deterministic, and fully testable. `src/terminal/BashEmulator.js` is a minimal stub and is not in the main flow. Do not reintroduce a WASM shell without a concrete need.
 
 ---
 
@@ -77,6 +77,7 @@ tmux-trek/
 │   │   │                            current zone, UI state, TmuxEmulator, Phaser.Game
 │   │   ├── scenes/
 │   │   │   ├── BootScene.js         Splash, save restore, then current zone scene
+│   │   │   ├── TitleScene.js        Keyboard menu, optional auth gate, save-slot management
 │   │   │   ├── GridScene.js         Shared tile, collision, movement, highlight, and interaction logic
 │   │   │   ├── BridgeScene.js       Act 0 bridge terminal scene
 │   │   │   ├── SurfaceScene.js      Session `0` village scene with overflow blocker
@@ -111,8 +112,9 @@ tmux-trek/
 │
 ├── tests/
 │   ├── unit/                       TmuxEngine, SessionManager, MissionSystem, InventorySystem,
-│   │                               SaveManager, TransitionSystem (53 tests; 99%/92% engine coverage)
-│   ├── e2e/                        gameplay.spec.js (full vertical-slice flow + reload/restore)
+│   │                               SaveManager, TransitionSystem (67 tests; 99%/92% engine coverage)
+│   ├── e2e/                        gameplay.spec.js (full vertical-slice flow + reload/restore),
+│   │                               title-save-slots.spec.js (front-door save-slot flow)
 │   ├── step-definitions/           sessions.steps.js
 │   └── integration/                (present, empty)
 │
@@ -144,12 +146,12 @@ tmux-trek/
 
 `public/assets/tiles/z-shell-terrain.png` is a 4×4 grid of 48×48 frames:
 
-| Frames | Use |
-|---|---|
-| 0–2 | Landing Crater ground variations |
-| 3–7 | Rocky map-border variations |
-| 8–11 | Purple crystal obstacle variations |
-| 12–15 | Amber/teal technology platforms (frame 14 = CLULIX beacon) |
+| Frames | Use                                                        |
+| ------ | ---------------------------------------------------------- |
+| 0–2    | Landing Crater ground variations                           |
+| 3–7    | Rocky map-border variations                                |
+| 8–11   | Purple crystal obstacle variations                         |
+| 12–15  | Amber/teal technology platforms (frame 14 = CLULIX beacon) |
 
 ---
 
@@ -172,7 +174,7 @@ Not yet supported (required by the design): window numbering/rename/close (`Ctrl
 - **One engine instance persists across all scenes.** `TmuxEmulator` creates one `TmuxEngine` at startup, so sessions survive world transitions and reloads via save snapshots.
 - **World progression is now event-driven at the engine boundary.** `TmuxEvents` lets `TmuxTrekApp` and `TransitionSystem` react to `session:created`, `session:attached`, `session:detached`, and `session:listed` without coupling Phaser code into the engine.
 - **Dialogue and terminal are mutually exclusive overlays** controlled by `GameState` flags; `GridScene` suppresses movement while an overlay is open. Dialogue runs 4 cards (who→what→why→how); the terminal overlay includes a `↺ Restart` button that restores the pre-challenge engine snapshot.
-- **Debug state lives on DOM data attributes** (`#game-root[data-player-grid]`, `[data-active-npc]`, `[data-active-challenge]`, etc.). Playwright asserts on these rather than pixel positions, keeping tests resilient to layout changes.
+- **Debug state lives on DOM data attributes** (`#game-root[data-player-grid]`, `[data-active-npc]`, `[data-title-screen]`, `[data-title-selection]`, `[data-active-challenge]`, etc.). Playwright asserts on these rather than pixel positions, keeping tests resilient to layout changes.
 - **Save/restore is app-level composition.** `SaveManager` persists a versioned snapshot that includes engine state, mission state, inventory state, unlocked commands, and current zone.
 
 ---
@@ -183,22 +185,23 @@ The redesign kept the stack and the layer separation, and the first migration tr
 
 ### New engine/system components
 
-| Component | Layer | Responsibility |
-|---|---|---|
-| `TmuxEvents.js` | `src/engine/` | Implemented. Event emitter firing on meaningful state changes (`session:created`, `session:detached`, `window:created`, `pane:split`, …). |
-| `MissionSystem.js` | `src/game/systems/` | Implemented. Manages current objective progression and snapshot restore, but scene interaction logic is still partly custom in `TmuxTrekApp.js`. |
-| `InventorySystem.js` | `src/game/systems/` | Implemented. Tracks collectibles and gates `tmux new -s ...` behind `RIFT_CODE`. |
-| `TransitionSystem.js` | `src/game/systems/` | Implemented. Handles scene routing decisions tied to events and explicit world actions. |
-| `AudioSystem.js` | `src/game/systems/` | Not implemented (Phase 3). |
-| `SaveManager.js` | `src/game/systems/` | Implemented as a single `localStorage` slot (`SAVE_VERSION = 2`). **Planned (Phase 4):** refactor to multi-slot — slot index + per-slot blobs, with new / continue / rename / delete / clear-all and a v3 migration. See [`design/save-manager-strategy.md`](design/save-manager-strategy.md). |
-| `DialogueSystem.js` | `src/game/systems/` | Not implemented as a separate system; dialogue remains scene/app-driven. |
-| `ScoreSystem.js` | `src/game/systems/` | **Planned (Phase 5).** Points model fed by mission/challenge/quiz events; aggregates per act and total; persists in the active save slot. |
-| `ReviewSystem.js` | `src/game/systems/` | **Planned (Phase 5).** Two surfaces: an optional flash-card self-assessment over unlocked commands, and a blocking multiple-choice gate (70% pass) wired into `TransitionSystem` at act boundaries. Question banks live in `src/data/reviews/`. |
-| Progress / level-complete | `src/game/systems/` + HUD | **Planned (Phase 5).** A `mission:act-completed` event drives a HUD progress widget and a level-complete overlay (score, time, next up). |
+| Component                           | Layer                                 | Responsibility                                                                                                                                                                                                                                    |
+| ----------------------------------- | ------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `TmuxEvents.js`                     | `src/engine/`                         | Implemented. Event emitter firing on meaningful state changes (`session:created`, `session:detached`, `window:created`, `pane:split`, …).                                                                                                         |
+| `MissionSystem.js`                  | `src/game/systems/`                   | Implemented. Manages current objective progression and snapshot restore, but scene interaction logic is still partly custom in `TmuxTrekApp.js`.                                                                                                  |
+| `InventorySystem.js`                | `src/game/systems/`                   | Implemented. Tracks collectibles and gates `tmux new -s ...` behind `RIFT_CODE`.                                                                                                                                                                  |
+| `TransitionSystem.js`               | `src/game/systems/`                   | Implemented. Handles scene routing decisions tied to events and explicit world actions.                                                                                                                                                           |
+| `AudioSystem.js`                    | `src/game/systems/`                   | Implemented. Procedural Web Audio keystroke, success, error, and ambient bridge sounds.                                                                                                                                                           |
+| `SaveManager.js`                    | `src/game/systems/`                   | Implemented as multi-slot `localStorage` persistence (`SAVE_VERSION = 3`): slot index + per-slot blobs, new / continue / rename / delete / clear-all, and v2 migration. See [`design/save-manager-strategy.md`](design/save-manager-strategy.md). |
+| `DialogueSystem.js`                 | `src/game/systems/`                   | Not implemented as a separate system; dialogue remains scene/app-driven.                                                                                                                                                                          |
+| `ScoreSystem.js`                    | `src/game/systems/`                   | **Planned (Phase 5).** Points model fed by mission/challenge/quiz events; aggregates per act and total; persists in the active save slot.                                                                                                         |
+| `ReviewSystem.js`                   | `src/game/systems/`                   | **Planned (Phase 5).** Two surfaces: an optional flash-card self-assessment over unlocked commands, and a blocking multiple-choice gate (70% pass) wired into `TransitionSystem` at act boundaries. Question banks live in `src/data/reviews/`.   |
+| Progress / level-complete           | `src/game/systems/` + HUD             | **Planned (Phase 5).** A `mission:act-completed` event drives a HUD progress widget and a level-complete overlay (score, time, next up).                                                                                                          |
+| `ActorNavigation` / `GridNavigator` | `src/game/systems/` or `src/game/ai/` | **Planned (Phase 6).** Deterministic grid route-following for demo automation and later NPC movement.                                                                                                                                             |
 
 ### New scenes
 
-`BridgeScene`, `SurfaceScene`, and `ArmoryScene` are implemented. A `TitleScene` (splash + main menu + optional auth gate) is **planned (Phase 4)**, either as a new scene or an extended `BootScene`. `StormZoneScene` and `ArchiveScene` are still future content work. `WorldScene` remains as legacy code from the older one-map prototype.
+`TitleScene`, `BridgeScene`, `SurfaceScene`, and `ArmoryScene` are implemented. `StormZoneScene` and `ArchiveScene` are still future content work. `WorldScene` remains as legacy code from the older one-map prototype.
 
 ### Current and target data layout
 

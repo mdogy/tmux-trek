@@ -16,15 +16,22 @@ import { ArmoryScene } from "./scenes/ArmoryScene.js";
 import { BootScene } from "./scenes/BootScene.js";
 import { BridgeScene } from "./scenes/BridgeScene.js";
 import { SurfaceScene } from "./scenes/SurfaceScene.js";
+import { TitleScene } from "./scenes/TitleScene.js";
 import { GameState } from "./systems/GameState.js";
 import { INVENTORY_ITEMS, InventorySystem } from "./systems/InventorySystem.js";
 import { MissionSystem } from "./systems/MissionSystem.js";
-import { loadGame, saveGame } from "./systems/SaveManager.js";
+import {
+  hasSave,
+  loadGame,
+  migrate,
+  newSlot,
+  saveGame,
+} from "./systems/SaveManager.js";
 import { TransitionSystem } from "./systems/TransitionSystem.js";
 import { UIController } from "./systems/UIController.js";
 
 const SESSION_ROUTES = {
-  "0": { sceneKey: "surface", zoneId: "surface" },
+  0: { sceneKey: "surface", zoneId: "surface" },
   armory: { sceneKey: "armory", zoneId: "armory" },
 };
 
@@ -42,6 +49,10 @@ const ZONES = {
   surface: surfaceZone,
   armory: armoryZone,
 };
+
+function isTestMode() {
+  return new URLSearchParams(window.location.search).get("testMode") === "1";
+}
 
 export class TmuxTrekApp {
   constructor() {
@@ -99,9 +110,9 @@ export class TmuxTrekApp {
     ];
 
     this.missionSystem.subscribe(() => this.#applyObjectiveState());
-    this.missionSystem.loadAct("act-01-sessions");
 
-    this.#restoreSnapshot(loadGame());
+    migrate();
+    this.missionSystem.loadAct("act-01-sessions");
     this.state.syncStatus(this.terminal.engine.getStatus());
   }
 
@@ -110,12 +121,28 @@ export class TmuxTrekApp {
     gameRoot.tabIndex = 0;
     window.__tmuxTrekApp = this;
 
+    // In test mode, restore/reset state before Phaser boots so that
+    // currentZoneId is stable when BootScene reads it, and skip TitleScene
+    // entirely to avoid Phaser scene-lifecycle timing races.
+    let scenes;
+    if (isTestMode()) {
+      if (hasSave()) {
+        this.restoreActiveSave();
+      } else {
+        newSlot("test");
+        this.resetToNewGame();
+      }
+      scenes = [BootScene, BridgeScene, SurfaceScene, ArmoryScene];
+    } else {
+      scenes = [TitleScene, BootScene, BridgeScene, SurfaceScene, ArmoryScene];
+    }
+
     this.game = new Phaser.Game({
       type: Phaser.AUTO,
       width: 960,
       height: 720,
       parent: "game-root",
-      scene: [BootScene, BridgeScene, SurfaceScene, ArmoryScene],
+      scene: scenes,
       render: {
         pixelArt: true,
       },
@@ -123,6 +150,25 @@ export class TmuxTrekApp {
 
     this.game.registry.set("app", this);
     window.addEventListener("beforeunload", this.#persistSnapshot);
+  }
+
+  resetToNewGame() {
+    this.terminal.engine.reset();
+    this.missionSystem.restore({});
+    this.inventory.restore({ items: [] });
+    this.state.restoreUnlockedCommands([]);
+    this.currentZoneId = "bridge";
+    this.missionSystem.loadAct("act-01-sessions");
+    this.state.syncStatus(this.terminal.engine.getStatus());
+  }
+
+  restoreActiveSave() {
+    this.#restoreSnapshot(loadGame());
+    this.state.syncStatus(this.terminal.engine.getStatus());
+  }
+
+  saveProgress() {
+    this.#saveProgress();
   }
 
   focusGame() {
@@ -256,9 +302,7 @@ export class TmuxTrekApp {
 
   handleOverflowInteraction() {
     if (this.getCurrentObjectiveId() !== "clear-overflow") {
-      this.state.setInstruction(
-        "The overflow front is not ready for you yet.",
-      );
+      this.state.setInstruction("The overflow front is not ready for you yet.");
       return false;
     }
 
@@ -326,7 +370,9 @@ export class TmuxTrekApp {
     const objective = this.getCurrentObjective();
 
     if (!objective) {
-      this.state.setMission("Act 1 complete. Starfall Village is stable again.");
+      this.state.setMission(
+        "Act 1 complete. Starfall Village is stable again.",
+      );
       this.state.setInstruction(
         "Sessions now feel like places: open, name, detach, list, and return.",
       );
@@ -375,7 +421,7 @@ export class TmuxTrekApp {
   }
 
   #persistSnapshot = () => {
-    if (window.__TMUX_TREK_DISABLE_AUTOSAVE) {
+    if (isTestMode()) {
       return;
     }
 

@@ -1,5 +1,43 @@
 # Project History
 
+## 2026-06-20 — Demo automation and actor AI planning
+
+Planning-only update for two utility features:
+
+- Added **Phase 6 — Demo Automation & Basic Actor AI** before the remaining content acts.
+- Planned a Playwright-driven demo-video e2e harness with two capture modes: full speedrun recording and a default captioned highlight reel with roughly 10-second samples around scene/feature beats.
+- Specified output artifacts under a demo/test output directory, plus watchdog safety: global and per-objective timeouts, max input budget, no-progress detection, path-not-found failure, scene-settle timeout, and failure screenshots/video.
+- Planned an in-game demo overlay for stable captions and human review of visual quality, audio timing, and gameplay mechanics.
+- Planned a reusable grid route-following service for the demo player and later NPC movement, using game state and zone walkability rather than computer vision.
+- Assessed tooling: Playwright video recording is a strong fit; Phaser helps with presentation and predefined path following but does not provide the route planner needed for obstacle-aware tile maps. `PathFinding.js`, `EasyStar.js`, and a small internal A\* are the implementation candidates to evaluate in Phase 6.
+- Renumbered Acts 2–5 from Phases 6–9 to Phases 7–10 in the implementation plan and handoff.
+- Follow-up review added front-door Playwright coverage for TitleScene save-slot management and hardened multi-slot storage validation.
+
+## 2026-06-20 — Phase 4 implementation (complete locally)
+
+Implemented Phase 4 (Game Shell, Auth & Save Slots) and resolved the E2E reload flake that was blocking PR readiness.
+
+**What was completed:**
+
+- `SaveManager` rewritten to multi-slot (SAVE_VERSION=3): slot index + per-slot localStorage keys, exports `newSlot`, `listSlots`, `getActiveSlotId`, `setActiveSlotId`, `deleteSlot`, `renameSlot`, `clearAllSlots`, `hasSave`, `saveGame`, `loadGame`, `migrate`. Follow-up hardening validates malformed indexes/blobs, ignores unknown active slots, and prevents legacy v2 migration from overwriting existing v3 slots.
+- `TitleScene` added: keyboard-navigated menu (New Game / Continue / Manage Saves), optional fixed-password auth gate via `VITE_AUTH_PASSWORD` build-time env var, DOM input overlays. Security note preserved: this is a client-side soft gate only, not a security control.
+- `BootScene` updated: `init(data)` lifecycle method receives optional `nextScene` data argument.
+- `TmuxTrekApp` updated: `resetToNewGame()` and `restoreActiveSave()` public methods; `migrate()` called in constructor; `start()` performs restore/reset before `new Phaser.Game()` for the test bypass path.
+
+**E2E flake resolved:**
+The Playwright test had been failing ~40-70% of runs at `waitForGrid(page, [3,15], "surface")` after `page.reload()`. Investigation showed save restoration and scene routing were correct; headless Chromium sometimes needed about 6-7 seconds for Phaser scene startup/debug attributes to settle, while the assertion used Playwright's default 5s timeout. `waitForGrid()` now uses an explicit 15s scene-readiness timeout.
+
+**Failed fix attempts before the timeout root cause was confirmed:**
+
+1. Deferred `scene.start()` from `create()` to `update()` via `_bypassScene` flag
+2. Passed `nextScene` via Phaser data argument to avoid re-reading `currentZoneId`
+3. Moved restore/reset before `new Phaser.Game()` in `start()` and removed TitleScene from test-path scene array
+
+**Verification:**
+
+- `npm run test:e2e -- --repeat-each=5 --workers=1` passed 5/5.
+- Full baseline passed: `npm run lint`, `npm run test` (67 tests after follow-up coverage), `npm run bdd` (2 scenarios / 17 steps), `npm run test:e2e` (2 Playwright tests), `npm run build`.
+
 ## 2026-06-20 — Roadmap expansion (planning only, no code)
 
 Scheduled eight additional features and decided their phase placement by
@@ -11,7 +49,7 @@ build on them, so the persistence shape and progression hooks are settled once
 rather than migrated/retrofitted per act.
 
 - **Phase 4 — Game Shell, Auth & Save Slots:** splash/title scene, optional
-  fixed-password soft-gate (documented as *not* security), and a multi-slot
+  fixed-password soft-gate (documented as _not_ security), and a multi-slot
   `SaveManager` refactor (new / continue / rename / delete / clear all, v3
   migration). Placed first because every later persisted feature writes into the
   save blob.
@@ -21,8 +59,10 @@ rather than migrated/retrofitted per act.
   content (question banks, score events, decks, progress nodes) wired through the
   acts.
 
-**Renumbering:** former Acts 2–5 (Phases 4–7) became Phases 6–9. The first live
-review gate is the Act 1 → Act 2 boundary in Phase 6.
+**Renumbering at that point:** former Acts 2–5 (Phases 4–7) became Phases 6–9.
+The later demo automation planning above inserted a new Phase 6, so the content
+acts are now Phases 7–10 and the first live review gate is the Act 1 → Act 2
+boundary in Phase 7.
 
 **Deployment (#8):** treated as a recurring per-phase Definition-of-Done plus a
 near-term milestone to merge the redesign branch so Pages stops showing the old
@@ -61,6 +101,7 @@ not technical).
 ## 2026-06-20 — Phase 2 player experience, coverage, and refactoring
 
 **Phase 2 — Player Experience Fixes (all 6 items complete):**
+
 - Vim `h/j/k/l` movement added as primary keys alongside WASD and arrows.
   Prepays copy-mode muscle memory payoff.
 - Interaction radius broadened from exact same-row/one-column to Chebyshev
@@ -84,12 +125,14 @@ not technical).
   dialogue-count-agnostic.
 
 **Refactoring (no behavior change):**
+
 - `TmuxEmulator.#renderChallengeHeader(title)` extracted: the 4-line terminal
   banner duplicated in `openChallenge` and `#restart` is now one method.
 - `MissionSystem.#clone` wrapper removed: the 3-line helper called exactly once
   in `getCurrentObjective` is inlined as a direct `structuredClone` call.
 
 **Coverage improvements:**
+
 - Engine layer (previously 86%/75%) raised to **99%/92%** statements/branches.
 - 18 new targeted tests added across `TmuxEngine` and `SessionManager`:
   `kill-session`, unknown command, `tmux` reattach-first-detached branch,
@@ -108,6 +151,7 @@ found and fixed two bugs and filled a test coverage gap, then a separate
 refactoring pass streamlined the code:
 
 **Review fixes:**
+
 - `TransitionSystem` was subscribing to both `session:created` and
   `session:attached`. Because `TmuxEngine` calls `createSession` then
   `attachSession` in sequence, every `tmux` or `tmux new -s` command caused
@@ -117,6 +161,7 @@ refactoring pass streamlined the code:
   Replaced with `node_modules/.bin/commitlint` (direct invocation).
 
 **Test coverage added:**
+
 - New `tests/unit/TransitionSystem.test.js` (7 cases): route lookup, bridge
   fallback on detach, unknown session ignored, dispose clears all listeners,
   single-fire guarantee, late route registration.
@@ -125,6 +170,7 @@ refactoring pass streamlined the code:
   on restore. (25 unit tests → 35 total.)
 
 **Refactoring (no behavior change):**
+
 - `SessionManager.#clone` wrapper removed; 14 call sites now use
   `structuredClone` directly.
 - `TmuxEmulator.#evaluate` extracted: the near-identical tails of

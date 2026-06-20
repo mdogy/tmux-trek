@@ -92,11 +92,15 @@ export class GridScene extends Phaser.Scene {
   }
 
   getGroundFrame(column, row) {
-    return TERRAIN_FRAMES.ground[(column * 7 + row * 11) % TERRAIN_FRAMES.ground.length];
+    return TERRAIN_FRAMES.ground[
+      (column * 7 + row * 11) % TERRAIN_FRAMES.ground.length
+    ];
   }
 
   getBorderFrame(column, row) {
-    return TERRAIN_FRAMES.border[(column * 5 + row * 3) % TERRAIN_FRAMES.border.length];
+    return TERRAIN_FRAMES.border[
+      (column * 5 + row * 3) % TERRAIN_FRAMES.border.length
+    ];
   }
 
   createZoneDecorations() {}
@@ -244,7 +248,12 @@ export class GridScene extends Phaser.Scene {
   #configureCamera() {
     const viewportWidth = Number(this.game.config.width);
     const viewportHeight = Number(this.game.config.height);
-    this.cameras.main.setBounds(0, 0, this.zone.map.width, this.zone.map.height);
+    this.cameras.main.setBounds(
+      0,
+      0,
+      this.zone.map.width,
+      this.zone.map.height,
+    );
 
     if (
       this.zone.map.width > viewportWidth ||
@@ -374,7 +383,9 @@ export class GridScene extends Phaser.Scene {
   }
 
   #handleTileArrival() {
-    const item = this.itemObjects.get(`${this.playerGrid.column},${this.playerGrid.row}`);
+    const item = this.itemObjects.get(
+      `${this.playerGrid.column},${this.playerGrid.row}`,
+    );
 
     if (!item) {
       return;
@@ -551,6 +562,8 @@ export class GridScene extends Phaser.Scene {
       return;
     }
 
+    delete host.dataset.titleScreen;
+    delete host.dataset.titleSelection;
     host.dataset.playerGrid = `${this.playerGrid.column},${this.playerGrid.row}`;
     host.dataset.isMoving = this.isMoving ? "true" : "false";
     host.dataset.prompt = prompt;
@@ -558,7 +571,8 @@ export class GridScene extends Phaser.Scene {
     host.dataset.activeNpc = this.app.getCurrentObjectiveId() ?? "";
     host.dataset.highlightedTarget = highlightedTargetId;
     host.dataset.lastInteractionResult = lastInteractionResult ?? "";
-    host.dataset.lastMoveResult = lastMoveResult ?? host.dataset.lastMoveResult ?? "";
+    host.dataset.lastMoveResult =
+      lastMoveResult ?? host.dataset.lastMoveResult ?? "";
     host.dataset.zoneId = this.zoneId;
   }
 }

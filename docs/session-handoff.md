@@ -1,6 +1,6 @@
 # TMUX Trek — Session Handoff
 
-*The start-here document for resuming or restarting work. Last updated June 19, 2026.*
+_The start-here document for resuming or restarting work. Last updated June 20, 2026._
 
 This is the operational resume doc: what is built today, how to verify it, what is wrong with it, and the immediate next task. It is written so that **a new session, model, or coding agent can pick up the project with no other context.** Read this first, then [`game-design.md`](game-design.md), [`architecture.md`](architecture.md), and [`implementation-plan.md`](implementation-plan.md).
 
@@ -29,107 +29,104 @@ Build TMUX Trek as an educational game where the story makes real tmux actions n
 
 ## What Is Built Today
 
-The live implementation now has a **three-scene Act 0 + Act 1 vertical slice** driven by engine events, mission state, inventory state, and browser save/restore.
+The live implementation has a **three-scene Act 0 + Act 1 vertical slice** plus a **Phase 4 game shell (TitleScene, multi-slot SaveManager, auth gate)**.
 
-| Order | Scene | Lesson | Required actions |
-|---|---|---|---|
-| 1 | Bridge | Open the Rift terminal | `tmux` |
-| 2 | Surface | Unlock named session creation | collect `RIFT_CODE`, `tmux new -s armory` |
-| 3 | Armory | Detach back to the bridge | collect weapon, `Ctrl+b d` |
-| 4 | Bridge | Inspect and re-enter the manifest | `tmux ls`, `tmux attach -t 0` |
-| 5 | Surface | Clear the overflow blocker | contextual `E` interaction with the weapon equipped |
+| Order | Scene   | Lesson                            | Required actions                                    |
+| ----- | ------- | --------------------------------- | --------------------------------------------------- |
+| 1     | Bridge  | Open the Rift terminal            | `tmux`                                              |
+| 2     | Surface | Unlock named session creation     | collect `RIFT_CODE`, `tmux new -s armory`           |
+| 3     | Armory  | Detach back to the bridge         | collect weapon, `Ctrl+b d`                          |
+| 4     | Bridge  | Inspect and re-enter the manifest | `tmux ls`, `tmux attach -t 0`                       |
+| 5     | Surface | Clear the overflow blocker        | contextual `E` interaction with the weapon equipped |
 
-The current gameplay loop is:
+Movement: vim `h/j/k/l` (primary), WASD and arrows (secondary). Interaction radius: Chebyshev distance ≤ 2. HUD shows `"Active: name  1w / 1p"` hierarchy. NPC dialogue: 4 cards (who→what→why→how).
 
-1. Start on the CLULIX bridge.
-2. Use `tmux` to descend into session `0` on the surface.
-3. Pick up the Rift Code so `tmux new -s NAME` is accepted.
-4. Create and enter the `armory` session.
-5. Pick up the weapon and detach with `Ctrl+b d`.
-6. Use `tmux ls` on the bridge to inspect the Rift Manifest.
-7. Reattach with `tmux attach -t 0`.
-8. Clear the overflow blocker and finish the slice.
+### Phase 4 additions
 
-Movement is vim `h/j/k/l` (primary) plus WASD and arrows (secondary). Interaction radius is Chebyshev distance ≤ 2 (nearest target). HELIX error feedback is specific to the mistake type. A `↺ Restart` button in the terminal overlay restores the pre-challenge engine state. The HUD shows `"Active: name  1w / 1p"` hierarchy. NPC dialogue runs 4 cards (who→what→why→how). The engine layer has 99%/92% statement/branch coverage with 53 unit tests.
-
-The architecture foundation from the redesign is fully live: `TmuxEvents`, `MissionSystem`, `InventorySystem`, `TransitionSystem`, and `SaveManager` are implemented; snapshots restore engine, mission, inventory, unlocked commands, and current zone from `localStorage`.
+- **`SaveManager`** rewritten to multi-slot (`SAVE_VERSION = 3`): slot index at `tmux-trek:saves`, per-slot data at `tmux-trek:save:<id>`. Exports: `newSlot`, `listSlots`, `getActiveSlotId`, `setActiveSlotId`, `deleteSlot`, `renameSlot`, `clearAllSlots`, `hasSave`, `saveGame`, `loadGame`, `migrate`. The storage boundary validates malformed indexes/blobs and avoids overwriting existing v3 slots during legacy migration.
+- **`TitleScene`** added: keyboard-navigated menu (New Game / Continue / Manage Saves), optional auth gate via `VITE_AUTH_PASSWORD` env var, DOM input overlays for slot naming and password. Correctly bypassed by the vertical-slice Playwright path with `?testMode=1`.
+- **`BootScene`** updated: `init(data)` lifecycle method added to receive `nextScene` via Phaser data argument from callers. Falls back to `app.currentZoneId` if no data passed.
+- **`TmuxTrekApp`** updated: `resetToNewGame()` and `restoreActiveSave()` public methods added; `migrate()` called in constructor; `start()` handles the `?testMode=1` bypass path before Phaser boot.
 
 ---
 
 ## Verification Baseline
 
-Last verified locally on the Phase 0 + Phase 1 feature branch:
+**As of June 20, 2026 the local baseline is clean:**
 
 ```bash
-npm run lint       # pass
-npm run test       # 53 unit tests pass (99% stmt / 92% branch on engine layer) -- AudioSystem untested (Web Audio API, browser-only)
-npm run bdd        # 2 scenarios / 17 steps pass
-npm run test:e2e   # 1 Playwright end-to-end vertical-slice flow passes
-npm run build      # pass
+npm run lint       # PASS — clean
+npm run test       # PASS — 67 unit tests pass
+npm run bdd        # PASS — 2 scenarios / 17 steps
+npm run test:e2e   # PASS — 2 Playwright tests
+npm run build      # PASS
 ```
 
-Playwright may need `npx playwright install chromium` on a fresh machine. `npm run format:check` reports pre-existing formatting drift and is **not** a clean CI gate yet.
+Stress check run after the fix:
+
+```bash
+npm run test:e2e -- --repeat-each=5 --workers=1   # PASS — 5/5
+```
+
+Playwright may need `npx playwright install chromium` on a fresh machine.
 
 > Environment note: `.husky/commit-msg` was updated to call `node_modules/.bin/commitlint` directly (instead of `npx commitlint`) to avoid hangs in sandboxed shells. Commit messages must follow conventional-commits format with a **lowercase** subject line.
 
 ---
 
-## Critical Evaluation (what's wrong now)
+## Resolved Bug — E2E Reload Flake
 
-**What works:** the new story loop is functionally complete end to end. The tmux engine is behaviorally accurate, session state persists across scene transitions and reloads, prefix-key handling works, the new systems are tested and cleanly separated, and the code was streamlined in a refactoring pass (see `history.md`).
+The previous blocker was a flaky Playwright assertion after `page.reload()` in `tests/e2e/gameplay.spec.js`. The test expected `#game-root[data-player-grid="3,15"]` within Playwright's default 5s assertion timeout, but headless Chromium sometimes took about 6-7s for Phaser scene startup/debug attributes to settle after reload.
 
-**Structural problems:**
+Investigation showed state restoration was correct: the sidebar rendered the restored zone/mission/session and the Phaser scene eventually exposed the expected `data-player-grid`. The fix was to make `waitForGrid()` use an explicit 15s readiness timeout for scene startup while keeping movement assertions tight.
 
-- **The session-as-travel metaphor is now visible, but only for the opening slice.** Bridge, surface, and armory work; later acts are still on the older structure and need to be reintroduced on top of the new scene model.
-- **Progression is less hardcoded than before, but not fully data-driven.** `MissionSystem` and zone data exist, but scene interaction dispatch still lives in `TmuxTrekApp.js` as objective-ID branches rather than in the act JSON.
-- **The HUD still shows sessions only.** Window and pane state exist in the engine but are not rendered, so later tmux commands still lack strong world feedback.
-- **Overflow resolution changed shape.** The design called for `tmux kill-session -t ...`, but the implemented slice clears the blocker through a world interaction with the weapon. Kill-session is still untaught.
+Verification after the fix:
 
-**Gameplay/UX (Phase 2 complete — remaining):**
-
-- Dialogue is now 4 cards but still a simple linear sequence; no branching, no speaker portraits.
-- The `↺ Restart` button exists but has no keyboard shortcut and no confirmation UX.
-- Audio and VFX minimum done (Phase 3): keystroke clicks, error tones, success chime, teal fade-in on scene entry, Rift Code pulse glow, bridge ambient drone.
-
-**Asset problems:** no animation; no sprite artwork; audio is procedural Web Audio (no sampled SFX or music files yet).
-
-Full detail is preserved in [`archive/descriptive-summary-05-19.md`](archive/descriptive-summary-05-19.md).
+- `npm run test:e2e -- --repeat-each=5 --workers=1` passed 5/5.
+- `npm run test:e2e` passed normally.
 
 ---
 
-## Known Gaps (concrete)
+## Critical Evaluation
 
-- The opening bridge/surface/armory loop is live, but Acts 2 and 3 are not yet migrated into the new scene architecture.
-- Window and pane changes are still engine/terminal-only; the HUD renders sessions only.
-- `tmux kill-session -t name` and `Ctrl+b n` work in the engine but are not taught in the new slice.
-- Later window/pane/copy-mode commands from the design are still unsupported or not wired into world progression.
-- The Playwright acceptance path is now one long keyboard-only vertical-slice test rather than per-act coverage.
-- `npm run format:check` is not a clean repository-wide gate.
-- The Gemini asset generator is experimental and writes to root `assets/`, not runtime `public/assets/`.
-- `WorldScene.js` is still in the repo as legacy code but is no longer part of the active scene flow.
-- No front-of-game shell yet: no splash/title scene, no main menu, single-slot saves only (no named saves / new-game / delete / rename / clear). Scheduled for Phase 4.
-- No scoring, progress indicator, level-complete screen, flash cards, or review gates yet. Scheduled for Phase 5.
-- The live Pages build on `main` still shows the old one-map prototype; the redesign exists only on this feature branch until merged.
-- The UI is desktop-fixed and not responsive. Mobile-web is evaluated in [`design/mobile-web-strategy.md`](design/mobile-web-strategy.md): supportable in tiers (full game only with a keyboard, since touch soft keyboards have no `Ctrl+b`; touch-only gets a review companion). The decision is to build Phases 4–5 UIs responsive from the start rather than retrofit.
+**What works:**
+
+- Full Act 1 gameplay loop end-to-end
+- TmuxEngine (session/window/pane), event system, mission state machine, inventory, save system
+- TitleScene (keyboard-navigated menu, auth gate, DOM overlays) — works in normal (non-test) use
+- Multi-slot SaveManager with migration from v2 → v3
+- Unit, BDD, Playwright, lint, and build all pass
+- Front-door save-slot management has Playwright coverage in `tests/e2e/title-save-slots.spec.js`
+
+**What is broken:**
+
+- No current blocking bug in the local baseline.
+
+**Known gaps (non-blocking):**
+
+- `WorldScene.js` still in repo — no longer in the active scene flow, can be deleted
+- `npm run format:check` is not a clean gate
+- No in-game "Save & Quit to Menu" path yet
+- No scoring, flash cards, or review gate (Phase 5)
+- No demo-video E2E capture or shared route-following actor AI yet (planned Phase 6)
+- Acts 2-5 not migrated to new scene architecture (Phases 7-10)
 
 ---
 
 ## Immediate Next Task
 
-Phases 0, 1, 2, and 3 are complete. The branch `codex/phase0-phase1-vertical-slice` is ready to be PR'd and merged to `main`.
+Phase 4 is no longer blocked locally. Next planned work is **Phase 5 — Progression & Assessment Systems** per [`implementation-plan.md`](implementation-plan.md): scoring, progress/level-complete, review gate framework, and optional flash cards.
 
-After merge, the next body of work is **Phase 4 — Game Shell, Auth & Save Slots** from [`implementation-plan.md`](implementation-plan.md):
-
-1. `TitleScene` (or extended `BootScene`): splash/logo, main menu — New Game, Continue, Saves, Settings.
-2. Fixed-password auth gate (build-flagged; soft gate only, not security).
-3. Multi-slot `SaveManager` refactor: `SAVE_VERSION` → 3, slot index + per-slot keys, new/continue/rename/delete/clear-all operations.
-
-**Roadmap note (expanded June 20, 2026):** eight further features are now scheduled. Two new phases land *before* the content acts because they reshape data models the acts depend on: **Phase 4 — Game Shell, Auth & Save Slots** (splash, fixed-password soft-gate, multi-slot saves) and **Phase 5 — Progression & Assessment Systems** (scoring, progress/level-complete, 70% multiple-choice gate, optional flash cards). The former Acts 2–5 renumber to Phases 6–9, and each wires its own per-act score events, review question bank, flashcards, and progress node. GitHub Pages deployment is a recurring per-phase step plus a near-term "merge the redesign to replace the prototype" milestone. See the implementation plan's [Feature → Phase Map](implementation-plan.md#feature--phase-map).
-
-After Phase 3, the loop should feel alive enough to evaluate the overflow/kill-session gap; Phases 4–5 then establish the shell and progression frameworks before Act 2 (Phase 6).
+After Phase 5, a new **Phase 6 — Demo Automation & Basic Actor AI** is planned before the content acts. It will add Playwright-driven video capture, a default captioned highlight reel for human visual/audio/gameplay review, full speedrun recording, watchdogs to prevent e2e hangs, and a reusable grid route-following service for the demo player and future NPC movement.
 
 ---
 
 ## Delivery
 
 Follow [`delivery-workflow.md`](delivery-workflow.md): branch from current `main`, implement and verify, open a PR, wait for CI, merge, wait for the `Deploy` workflow, and verify the Pages URL. Update this handoff, [`implementation-plan.md`](implementation-plan.md), and [`../history.md`](../history.md) whenever the resume state materially changes.
+
+---
+
+## Roadmap Note (expanded June 20, 2026)
+
+Further utility and product features are scheduled. Three phases now land _before_ the content acts: **Phase 4 — Game Shell, Auth & Save Slots**, **Phase 5 — Progression & Assessment Systems**, and **Phase 6 — Demo Automation & Basic Actor AI**. Phase 6 is a utility phase for review videos and shared navigation AI before NPC-heavy acts. The former Acts 2–5 renumber to Phases 7–10. GitHub Pages deployment is a recurring per-phase step plus a near-term "merge the redesign to replace the prototype" milestone. See [`implementation-plan.md`](implementation-plan.md) for full detail.
