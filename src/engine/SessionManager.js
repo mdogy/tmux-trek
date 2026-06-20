@@ -28,8 +28,8 @@ export class SessionManager {
     };
 
     this.sessions.set(resolvedName, session);
-    this.#emit("session:created", { name: resolvedName, session: this.#clone(session) });
-    return this.#clone(session);
+    this.#emit("session:created", { name: resolvedName, session: structuredClone(session) });
+    return structuredClone(session);
   }
 
   attachSession(name) {
@@ -45,8 +45,8 @@ export class SessionManager {
 
     session.attached = true;
     this.activeSessionName = name;
-    this.#emit("session:attached", { name, session: this.#clone(session) });
-    return this.#clone(session);
+    this.#emit("session:attached", { name, session: structuredClone(session) });
+    return structuredClone(session);
   }
 
   detachSession() {
@@ -57,8 +57,8 @@ export class SessionManager {
     const session = this.sessions.get(this.activeSessionName);
     session.attached = false;
     this.activeSessionName = null;
-    this.#emit("session:detached", { name: session.name, session: this.#clone(session) });
-    return this.#clone(session);
+    this.#emit("session:detached", { name: session.name, session: structuredClone(session) });
+    return structuredClone(session);
   }
 
   renameSession(oldName, newName) {
@@ -82,9 +82,9 @@ export class SessionManager {
     this.#emit("session:renamed", {
       oldName,
       name: newName,
-      session: this.#clone(session),
+      session: structuredClone(session),
     });
-    return this.#clone(session);
+    return structuredClone(session);
   }
 
   killSession(name) {
@@ -99,7 +99,7 @@ export class SessionManager {
       this.activeSessionName = null;
     }
 
-    this.#emit("session:killed", { name, session: this.#clone(session) });
+    this.#emit("session:killed", { name, session: structuredClone(session) });
   }
 
   createWindow() {
@@ -117,14 +117,14 @@ export class SessionManager {
     this.#emit("window:created", {
       sessionName: session.name,
       id,
-      window: this.#clone(window),
+      window: structuredClone(window),
     });
-    return this.#clone(window);
+    return structuredClone(window);
   }
 
   listWindows() {
     const session = this.#requireActiveSession();
-    return session.windows.map((window) => this.#clone(window));
+    return session.windows.map((window) => structuredClone(window));
   }
 
   selectNextWindow(direction = 1) {
@@ -140,9 +140,9 @@ export class SessionManager {
     this.#emit("window:selected", {
       sessionName: session.name,
       id: session.activeWindowId,
-      window: this.#clone(session.windows[nextIndex]),
+      window: structuredClone(session.windows[nextIndex]),
     });
-    return this.#clone(session.windows[nextIndex]);
+    return structuredClone(session.windows[nextIndex]);
   }
 
   splitActivePane(direction) {
@@ -158,10 +158,10 @@ export class SessionManager {
     this.#emit("pane:split", {
       sessionName: this.activeSessionName,
       windowId: window.id,
-      pane: this.#clone(pane),
+      pane: structuredClone(pane),
       direction,
     });
-    return this.#clone(pane);
+    return structuredClone(pane);
   }
 
   closeActivePane() {
@@ -180,14 +180,14 @@ export class SessionManager {
     this.#emit("pane:closed", {
       sessionName: this.activeSessionName,
       windowId: window.id,
-      pane: this.#clone(closedPane),
+      pane: structuredClone(closedPane),
     });
-    return this.#clone(closedPane);
+    return structuredClone(closedPane);
   }
 
   getSession(name) {
     const session = this.sessions.get(name);
-    return session ? this.#clone(session) : undefined;
+    return session ? structuredClone(session) : undefined;
   }
 
   getActiveSession() {
@@ -199,7 +199,7 @@ export class SessionManager {
   }
 
   listSessions() {
-    return [...this.sessions.values()].map((session) => this.#clone(session));
+    return [...this.sessions.values()].map((session) => structuredClone(session));
   }
 
   toSnapshot() {
@@ -216,7 +216,7 @@ export class SessionManager {
     this.nextUnnamedSession = snapshot?.nextUnnamedSession ?? 0;
 
     for (const session of snapshot?.sessions ?? []) {
-      this.sessions.set(session.name, this.#clone(session));
+      this.sessions.set(session.name, structuredClone(session));
     }
   }
 
@@ -249,10 +249,6 @@ export class SessionManager {
     const name = `${this.nextUnnamedSession}`;
     this.nextUnnamedSession += 1;
     return name;
-  }
-
-  #clone(value) {
-    return structuredClone(value);
   }
 
   #emit(eventName, payload) {

@@ -23,6 +23,11 @@ import { loadGame, saveGame } from "./systems/SaveManager.js";
 import { TransitionSystem } from "./systems/TransitionSystem.js";
 import { UIController } from "./systems/UIController.js";
 
+const SESSION_ROUTES = {
+  "0": { sceneKey: "surface", zoneId: "surface" },
+  armory: { sceneKey: "armory", zoneId: "armory" },
+};
+
 const DIALOGUE_BY_ID = {
   "bridge-rift-terminal": bridgeRiftDialogue,
   "bridge-manifest-terminal": bridgeManifestDialogue,
@@ -75,14 +80,9 @@ export class TmuxTrekApp {
       events: this.terminal.engine.events,
       onTransition: (route) => this.navigateTo(route),
     });
-    this.transitionSystem.registerRoute("0", {
-      sceneKey: "surface",
-      zoneId: "surface",
-    });
-    this.transitionSystem.registerRoute("armory", {
-      sceneKey: "armory",
-      zoneId: "armory",
-    });
+    for (const [sessionName, route] of Object.entries(SESSION_ROUTES)) {
+      this.transitionSystem.registerRoute(sessionName, route);
+    }
     this.engineMissionUnsubscribers = [
       this.terminal.engine.on("session:created", (payload) =>
         this.missionSystem.handleEvent("session:created", payload),
@@ -367,16 +367,7 @@ export class TmuxTrekApp {
 
   #deriveZoneFromEngineState() {
     const activeSession = this.terminal.engine.getStatus().activeSessionName;
-
-    if (activeSession === "armory") {
-      return "armory";
-    }
-
-    if (activeSession === "0") {
-      return "surface";
-    }
-
-    return "bridge";
+    return SESSION_ROUTES[activeSession]?.zoneId ?? "bridge";
   }
 
   #saveProgress() {

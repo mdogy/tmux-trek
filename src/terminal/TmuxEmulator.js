@@ -121,8 +121,6 @@ export class TmuxEmulator {
   }
 
   #handleCommand(command) {
-    const step = this.activeChallenge.steps[this.activeStepIndex];
-
     if (!command) {
       this.#prompt();
       return;
@@ -136,21 +134,7 @@ export class TmuxEmulator {
       return;
     }
 
-    const result = this.engine.execute(command);
-    result.output.forEach((line) => this.renderer.writeln(line));
-    this.onStatusChange(result.status);
-
-    if (step.kind === "command" && command === step.expected && result.ok) {
-      this.#completeStep(step);
-      return;
-    }
-
-    if (step.kind === "command" && command !== step.expected) {
-      this.renderer.writeln(`HELIX: not yet. ${step.instruction}`);
-    }
-
-    this.renderer.writeln("");
-    this.#prompt();
+    this.#evaluate("command", command, this.engine.execute(command), `HELIX: not yet. `);
   }
 
   #getBlockedCommandMessage(command) {
@@ -165,18 +149,21 @@ export class TmuxEmulator {
   }
 
   #handleKeybinding(key) {
+    this.#evaluate("keybinding", key, this.engine.handleKeybinding(key), "HELIX: wrong follow-up key. ");
+  }
+
+  #evaluate(kind, input, result, wrongPrefix) {
     const step = this.activeChallenge.steps[this.activeStepIndex];
-    const result = this.engine.handleKeybinding(key);
     result.output.forEach((line) => this.renderer.writeln(line));
     this.onStatusChange(result.status);
 
-    if (step.kind === "keybinding" && key === step.expected && result.ok) {
+    if (step.kind === kind && input === step.expected && result.ok) {
       this.#completeStep(step);
       return;
     }
 
-    if (step.kind === "keybinding" && key !== step.expected) {
-      this.renderer.writeln(`HELIX: wrong follow-up key. ${step.instruction}`);
+    if (step.kind === kind && input !== step.expected) {
+      this.renderer.writeln(`${wrongPrefix}${step.instruction}`);
     }
 
     this.renderer.writeln("");

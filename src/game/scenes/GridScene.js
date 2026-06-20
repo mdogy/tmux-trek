@@ -313,7 +313,7 @@ export class GridScene extends Phaser.Scene {
       nextColumn === this.playerGrid.column &&
       nextRow === this.playerGrid.row
     ) {
-      this.#syncDebugState(undefined, undefined, "blocked");
+      this.#syncDebugState({ lastMoveResult: "blocked" });
       return;
     }
 
@@ -322,7 +322,7 @@ export class GridScene extends Phaser.Scene {
       const reason = occupiedTile
         ? `${occupiedTile.name} blocks the way.`
         : "Movement blocked by terrain.";
-      this.#syncDebugState(reason, null, "blocked");
+      this.#syncDebugState({ prompt: reason, lastMoveResult: "blocked" });
       return;
     }
 
@@ -343,7 +343,7 @@ export class GridScene extends Phaser.Scene {
         this.playerLabel.setPosition(center.x - 24, center.y + 28);
         this.isMoving = false;
         this.#handleTileArrival();
-        this.#syncDebugState(undefined, undefined, "moved");
+        this.#syncDebugState({ lastMoveResult: "moved" });
       },
     });
 
@@ -353,7 +353,6 @@ export class GridScene extends Phaser.Scene {
       ease: "Quad.Out",
       x: center.x - 24,
       y: center.y + 28,
-      onComplete: () => {},
     });
   }
 
@@ -395,13 +394,12 @@ export class GridScene extends Phaser.Scene {
     }
 
     this.interactionText.setText(prompt);
-    this.#syncDebugState(
+    this.#syncDebugState({
       prompt,
-      target?.kind === "npc" ? target.id : "",
-      undefined,
-      target?.id ?? "",
+      nearbyNpcId: target?.kind === "npc" ? target.id : "",
+      highlightedTargetId: target?.id ?? "",
       lastInteractionResult,
-    );
+    });
     this.interactRequested = false;
   }
 
@@ -430,110 +428,100 @@ export class GridScene extends Phaser.Scene {
       .setVisible(false);
   }
 
-  #createSpriteTextures() {
-    if (!this.textures.exists(SPRITE_KEYS.captain)) {
-      const graphics = this.add.graphics();
-      graphics.fillStyle(0xf2e8be);
-      graphics.fillRoundedRect(13, 4, 22, 18, 8);
-      graphics.fillStyle(0x0a1628);
-      graphics.fillRoundedRect(17, 8, 14, 8, 4);
-      graphics.fillStyle(0x46d9c4);
-      graphics.fillRoundedRect(14, 22, 20, 17, 5);
-      graphics.fillStyle(0xf2e8be);
-      graphics.fillRect(12, 25, 5, 10);
-      graphics.fillRect(31, 25, 5, 10);
-      graphics.fillRect(17, 38, 5, 6);
-      graphics.fillRect(26, 38, 5, 6);
-      graphics.generateTexture(SPRITE_KEYS.captain, 48, 48);
-      graphics.destroy();
+  #generateTexture(key, drawFn) {
+    if (this.textures.exists(key)) {
+      return;
     }
 
-    if (!this.textures.exists(SPRITE_KEYS.zrix)) {
-      const graphics = this.add.graphics();
-      graphics.fillStyle(0x7b2d8b);
-      graphics.fillEllipse(24, 23, 26, 30);
-      graphics.fillEllipse(14, 30, 10, 10);
-      graphics.fillEllipse(34, 30, 10, 10);
-      graphics.fillStyle(0x46d9c4);
-      graphics.fillEllipse(24, 18, 13, 8);
-      graphics.fillRect(21, 6, 3, 12);
-      graphics.fillRect(26, 6, 3, 12);
-      graphics.fillStyle(0xffb300);
-      graphics.fillCircle(19, 22, 3);
-      graphics.fillCircle(29, 22, 3);
-      graphics.generateTexture(SPRITE_KEYS.zrix, 48, 48);
-      graphics.destroy();
-    }
-
-    if (!this.textures.exists(SPRITE_KEYS.armorer)) {
-      const graphics = this.add.graphics();
-      graphics.fillStyle(0x8f6d2a);
-      graphics.fillRoundedRect(10, 10, 28, 28, 5);
-      graphics.fillStyle(0x46d9c4);
-      graphics.fillEllipse(24, 15, 12, 10);
-      graphics.fillStyle(0xffb300);
-      graphics.fillRect(16, 24, 16, 3);
-      graphics.fillRect(14, 30, 20, 4);
-      graphics.generateTexture(SPRITE_KEYS.armorer, 48, 48);
-      graphics.destroy();
-    }
-
-    if (!this.textures.exists(SPRITE_KEYS.terminal)) {
-      const graphics = this.add.graphics();
-      graphics.fillStyle(0x0b1d2c);
-      graphics.fillRoundedRect(10, 8, 28, 28, 4);
-      graphics.fillStyle(0x46d9c4);
-      graphics.fillRoundedRect(14, 12, 20, 12, 3);
-      graphics.fillStyle(0xffb300);
-      graphics.fillRect(14, 28, 20, 3);
-      graphics.generateTexture(SPRITE_KEYS.terminal, 48, 48);
-      graphics.destroy();
-    }
-
-    if (!this.textures.exists(SPRITE_KEYS.riftCode)) {
-      const graphics = this.add.graphics();
-      graphics.fillStyle(0x46d9c4);
-      graphics.fillTriangle(24, 6, 12, 24, 24, 42);
-      graphics.fillTriangle(24, 6, 36, 24, 24, 42);
-      graphics.lineStyle(2, 0xffb300);
-      graphics.strokeRect(18, 18, 12, 12);
-      graphics.generateTexture(SPRITE_KEYS.riftCode, 48, 48);
-      graphics.destroy();
-    }
-
-    if (!this.textures.exists(SPRITE_KEYS.weapon)) {
-      const graphics = this.add.graphics();
-      graphics.fillStyle(0xffb300);
-      graphics.fillRect(8, 22, 26, 6);
-      graphics.fillStyle(0x46d9c4);
-      graphics.fillRect(28, 18, 8, 14);
-      graphics.fillStyle(0xf2e8be);
-      graphics.fillRect(12, 18, 8, 4);
-      graphics.generateTexture(SPRITE_KEYS.weapon, 48, 48);
-      graphics.destroy();
-    }
-
-    if (!this.textures.exists(SPRITE_KEYS.overflow)) {
-      const graphics = this.add.graphics();
-      graphics.fillStyle(0x7b2d8b);
-      graphics.fillRect(8, 8, 32, 32);
-      graphics.fillStyle(0x46d9c4);
-      graphics.fillRect(12, 12, 24, 6);
-      graphics.fillStyle(0xff6f61);
-      graphics.fillRect(12, 24, 20, 6);
-      graphics.fillRect(18, 32, 18, 4);
-      graphics.generateTexture(SPRITE_KEYS.overflow, 48, 48);
-      graphics.destroy();
-    }
+    const g = this.add.graphics();
+    drawFn(g);
+    g.generateTexture(key, 48, 48);
+    g.destroy();
   }
 
-  #syncDebugState(
+  #createSpriteTextures() {
+    this.#generateTexture(SPRITE_KEYS.captain, (g) => {
+      g.fillStyle(0xf2e8be);
+      g.fillRoundedRect(13, 4, 22, 18, 8);
+      g.fillStyle(0x0a1628);
+      g.fillRoundedRect(17, 8, 14, 8, 4);
+      g.fillStyle(0x46d9c4);
+      g.fillRoundedRect(14, 22, 20, 17, 5);
+      g.fillStyle(0xf2e8be);
+      g.fillRect(12, 25, 5, 10);
+      g.fillRect(31, 25, 5, 10);
+      g.fillRect(17, 38, 5, 6);
+      g.fillRect(26, 38, 5, 6);
+    });
+
+    this.#generateTexture(SPRITE_KEYS.zrix, (g) => {
+      g.fillStyle(0x7b2d8b);
+      g.fillEllipse(24, 23, 26, 30);
+      g.fillEllipse(14, 30, 10, 10);
+      g.fillEllipse(34, 30, 10, 10);
+      g.fillStyle(0x46d9c4);
+      g.fillEllipse(24, 18, 13, 8);
+      g.fillRect(21, 6, 3, 12);
+      g.fillRect(26, 6, 3, 12);
+      g.fillStyle(0xffb300);
+      g.fillCircle(19, 22, 3);
+      g.fillCircle(29, 22, 3);
+    });
+
+    this.#generateTexture(SPRITE_KEYS.armorer, (g) => {
+      g.fillStyle(0x8f6d2a);
+      g.fillRoundedRect(10, 10, 28, 28, 5);
+      g.fillStyle(0x46d9c4);
+      g.fillEllipse(24, 15, 12, 10);
+      g.fillStyle(0xffb300);
+      g.fillRect(16, 24, 16, 3);
+      g.fillRect(14, 30, 20, 4);
+    });
+
+    this.#generateTexture(SPRITE_KEYS.terminal, (g) => {
+      g.fillStyle(0x0b1d2c);
+      g.fillRoundedRect(10, 8, 28, 28, 4);
+      g.fillStyle(0x46d9c4);
+      g.fillRoundedRect(14, 12, 20, 12, 3);
+      g.fillStyle(0xffb300);
+      g.fillRect(14, 28, 20, 3);
+    });
+
+    this.#generateTexture(SPRITE_KEYS.riftCode, (g) => {
+      g.fillStyle(0x46d9c4);
+      g.fillTriangle(24, 6, 12, 24, 24, 42);
+      g.fillTriangle(24, 6, 36, 24, 24, 42);
+      g.lineStyle(2, 0xffb300);
+      g.strokeRect(18, 18, 12, 12);
+    });
+
+    this.#generateTexture(SPRITE_KEYS.weapon, (g) => {
+      g.fillStyle(0xffb300);
+      g.fillRect(8, 22, 26, 6);
+      g.fillStyle(0x46d9c4);
+      g.fillRect(28, 18, 8, 14);
+      g.fillStyle(0xf2e8be);
+      g.fillRect(12, 18, 8, 4);
+    });
+
+    this.#generateTexture(SPRITE_KEYS.overflow, (g) => {
+      g.fillStyle(0x7b2d8b);
+      g.fillRect(8, 8, 32, 32);
+      g.fillStyle(0x46d9c4);
+      g.fillRect(12, 12, 24, 6);
+      g.fillStyle(0xff6f61);
+      g.fillRect(12, 24, 20, 6);
+      g.fillRect(18, 32, 18, 4);
+    });
+  }
+
+  #syncDebugState({
     prompt = this.interactionText?.text ?? "",
     nearbyNpcId = "",
     lastMoveResult = null,
     highlightedTargetId = "",
     lastInteractionResult = null,
-  ) {
+  } = {}) {
     const host = document.querySelector("#game-root");
     if (!host) {
       return;
@@ -542,9 +530,9 @@ export class GridScene extends Phaser.Scene {
     host.dataset.playerGrid = `${this.playerGrid.column},${this.playerGrid.row}`;
     host.dataset.isMoving = this.isMoving ? "true" : "false";
     host.dataset.prompt = prompt;
-    host.dataset.nearbyNpc = nearbyNpcId ?? "";
+    host.dataset.nearbyNpc = nearbyNpcId;
     host.dataset.activeNpc = this.app.getCurrentObjectiveId() ?? "";
-    host.dataset.highlightedTarget = highlightedTargetId ?? "";
+    host.dataset.highlightedTarget = highlightedTargetId;
     host.dataset.lastInteractionResult = lastInteractionResult ?? "";
     host.dataset.lastMoveResult = lastMoveResult ?? host.dataset.lastMoveResult ?? "";
     host.dataset.zoneId = this.zoneId;
