@@ -9,6 +9,8 @@ export class GameState {
       unlockedCommands: [],
       sessions: [],
       activeSessionName: null,
+      activeWindowId: null,
+      activePaneId: null,
       terminalOpen: false,
       dialogueOpen: false,
       toast: "",
@@ -64,6 +66,8 @@ export class GameState {
     this.#update({
       sessions: status.sessions,
       activeSessionName: status.activeSessionName,
+      activeWindowId: status.activeWindowId,
+      activePaneId: status.activePaneId,
     });
   }
 

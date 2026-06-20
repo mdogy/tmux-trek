@@ -31,8 +31,12 @@ async function openDialogue(page) {
   await expect(page.locator("#dialogue-root")).not.toHaveClass(/hidden/);
 }
 
-async function advanceDialogue(page) {
-  await page.keyboard.press("Enter");
+async function clearDialogue(page) {
+  const root = page.locator("#dialogue-root");
+  while (!((await root.getAttribute("class")) ?? "").includes("hidden")) {
+    await page.keyboard.press("Enter");
+    await page.waitForTimeout(120);
+  }
 }
 
 async function pressTmuxKeybinding(page, key) {
@@ -63,8 +67,7 @@ test("TMUX Trek completes the Phase 1 vertical slice and restores on reload", as
   ]);
 
   await openDialogue(page);
-  await advanceDialogue(page);
-  await advanceDialogue(page);
+  await clearDialogue(page);
   await expect(page.locator("#terminal-root")).toHaveAttribute(
     "data-active-challenge",
     "bridge-open-rift",
@@ -117,8 +120,7 @@ test("TMUX Trek completes the Phase 1 vertical slice and restores on reload", as
   ]);
 
   await openDialogue(page);
-  await advanceDialogue(page);
-  await advanceDialogue(page);
+  await clearDialogue(page);
   await expect(page.locator("#terminal-root")).toHaveAttribute(
     "data-active-challenge",
     "village-open-armory",
@@ -145,8 +147,7 @@ test("TMUX Trek completes the Phase 1 vertical slice and restores on reload", as
     "Speak with Armorer Kesh",
   );
   await openDialogue(page);
-  await advanceDialogue(page);
-  await advanceDialogue(page);
+  await clearDialogue(page);
   await expect(page.locator("#terminal-root")).toHaveAttribute(
     "data-active-challenge",
     "armory-detach",
@@ -161,8 +162,7 @@ test("TMUX Trek completes the Phase 1 vertical slice and restores on reload", as
     ["KeyD", [7, 7]],
   ]);
   await openDialogue(page);
-  await advanceDialogue(page);
-  await advanceDialogue(page);
+  await clearDialogue(page);
   await expect(page.locator("#terminal-root")).toHaveAttribute(
     "data-active-challenge",
     "bridge-manifest-return",

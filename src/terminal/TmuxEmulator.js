@@ -23,6 +23,8 @@ export class TmuxEmulator {
     this.activeChallenge = null;
     this.activeStepIndex = 0;
     this.keySubscription = null;
+    this.challengeEngineSnapshot = null;
+    this.restartButton = null;
   }
 
   openChallenge(challenge) {
@@ -30,9 +32,11 @@ export class TmuxEmulator {
     this.activeStepIndex = 0;
     this.inputBuffer = "";
     this.prefixArmed = false;
+    this.challengeEngineSnapshot = this.engine.getSnapshot();
     this.renderer.mount(this.container);
     this.keySubscription?.dispose?.();
     this.keySubscription = this.renderer.onKey((event) => this.#handleKey(event));
+    this.#addRestartButton();
     this.renderer.clear();
     this.container.dataset.activeChallenge = challenge.id;
     this.container.dataset.activeStep = "0";
@@ -48,6 +52,8 @@ export class TmuxEmulator {
   close() {
     this.keySubscription?.dispose?.();
     this.keySubscription = null;
+    this.restartButton?.remove();
+    this.restartButton = null;
     this.renderer.dispose();
     this.activeChallenge = null;
     this.activeStepIndex = 0;
@@ -134,7 +140,7 @@ export class TmuxEmulator {
       return;
     }
 
-    this.#evaluate("command", command, this.engine.execute(command), `HELIX: not yet. `);
+    this.#evaluate("command", command, this.engine.execute(command));
   }
 
   #getBlockedCommandMessage(command) {
@@ -149,10 +155,10 @@ export class TmuxEmulator {
   }
 
   #handleKeybinding(key) {
-    this.#evaluate("keybinding", key, this.engine.handleKeybinding(key), "HELIX: wrong follow-up key. ");
+    this.#evaluate("keybinding", key, this.engine.handleKeybinding(key));
   }
 
-  #evaluate(kind, input, result, wrongPrefix) {
+  #evaluate(kind, input, result) {
     const step = this.activeChallenge.steps[this.activeStepIndex];
     result.output.forEach((line) => this.renderer.writeln(line));
     this.onStatusChange(result.status);
@@ -163,11 +169,62 @@ export class TmuxEmulator {
     }
 
     if (step.kind === kind && input !== step.expected) {
-      this.renderer.writeln(`${wrongPrefix}${step.instruction}`);
+      this.renderer.writeln(this.#categorizeError(kind, input, step));
     }
 
     this.renderer.writeln("");
     this.#prompt();
+  }
+
+  #categorizeError(kind, input, step) {
+    const expected = step.expected;
+
+    if (kind === "keybinding") {
+      return `HELIX: wrong key. After Ctrl+b, press: ${expected}`;
+    }
+
+    if (input.toLowerCase() === expected.toLowerCase()) {
+      return `HELIX: tmux is case-sensitive. Try: ${expected}`;
+    }
+
+    const inParts = input.trim().split(/\s+/);
+    const exParts = expected.trim().split(/\s+/);
+
+    if (inParts[0] === exParts[0] && inParts[1] === exParts[1]) {
+      return `HELIX: right command, wrong argument. Expected: ${expected}`;
+    }
+
+    if (inParts[0] === "tmux" && exParts[0] === "tmux") {
+      return `HELIX: right tool, wrong subcommand. Expected: ${expected}`;
+    }
+
+    return `HELIX: ${step.instruction}`;
+  }
+
+  #addRestartButton() {
+    this.restartButton?.remove();
+    this.restartButton = document.createElement("button");
+    this.restartButton.className = "terminal-restart-btn";
+    this.restartButton.type = "button";
+    this.restartButton.textContent = "↺ Restart";
+    this.restartButton.addEventListener("click", () => this.#restart());
+    this.container.appendChild(this.restartButton);
+  }
+
+  #restart() {
+    this.engine.restore(this.challengeEngineSnapshot);
+    this.activeStepIndex = 0;
+    this.inputBuffer = "";
+    this.prefixArmed = false;
+    this.renderer.clear();
+    this.container.dataset.activeStep = "0";
+    this.renderer.writeln("TMUX TREK / TERMINAL PLANE");
+    this.renderer.writeln("----------------------------------------");
+    this.renderer.writeln(this.activeChallenge.title);
+    this.renderer.writeln("");
+    this.#announceCurrentStep();
+    this.#prompt();
+    this.onStatusChange(this.engine.getStatus());
   }
 
   #completeStep(step) {

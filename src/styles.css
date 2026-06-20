@@ -94,6 +94,27 @@ h2 {
   background: rgba(4, 12, 20, 0.94);
 }
 
+.terminal-restart-btn {
+  position: absolute;
+  top: 0.5rem;
+  right: 0.5rem;
+  z-index: 10;
+  padding: 0.25rem 0.65rem;
+  background: rgba(10, 22, 40, 0.9);
+  border: 1px solid rgba(70, 217, 196, 0.35);
+  border-radius: 6px;
+  color: var(--teal);
+  font-family: "Share Tech Mono", monospace;
+  font-size: 0.75rem;
+  cursor: pointer;
+  opacity: 0.65;
+}
+
+.terminal-restart-btn:hover {
+  opacity: 1;
+  border-color: var(--teal);
+}
+
 .dialogue-root {
   display: flex;
   align-items: end;

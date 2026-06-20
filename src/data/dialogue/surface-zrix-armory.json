@@ -5,6 +5,14 @@
   },
   {
     "speaker": "Zrix",
+    "text": "A named session is a permanent address. Once opened, it stays alive until you kill it — even after you detach and leave."
+  },
+  {
+    "speaker": "Zrix",
     "text": "Open a named Rift to armory. Bring back the bracket cannon before the overflow reaches the village core."
+  },
+  {
+    "speaker": "Zrix",
+    "text": "Type: tmux new -s armory — give it a name that means something. The armory will answer."
   }
 ]

@@ -268,12 +268,16 @@ export class GridScene extends Phaser.Scene {
       const direction = {
         ArrowUp: { column: 0, row: -1 },
         KeyW: { column: 0, row: -1 },
+        KeyK: { column: 0, row: -1 },
         ArrowDown: { column: 0, row: 1 },
         KeyS: { column: 0, row: 1 },
+        KeyJ: { column: 0, row: 1 },
         ArrowLeft: { column: -1, row: 0 },
         KeyA: { column: -1, row: 0 },
+        KeyH: { column: -1, row: 0 },
         ArrowRight: { column: 1, row: 0 },
         KeyD: { column: 1, row: 0 },
+        KeyL: { column: 1, row: 0 },
       }[code];
 
       if (!direction || event.repeat) {
@@ -404,13 +408,20 @@ export class GridScene extends Phaser.Scene {
   }
 
   #getAdjacentTarget() {
-    return (
-      this.interactiveTargets.find(
-        (target) =>
-          target.row === this.playerGrid.row &&
-          Math.abs(target.column - this.playerGrid.column) === 1,
-      ) ?? null
-    );
+    const RADIUS = 2;
+    let nearest = null;
+    let nearestDist = Infinity;
+    for (const target of this.interactiveTargets) {
+      const dist = Math.max(
+        Math.abs(target.column - this.playerGrid.column),
+        Math.abs(target.row - this.playerGrid.row),
+      );
+      if (dist <= RADIUS && dist < nearestDist) {
+        nearest = target;
+        nearestDist = dist;
+      }
+    }
+    return nearest;
   }
 
   #tileCenter(column, row) {

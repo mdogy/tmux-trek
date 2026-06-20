@@ -20,9 +20,15 @@ export class UIController {
     this.zoneName.textContent = snapshot.zoneName;
     this.missionText.textContent = snapshot.missionText;
     this.instructionText.textContent = snapshot.instructionText;
-    this.activeSession.textContent = snapshot.activeSessionName
-      ? `Active: ${snapshot.activeSessionName}`
-      : "Active: bridge";
+    if (snapshot.activeSessionName) {
+      const session = snapshot.sessions.find((s) => s.name === snapshot.activeSessionName);
+      const winCount = session?.windows.length ?? 0;
+      const activeWin = session?.windows.find((w) => w.id === snapshot.activeWindowId);
+      const paneCount = activeWin?.panes?.length ?? 0;
+      this.activeSession.textContent = `Active: ${snapshot.activeSessionName}  ${winCount}w / ${paneCount}p`;
+    } else {
+      this.activeSession.textContent = "Active: bridge";
+    }
 
     this.codexList.replaceChildren(
       ...snapshot.commands.map((command) => {
@@ -39,7 +45,8 @@ export class UIController {
       ...snapshot.sessions.map((session) => {
         const item = document.createElement("li");
         item.className = "session-item";
-        item.textContent = `${session.name} ${session.attached ? "(attached)" : "(detached)"}`;
+        const winCount = session.windows?.length ?? 0;
+        item.textContent = `${session.name} ${session.attached ? "(attached)" : "(detached)"}  ${winCount}w`;
         return item;
       }),
     );
