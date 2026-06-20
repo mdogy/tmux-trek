@@ -5,9 +5,9 @@
     "summary": "Start or enter a session."
   },
   {
-    "id": "tmux new -s clulix",
-    "label": "tmux new -s clulix",
-    "summary": "Create a named session you can find again."
+    "id": "tmux new -s armory",
+    "label": "tmux new -s armory",
+    "summary": "Create a named session that opens the armory destination."
   },
   {
     "id": "Ctrl+b d",
@@ -20,9 +20,9 @@
     "summary": "List the sessions that currently exist."
   },
   {
-    "id": "tmux attach -t clulix",
-    "label": "tmux attach -t clulix",
-    "summary": "Re-enter a named session."
+    "id": "tmux attach -t 0",
+    "label": "tmux attach -t 0",
+    "summary": "Re-enter the surface session with intent."
   },
   {
     "id": "Ctrl+b c",

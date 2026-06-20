@@ -1,0 +1,93 @@
+import { expect, test } from "@playwright/test";
+
+const GRID_READY_TIMEOUT = 15_000;
+
+async function waitForGrid(page, grid, zoneId) {
+  await expect(page.locator("#game-root")).toHaveAttribute(
+    "data-player-grid",
+    `${grid[0]},${grid[1]}`,
+    { timeout: GRID_READY_TIMEOUT },
+  );
+  await expect(page.locator("#game-root")).toHaveAttribute(
+    "data-zone-id",
+    zoneId,
+  );
+}
+
+async function getSaveIndex(page) {
+  return page.evaluate(() =>
+    JSON.parse(window.localStorage.getItem("tmux-trek:saves") ?? "{}"),
+  );
+}
+
+async function waitForTitleScreen(page, screen, selectionPattern) {
+  await expect(page.locator("#game-root")).toHaveAttribute(
+    "data-title-screen",
+    screen,
+  );
+  if (selectionPattern) {
+    await expect(page.locator("#game-root")).toHaveAttribute(
+      "data-title-selection",
+      selectionPattern,
+    );
+  }
+}
+
+async function pressTitleKey(page, key) {
+  await page.locator("#game-root").focus();
+  await page.keyboard.press(key);
+}
+
+test("TitleScene creates, continues, renames, and deletes save slots", async ({
+  page,
+}) => {
+  test.setTimeout(60_000);
+
+  await page.goto("/");
+  await page.evaluate(() => {
+    window.localStorage.clear();
+    window.sessionStorage.clear();
+  });
+  await page.reload();
+  await waitForTitleScreen(page, "menu", "NEW GAME");
+
+  await pressTitleKey(page, "Enter");
+  await expect(page.locator("#title-input-overlay input")).toBeVisible();
+  await page.locator("#title-input-overlay input").fill("Review Run");
+  await page.keyboard.press("Enter");
+  await waitForGrid(page, [4, 7], "bridge");
+
+  let index = await getSaveIndex(page);
+  expect(index.slots).toHaveLength(1);
+  expect(index.slots[0].name).toBe("Review Run");
+
+  await page.reload();
+  await waitForTitleScreen(page, "menu", "CONTINUE");
+  await pressTitleKey(page, "Enter");
+  await waitForGrid(page, [4, 7], "bridge");
+
+  await page.reload();
+  await waitForTitleScreen(page, "menu", "CONTINUE");
+  await pressTitleKey(page, "ArrowDown");
+  await waitForTitleScreen(page, "menu", /MANAGE SAVES/);
+  await pressTitleKey(page, "Enter");
+  await waitForTitleScreen(page, "saves");
+  await pressTitleKey(page, "KeyR");
+  await expect(page.locator("#title-input-overlay input")).toBeVisible();
+  await page.locator("#title-input-overlay input").fill("Renamed Run");
+  await page.keyboard.press("Enter");
+  await waitForTitleScreen(page, "saves");
+
+  await expect
+    .poll(async () => {
+      const saveIndex = await getSaveIndex(page);
+      return saveIndex.slots.map((slot) => slot.name);
+    })
+    .toEqual(["Renamed Run"]);
+
+  await pressTitleKey(page, "KeyD");
+  await waitForTitleScreen(page, "menu", "NEW GAME");
+  index = await getSaveIndex(page);
+  expect(index.slots).toHaveLength(0);
+  expect(index.activeId).toBeNull();
+});

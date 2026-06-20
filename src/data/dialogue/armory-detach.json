@@ -1,0 +1,18 @@
+[
+  {
+    "speaker": "Armorer Kesh",
+    "text": "You have the weapon. Leave the armory intact so the route stays available after the fighting starts."
+  },
+  {
+    "speaker": "Armorer Kesh",
+    "text": "Detaching is not quitting. The armory session will remain alive — you can attach back to it from the bridge manifest."
+  },
+  {
+    "speaker": "HELIX",
+    "text": "Ctrl+b is the prefix. Press it, then press d. You will return to the bridge and the armory Rift stays open."
+  },
+  {
+    "speaker": "HELIX",
+    "text": "Detach from the session and I will lift you back to the bridge."
+  }
+]

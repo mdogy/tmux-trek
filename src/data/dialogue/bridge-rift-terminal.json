@@ -1,0 +1,18 @@
+[
+  {
+    "speaker": "HELIX",
+    "text": "The shuttle bay is sealed. Z-shell only responds to the Zshellian Rift protocol."
+  },
+  {
+    "speaker": "HELIX",
+    "text": "A session is a named container for your work. It persists even after you leave — unlike a process, it does not die when you walk away."
+  },
+  {
+    "speaker": "HELIX",
+    "text": "The bridge terminal is the only exit. Open tmux and the ship will descend through session 0."
+  },
+  {
+    "speaker": "HELIX",
+    "text": "Type: tmux — no flags, no arguments. The Rift will open and you will land in session 0."
+  }
+]

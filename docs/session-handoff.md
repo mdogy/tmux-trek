@@ -1,11 +1,12 @@
 # TMUX Trek — Session Handoff
 
-*The start-here document for resuming or restarting work. Last updated June 19, 2026.*
+_The start-here document for resuming or restarting work. Last updated June 20, 2026._
 
 This is the operational resume doc: what is built today, how to verify it, what is wrong with it, and the immediate next task. It is written so that **a new session, model, or coding agent can pick up the project with no other context.** Read this first, then [`game-design.md`](game-design.md), [`architecture.md`](architecture.md), and [`implementation-plan.md`](implementation-plan.md).
 
 - Live build: <https://mdogy.github.io/tmux-trek/>
 - Latest gameplay baseline commit on `main`: `fb6041f` (merged PR #12)
+- Active feature branch: `codex/phase0-phase1-vertical-slice` (not yet PR'd)
 - Documentation index: [`README.md`](README.md)
 
 ---
@@ -28,89 +29,104 @@ Build TMUX Trek as an educational game where the story makes real tmux actions n
 
 ## What Is Built Today
 
-The game uses **one map (`Landing Crater`)** and a hardcoded linear mentor sequence. All five mentors share that map; there are no separate bridge, armory, or act scenes yet.
+The live implementation has a **three-scene Act 0 + Act 1 vertical slice** plus a **Phase 4 game shell (TitleScene, multi-slot SaveManager, auth gate)**.
 
-| Order | Mentor | Lesson | Required actions |
-|---|---|---|---|
-| 1 | Zrix | Session creation | `tmux`, `tmux new -s clulix` |
-| 2 | Vrex | Detach | `Ctrl+b d` |
-| 3 | Archivist Orin | Persistence | `tmux ls`, `tmux attach -t clulix` |
-| 4 | Ensign Redshirt | Act 2 window rescue | `Ctrl+b c`, `Ctrl+b w`, `Ctrl+b p` |
-| 5 | Commander Sock | Act 3 pane scanner | `Ctrl+b %`, `Ctrl+b "`, `Ctrl+b x` |
-| 6 | CLULIX beacon | Completion | contextual `E` interaction |
+| Order | Scene   | Lesson                            | Required actions                                    |
+| ----- | ------- | --------------------------------- | --------------------------------------------------- |
+| 1     | Bridge  | Open the Rift terminal            | `tmux`                                              |
+| 2     | Surface | Unlock named session creation     | collect `RIFT_CODE`, `tmux new -s armory`           |
+| 3     | Armory  | Detach back to the bridge         | collect weapon, `Ctrl+b d`                          |
+| 4     | Bridge  | Inspect and re-enter the manifest | `tmux ls`, `tmux attach -t 0`                       |
+| 5     | Surface | Clear the overflow blocker        | contextual `E` interaction with the weapon equipped |
 
-Movement is WASD/arrows. NPCs, obstacles, and the beacon block movement. Only the tile immediately left or right of a character/place highlights and allows `E`. Inactive characters give a "nothing to say yet" hint.
+Movement: vim `h/j/k/l` (primary), WASD and arrows (secondary). Interaction radius: Chebyshev distance ≤ 2. HUD shows `"Active: name  1w / 1p"` hierarchy. NPC dialogue: 4 cards (who→what→why→how).
 
-The pure engine supports more than is taught: session create/attach/detach/list/kill, window create/list/next/previous, pane split, and active-pane close. Full surface is in [`architecture.md`](architecture.md) §4.
+### Phase 4 additions
 
-Character art is drawn at runtime with Phaser graphics (no sprite sheets). Terrain uses `public/assets/tiles/z-shell-terrain.png`. There is **no audio, no VFX, no save system, no fog of war, no companion following, and no animated atlas.**
+- **`SaveManager`** rewritten to multi-slot (`SAVE_VERSION = 3`): slot index at `tmux-trek:saves`, per-slot data at `tmux-trek:save:<id>`. Exports: `newSlot`, `listSlots`, `getActiveSlotId`, `setActiveSlotId`, `deleteSlot`, `renameSlot`, `clearAllSlots`, `hasSave`, `saveGame`, `loadGame`, `migrate`. The storage boundary validates malformed indexes/blobs and avoids overwriting existing v3 slots during legacy migration.
+- **`TitleScene`** added: keyboard-navigated menu (New Game / Continue / Manage Saves), optional auth gate via `VITE_AUTH_PASSWORD` env var, DOM input overlays for slot naming and password. Correctly bypassed by the vertical-slice Playwright path with `?testMode=1`.
+- **`BootScene`** updated: `init(data)` lifecycle method added to receive `nextScene` via Phaser data argument from callers. Falls back to `app.currentZoneId` if no data passed.
+- **`TmuxTrekApp`** updated: `resetToNewGame()` and `restoreActiveSave()` public methods added; `migrate()` called in constructor; `start()` handles the `?testMode=1` bypass path before Phaser boot.
 
 ---
 
 ## Verification Baseline
 
-Last verified locally and in PR #12 CI:
+**As of June 20, 2026 the local baseline is clean:**
 
 ```bash
-npm run lint       # pass
-npm run test       # 14 unit tests pass
-npm run bdd        # 2 scenarios / 17 steps pass
-npm run test:e2e   # 11 Playwright tests pass
-npm run build      # pass
+npm run lint       # PASS — clean
+npm run test       # PASS — 67 unit tests pass
+npm run bdd        # PASS — 2 scenarios / 17 steps
+npm run test:e2e   # PASS — 2 Playwright tests
+npm run build      # PASS
 ```
 
-Playwright may need `npx playwright install chromium` on a fresh machine. `npm run format:check` reports pre-existing formatting drift and is **not** a clean CI gate yet.
+Stress check run after the fix:
 
-> Environment note: the local `commit-msg` (commitlint) hook can hang in sandboxed shells even though the change is fine. If a commit stalls after lint+test pass, the hook is the cause, not your work.
+```bash
+npm run test:e2e -- --repeat-each=5 --workers=1   # PASS — 5/5
+```
 
----
+Playwright may need `npx playwright install chromium` on a fresh machine.
 
-## Critical Evaluation (what's wrong now)
-
-**What works:** the core loop is functionally correct. The tmux engine is behaviorally accurate, session state persists across challenges, prefix-key handling works, and the JSON-data architecture is a sound foundation.
-
-**Structural problems:**
-
-- **The central metaphor is not implemented.** Sessions should be destinations; all mentors are on one flat map, so tmux-as-travel is invisible. This is the #1 thing the redesign fixes.
-- **Progression is hardcoded.** `TmuxTrekApp.js` imports all five dialogue files by name and uses a numeric NPC index. New content needs code changes — should become data-driven (`MissionSystem`).
-- **No inventory/collectible system**, so the VIM Adventures key-as-collectible pattern can't exist; commands appear from nowhere.
-- **The HUD shows sessions but not windows or panes.** Creating a window or splitting a pane produces no visual confirmation.
-
-**Gameplay/UX problems:**
-
-- Open-rectangle map with scattered icons creates zero exploration tension; no camera scrolling.
-- Movement is WASD; the design calls for vim `h/j/k/l`.
-- Interaction adjacency (exact same row, one column) is brittle and undiscoverable.
-- Dialogue is two lines, then straight to the terminal — no story setup before the command is requested.
-- HELIX error feedback is generic ("not yet"); it should name the specific error.
-- No save/resume; no restart-challenge mechanism.
-
-**Asset problems:** no animation of any kind; no audio (game feels inert); no Rift VFX (the central metaphor is invisible).
-
-Full detail is preserved in [`archive/descriptive-summary-05-19.md`](archive/descriptive-summary-05-19.md).
+> Environment note: `.husky/commit-msg` was updated to call `node_modules/.bin/commitlint` directly (instead of `npx commitlint`) to avoid hangs in sandboxed shells. Commit messages must follow conventional-commits format with a **lowercase** subject line.
 
 ---
 
-## Known Gaps (concrete)
+## Resolved Bug — E2E Reload Flake
 
-- All five mentors occupy one map; no bridge/armory/separate act scenes.
-- Window and pane changes are engine/terminal-only; the HUD renders sessions only.
-- `tmux kill-session -t name` and `Ctrl+b n` work in the engine but are not taught.
-- Later window/pane/copy-mode commands from the design are unsupported.
-- The Playwright acceptance path is keyboard-only but long and coupled to map coordinates.
-- `npm run format:check` is not a clean repository-wide gate.
-- The Gemini asset generator is experimental and writes to root `assets/`, not runtime `public/assets/`.
+The previous blocker was a flaky Playwright assertion after `page.reload()` in `tests/e2e/gameplay.spec.js`. The test expected `#game-root[data-player-grid="3,15"]` within Playwright's default 5s assertion timeout, but headless Chromium sometimes took about 6-7s for Phaser scene startup/debug attributes to settle after reload.
+
+Investigation showed state restoration was correct: the sidebar rendered the restored zone/mission/session and the Phaser scene eventually exposed the expected `data-player-grid`. The fix was to make `waitForGrid()` use an explicit 15s readiness timeout for scene startup while keeping movement assertions tight.
+
+Verification after the fix:
+
+- `npm run test:e2e -- --repeat-each=5 --workers=1` passed 5/5.
+- `npm run test:e2e` passed normally.
+
+---
+
+## Critical Evaluation
+
+**What works:**
+
+- Full Act 1 gameplay loop end-to-end
+- TmuxEngine (session/window/pane), event system, mission state machine, inventory, save system
+- TitleScene (keyboard-navigated menu, auth gate, DOM overlays) — works in normal (non-test) use
+- Multi-slot SaveManager with migration from v2 → v3
+- Unit, BDD, Playwright, lint, and build all pass
+- Front-door save-slot management has Playwright coverage in `tests/e2e/title-save-slots.spec.js`
+
+**What is broken:**
+
+- No current blocking bug in the local baseline.
+
+**Known gaps (non-blocking):**
+
+- `WorldScene.js` still in repo — no longer in the active scene flow, can be deleted
+- `npm run format:check` is not a clean gate
+- No in-game "Save & Quit to Menu" path yet
+- No scoring, flash cards, or review gate (Phase 5)
+- No demo-video E2E capture or shared route-following actor AI yet (planned Phase 6)
+- Acts 2-5 not migrated to new scene architecture (Phases 7-10)
 
 ---
 
 ## Immediate Next Task
 
-Implement **Phase 0 + Phase 1** from [`implementation-plan.md`](implementation-plan.md): build the foundation systems (`TmuxEvents`, `MissionSystem`, `InventorySystem`, `TransitionSystem`, `SaveManager`), then the Act 0 + Act 1 vertical slice (CLULIX bridge → `tmux` → village → Rift Code → `tmux new -s armory` → weapon → `Ctrl+b d` → `tmux ls` → `tmux attach -t village` → defeat the overflow buffer). This corresponds to GitHub issues #5 and #2.
+Phase 4 is no longer blocked locally. Next planned work is **Phase 5 — Progression & Assessment Systems** per [`implementation-plan.md`](implementation-plan.md): scoring, progress/level-complete, review gate framework, and optional flash cards.
 
-This replaces abstract mentor drills with story consequences while preserving the Act 2/3 prototypes for later expansion.
+After Phase 5, a new **Phase 6 — Demo Automation & Basic Actor AI** is planned before the content acts. It will add Playwright-driven video capture, a default captioned highlight reel for human visual/audio/gameplay review, full speedrun recording, watchdogs to prevent e2e hangs, and a reusable grid route-following service for the demo player and future NPC movement.
 
 ---
 
 ## Delivery
 
 Follow [`delivery-workflow.md`](delivery-workflow.md): branch from current `main`, implement and verify, open a PR, wait for CI, merge, wait for the `Deploy` workflow, and verify the Pages URL. Update this handoff, [`implementation-plan.md`](implementation-plan.md), and [`../history.md`](../history.md) whenever the resume state materially changes.
+
+---
+
+## Roadmap Note (expanded June 20, 2026)
+
+Further utility and product features are scheduled. Three phases now land _before_ the content acts: **Phase 4 — Game Shell, Auth & Save Slots**, **Phase 5 — Progression & Assessment Systems**, and **Phase 6 — Demo Automation & Basic Actor AI**. Phase 6 is a utility phase for review videos and shared navigation AI before NPC-heavy acts. The former Acts 2–5 renumber to Phases 7–10. GitHub Pages deployment is a recurring per-phase step plus a near-term "merge the redesign to replace the prototype" milestone. See [`implementation-plan.md`](implementation-plan.md) for full detail.

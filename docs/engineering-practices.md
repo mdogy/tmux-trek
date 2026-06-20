@@ -229,7 +229,7 @@ Closes #15
 
 ```bash
 npx husky init
-echo "npx commitlint --edit \$1" > .husky/commit-msg
+echo "node_modules/.bin/commitlint --edit \$1" > .husky/commit-msg
 ```
 
 ```js

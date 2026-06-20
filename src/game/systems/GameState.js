@@ -9,6 +9,8 @@ export class GameState {
       unlockedCommands: [],
       sessions: [],
       activeSessionName: null,
+      activeWindowId: null,
+      activePaneId: null,
       terminalOpen: false,
       dialogueOpen: false,
       toast: "",
@@ -23,6 +25,10 @@ export class GameState {
 
   setMission(text) {
     this.#update({ missionText: text });
+  }
+
+  setZoneName(text) {
+    this.#update({ zoneName: text });
   }
 
   setInstruction(text) {
@@ -52,10 +58,16 @@ export class GameState {
     this.#update({ toast: "" });
   }
 
+  restoreUnlockedCommands(commands = []) {
+    this.#update({ unlockedCommands: [...commands] });
+  }
+
   syncStatus(status) {
     this.#update({
       sessions: status.sessions,
       activeSessionName: status.activeSessionName,
+      activeWindowId: status.activeWindowId,
+      activePaneId: status.activePaneId,
     });
   }
 

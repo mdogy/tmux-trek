@@ -1,6 +1,6 @@
 # TMUX Trek — Game Design
 
-*Authoritative design document. Last consolidated June 19, 2026.*
+_Authoritative design document. Last consolidated June 19, 2026._
 
 This is the single source of truth for **what TMUX Trek is and how it should play**. It supersedes the earlier `gameplay-plan.md` and the June 19 redesign drafts (both preserved in [`archive/`](archive/)). For how the code is structured, read [`architecture.md`](architecture.md). For build order, read [`implementation-plan.md`](implementation-plan.md). For what exists today, read [`session-handoff.md`](session-handoff.md).
 
@@ -10,7 +10,7 @@ This is the single source of truth for **what TMUX Trek is and how it should pla
 
 **Every tmux command must be the only sensible answer to a story problem.**
 
-The player should never feel like they are stopping the game to attend a tutorial. The command *is* the action. When this rule is satisfied, the tutorial disappears, because the level itself teaches.
+The player should never feel like they are stopping the game to attend a tutorial. The command _is_ the action. When this rule is satisfied, the tutorial disappears, because the level itself teaches.
 
 The intended outcome is genuine tmux muscle memory — not recognition, but execution. A player who finishes the game should be able to open a named session, detach, list sessions, reattach, create and navigate windows, split and close panes, and use copy mode without looking anything up, because they performed each action repeatedly inside a story frame that made it feel necessary.
 
@@ -30,7 +30,7 @@ TMUX Trek draws deliberately from four proven designs. These are not decoration 
 
 ### VIM Adventures — keys are collectible items
 
-VIM Adventures ("Zelda meets text editing") makes keyboard keys *physical collectibles*. The player begins able only to move; they pick up `w`, `b`, `e` as objects, and each acquired key immediately unlocks a capability. The level is shaped so the newest key is required to proceed. There is no tutorial text — the zone *is* the tutorial.
+VIM Adventures ("Zelda meets text editing") makes keyboard keys _physical collectibles_. The player begins able only to move; they pick up `w`, `b`, `e` as objects, and each acquired key immediately unlocks a capability. The level is shaped so the newest key is required to proceed. There is no tutorial text — the zone _is_ the tutorial.
 
 **TMUX Trek mechanic:** tmux commands are unlocked as collectible items found in the world:
 
@@ -49,15 +49,15 @@ Portal never explains portals with text. It builds rooms where the only sensible
 
 ### Metroidvania — show the lock before the key
 
-Metroidvanias run on "limited access → new ability → revisit old areas → new discoveries," and they always show a locked door before giving the key, so the key feels earned. Strong abilities have *multiple* uses across the game, not one door each.
+Metroidvanias run on "limited access → new ability → revisit old areas → new discoveries," and they always show a locked door before giving the key, so the key feels earned. Strong abilities have _multiple_ uses across the game, not one door each.
 
 **TMUX Trek mechanic:** every zone has visible-but-locked areas (fogged corridors, sealed vaults, dark terminals) that become reachable in later acts. Commands are reused: `tmux new -s` opens the armory (Act 1), the rescue session (Act 2), and the archive (Act 4); `Ctrl+b d` is used every time the player returns to the ship; the Rift Manifest (`tmux ls`) grows across the whole game.
 
 ### SpaceChem — make the system the game
 
-SpaceChem teaches programming by making the programming system *be* the core mechanic; the educational content and the game content are identical.
+SpaceChem teaches programming by making the programming system _be_ the core mechanic; the educational content and the game content are identical.
 
-**TMUX Trek mechanic:** the session hierarchy *is* the map hierarchy. The window list *is* the mission list. The pane layout *is* the party formation. When this alignment is complete, the player cannot play the game without mastering tmux.
+**TMUX Trek mechanic:** the session hierarchy _is_ the map hierarchy. The window list _is_ the mission list. The pane layout _is_ the party formation. When this alignment is complete, the player cannot play the game without mastering tmux.
 
 ---
 
@@ -65,29 +65,29 @@ SpaceChem teaches programming by making the programming system *be* the core mec
 
 The curriculum follows tmux's own three-layer hierarchy — sessions → windows → panes → copy mode — expanded into five acts. Each command is introduced exactly when the story creates a situation that demands it, and revisited later without instruction.
 
-| Act | Command / Keybind | tmux meaning | Story demand that introduces it |
-|---|---|---|---|
-| 0 | `tmux` | Start tmux, open raw session 0 | Activate the Rift transporter; only exit from the ship |
-| 1a | `tmux new -s <name>` | Create a named session | Name a stable Rift destination (unnamed = lost/unstable) |
-| 1b | `Ctrl+b d` | Detach (leave without closing) | Beam back to the ship; the Rift stays open behind you |
-| 1c | `tmux ls` | List running sessions | Review the Rift manifest of known destinations |
-| 1d | `tmux attach -t <name>` | Reattach to a named session | Return to a specific planet location, with intent |
-| 1e | `tmux kill-session -t <name>` | Destroy a session | Collapse an unstable or contaminated Rift |
-| 2a | `Ctrl+b c` | Create a new window | Open a second live view during a rescue |
-| 2b | `Ctrl+b w` | List windows | Inspect available active channels |
-| 2c | `Ctrl+b n` / `Ctrl+b p` | Next / previous window | Switch between rescue and base channels |
-| 2d | `Ctrl+b ,` | Rename current window | Label a tactical view for faster recall |
-| 2e | `Ctrl+b 0-9` | Jump to window by number | Urgent jump to a specific channel |
-| 2f | `Ctrl+b &` | Close current window | Shut down a compromised channel |
-| 3a | `Ctrl+b %` | Split pane vertically | Open a second simultaneous view |
-| 3b | `Ctrl+b "` | Split pane horizontally | Open a third simultaneous view |
-| 3c | `Ctrl+b ←→↑↓` | Navigate between panes | Switch control between two party members |
-| 3d | `Ctrl+b z` | Zoom current pane | Focus on one character during a precision task |
-| 3e | `Ctrl+b x` | Close one pane | Shut down only the corrupted feed |
-| 4a | `Ctrl+b [` | Enter copy mode | Access scrollback — the Archives |
-| 4b | `h/j/k/l` / arrows in copy mode | Navigate scrollback | Read old transmissions for clues |
-| 4c | `/` search in copy mode | Search scrollback | Find a specific code or coordinate |
-| 4d | Space / Enter | Select and copy text | Extract coordinates to use elsewhere |
+| Act | Command / Keybind               | tmux meaning                   | Story demand that introduces it                          |
+| --- | ------------------------------- | ------------------------------ | -------------------------------------------------------- |
+| 0   | `tmux`                          | Start tmux, open raw session 0 | Activate the Rift transporter; only exit from the ship   |
+| 1a  | `tmux new -s <name>`            | Create a named session         | Name a stable Rift destination (unnamed = lost/unstable) |
+| 1b  | `Ctrl+b d`                      | Detach (leave without closing) | Beam back to the ship; the Rift stays open behind you    |
+| 1c  | `tmux ls`                       | List running sessions          | Review the Rift manifest of known destinations           |
+| 1d  | `tmux attach -t <name>`         | Reattach to a named session    | Return to a specific planet location, with intent        |
+| 1e  | `tmux kill-session -t <name>`   | Destroy a session              | Collapse an unstable or contaminated Rift                |
+| 2a  | `Ctrl+b c`                      | Create a new window            | Open a second live view during a rescue                  |
+| 2b  | `Ctrl+b w`                      | List windows                   | Inspect available active channels                        |
+| 2c  | `Ctrl+b n` / `Ctrl+b p`         | Next / previous window         | Switch between rescue and base channels                  |
+| 2d  | `Ctrl+b ,`                      | Rename current window          | Label a tactical view for faster recall                  |
+| 2e  | `Ctrl+b 0-9`                    | Jump to window by number       | Urgent jump to a specific channel                        |
+| 2f  | `Ctrl+b &`                      | Close current window           | Shut down a compromised channel                          |
+| 3a  | `Ctrl+b %`                      | Split pane vertically          | Open a second simultaneous view                          |
+| 3b  | `Ctrl+b "`                      | Split pane horizontally        | Open a third simultaneous view                           |
+| 3c  | `Ctrl+b ←→↑↓`                   | Navigate between panes         | Switch control between two party members                 |
+| 3d  | `Ctrl+b z`                      | Zoom current pane              | Focus on one character during a precision task           |
+| 3e  | `Ctrl+b x`                      | Close one pane                 | Shut down only the corrupted feed                        |
+| 4a  | `Ctrl+b [`                      | Enter copy mode                | Access scrollback — the Archives                         |
+| 4b  | `h/j/k/l` / arrows in copy mode | Navigate scrollback            | Read old transmissions for clues                         |
+| 4c  | `/` search in copy mode         | Search scrollback              | Find a specific code or coordinate                       |
+| 4d  | Space / Enter                   | Select and copy text           | Extract coordinates to use elsewhere                     |
 
 ### Layering rules
 
@@ -108,7 +108,7 @@ The correct pattern has five beats:
 
 1. **Inciting event** — the environment presents a visible, concrete problem the player cannot solve with current abilities.
 2. **Collectible acquisition** — the player finds a Rift Code / Channel Token / Scanner Array / Archive Crystal in the level.
-3. **NPC context** — an NPC explains what the object does *in story terms*, not technical terms.
+3. **NPC context** — an NPC explains what the object does _in story terms_, not technical terms.
 4. **Gated exit** — the only path forward requires using the new command.
 5. **Second application** — later in the same act, the same command is required again without guidance, as a natural mission step.
 
@@ -131,16 +131,16 @@ The player learns each command because the story withholds progress until that c
 - **Hero's Journey** for the overall shape (ordinary world → call → mentor → threshold → tests → ordeal → resolution).
 - **Star Trek: Deep Space Nine** dual structure for pacing: each act is a complete, self-contained learning loop for one tmux concept, while a serialized long arc — the Rift Storm threat and the growing crew — advances across all acts.
 
-| Story beat | Act |
-|---|---|
-| Ordinary world / inciting incident | Act 0 — bridge; HELIX reports the anomaly |
-| Call to adventure | Signal from the surface; Rift system activated |
-| Meeting the mentor | Zrix, Zshellian guide to sessions |
-| Crossing the threshold | First named-session descent |
-| Tests, allies, enemies | Acts 2–3; rescues, storms, growing party |
-| Innermost cave | Pane coordination under storm pressure |
-| Ordeal | Archive recovery mission |
-| Resolution | Final Rift stabilization; all commands mastered |
+| Story beat                         | Act                                             |
+| ---------------------------------- | ----------------------------------------------- |
+| Ordinary world / inciting incident | Act 0 — bridge; HELIX reports the anomaly       |
+| Call to adventure                  | Signal from the surface; Rift system activated  |
+| Meeting the mentor                 | Zrix, Zshellian guide to sessions               |
+| Crossing the threshold             | First named-session descent                     |
+| Tests, allies, enemies             | Acts 2–3; rescues, storms, growing party        |
+| Innermost cave                     | Pane coordination under storm pressure          |
+| Ordeal                             | Archive recovery mission                        |
+| Resolution                         | Final Rift stabilization; all commands mastered |
 
 ### Act 0 — The Bridge (opening)
 
@@ -152,11 +152,11 @@ The player arrives on the surface in an unnamed Rift (session `0`). The village 
 
 The **Rift Code** for `tmux new -s` is a glyph on a monolith at the map edge. Once collected, the player creates `tmux new -s armory`, a new map opens, and a weapon is recovered. `Ctrl+b d` beams back to the ship; on the bridge, the **Rift Manifest** (`tmux ls`) shows both `0` and `armory`. `tmux attach -t 0` returns to the village with the weapon, and the overflow buffer is defeated. `tmux kill-session -t overflow` collapses the contaminated zone. **Teaches:** `tmux new -s`, `Ctrl+b d`, `tmux ls`, `tmux attach -t`, `tmux kill-session -t`.
 
-Design rule: the player *sees* the overflow blocker before they know how to reach the armory.
+Design rule: the player _sees_ the overflow blocker before they know how to reach the armory.
 
 ### Act 2 — Redshirt Rescue: Windows
 
-A Rift storm scatters Ensign Redshirt into a disconnected operational channel. Critically, the Rift containing Redshirt is **not** a new session — it is a *window* of the current session, cut off by the storm. The **Channel Token** for `Ctrl+b c` is found in the storm debris. The player opens a rescue view (`Ctrl+b c`), lists views (`Ctrl+b w`), navigates between them (`Ctrl+b n/p`), and renames the rescue channel (`Ctrl+b ,`) so it is findable. The bridge window must stay open (cannot `Ctrl+b &` it) or the mission fails — teaching the difference between windows and sessions. **Teaches:** `Ctrl+b c`, `Ctrl+b w`, `Ctrl+b n`, `Ctrl+b p`, `Ctrl+b ,`, `Ctrl+b &`.
+A Rift storm scatters Ensign Redshirt into a disconnected operational channel. Critically, the Rift containing Redshirt is **not** a new session — it is a _window_ of the current session, cut off by the storm. The **Channel Token** for `Ctrl+b c` is found in the storm debris. The player opens a rescue view (`Ctrl+b c`), lists views (`Ctrl+b w`), navigates between them (`Ctrl+b n/p`), and renames the rescue channel (`Ctrl+b ,`) so it is findable. The bridge window must stay open (cannot `Ctrl+b &` it) or the mission fails — teaching the difference between windows and sessions. **Teaches:** `Ctrl+b c`, `Ctrl+b w`, `Ctrl+b n`, `Ctrl+b p`, `Ctrl+b ,`, `Ctrl+b &`.
 
 ### Act 3 — Sock's Scanner: Panes
 
@@ -166,7 +166,7 @@ Commander Sock joins the crew. The captain cannot observe two corridors simultan
 
 A final encrypted vault holds coordinates needed to stabilize the Rift Storm. The vault terminal's display is locked; the only way to read it is to enter copy mode, scroll back through old transmissions, search for the coordinates, and extract them. The **Archive Crystal** unlocks copy mode. The transmission log mixes the target among many similar-looking lines, forcing `/` search. **Teaches:** `Ctrl+b [`, scrollback navigation (`h/j/k/l`), `/` search, Space/Enter to copy.
 
-Design note: copy mode uses vim-style `h/j/k/l`. The game should teach `h/j/k/l` as the *movement keys throughout*, so this act is a direct payoff.
+Design note: copy mode uses vim-style `h/j/k/l`. The game should teach `h/j/k/l` as the _movement keys throughout_, so this act is a direct payoff.
 
 ### Act 5 — Resolution: The Rift Storm
 
@@ -204,6 +204,12 @@ These are non-negotiable UX commitments derived from educational-game research (
 - **Wrong-command feedback is specific.** "Session names are case-sensitive — you typed CLULIX but the session is named clulix," not a generic "not yet."
 - **The HUD shows the full tmux hierarchy** (sessions, windows, panes) in real time, so the player can always confirm what their command changed.
 - **The game can be paused and resumed** without losing progress (see [`design/save-manager-strategy.md`](design/save-manager-strategy.md)).
+- **Multiple named saves are first-class.** A learner may keep a personal run, a classroom run, and a "show a friend" run; the front-of-game menu manages them (new / continue / rename / delete / clear all). Resuming is travel, not setup.
+- **Assessment is part of the fiction, never a quiz interruption.** Two distinct surfaces, both optional-feeling:
+  - _Flash cards_ — an optional self-check the player can open at any time to review every command unlocked so far (story prompt on the front, command + reason on the back). No score, no gate; pure recall practice.
+  - _Review gates_ — a brief in-fiction "readiness check" (HELIX certifying the crew) at an act boundary, passing at 70%, with retry and review on failure. The gate exists to guarantee the muscle memory is real before the next concept layers on — consistent with "one concept before the next."
+- **Progress and competence are visible.** A level-complete beat and a progress indicator mark each act's close, and a light score rewards correct, confident, hint-free execution — feedback that reinforces mastery without turning the game into a leaderboard grind.
+- **The keyboard is the instrument.** The skill being taught lives in physical keys and chords (`Ctrl+b` then a key). Execution requires a real keyboard; this is a feature, not a limitation. On touch-only devices the game offers honest review (flash cards, multiple-choice, codex), never a simulated-keyboard substitute that would teach tapping instead of muscle memory. See [`design/mobile-web-strategy.md`](design/mobile-web-strategy.md).
 - **Every zone has at least one visible-but-locked area** that rewards a return visit.
 
 ---
@@ -213,7 +219,7 @@ These are non-negotiable UX commitments derived from educational-game research (
 The design is realized when all of the following are true:
 
 - [ ] A player who has never used tmux completes Act 1 without external documentation.
-- [ ] The player can explain *why* sessions exist without being told — they experienced it.
+- [ ] The player can explain _why_ sessions exist without being told — they experienced it.
 - [ ] `Ctrl+b d` and `tmux attach` feel like natural travel, not drill steps.
 - [ ] The world visibly changes when tmux commands succeed.
 - [ ] Each command is introduced exactly when a story problem demands it, not before.
@@ -222,3 +228,9 @@ The design is realized when all of the following are true:
 - [ ] The game can be paused and resumed without losing progress.
 - [ ] Movement keys are `h/j/k/l` with WASD as secondary.
 - [ ] The HUD shows the full tmux hierarchy in real time.
+- [ ] The player can keep multiple named saves and switch between them from the menu.
+- [ ] Flash-card review covers exactly the commands unlocked so far and never blocks play.
+- [ ] An act boundary can require a 70% review pass before the next concept unlocks, with retry on failure.
+- [ ] Each act closes with a visible level-complete beat, and progress survives reload.
+
+> **Design scope note (June 20, 2026):** the save-menu, flash cards, review gates, scoring, progress/level-complete, splash, and optional auth are scheduled in [`implementation-plan.md`](implementation-plan.md) Phases 4–5 (frameworks) with per-act content wired through Phases 7–10. Phase 6 is a utility phase for demo-video automation and basic actor AI. The fixed-password auth is a _soft_ gate for a public link, not a security control.

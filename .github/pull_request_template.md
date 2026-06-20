@@ -20,6 +20,6 @@
 
 ## Handoff
 
-- [ ] `doc/session-handoff.md` updated, or not needed
-- [ ] `TODO.md` updated, or not needed
+- [ ] `docs/session-handoff.md` updated, or not needed
+- [ ] `docs/implementation-plan.md` updated, or not needed
 - [ ] `history.md` updated, or not needed

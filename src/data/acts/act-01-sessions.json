@@ -1,0 +1,92 @@
+{
+  "id": "act-01-sessions",
+  "title": "First Descent",
+  "objectives": [
+    {
+      "id": "activate-rift-terminal",
+      "zoneId": "bridge",
+      "challengeId": "bridge-open-rift",
+      "missionText": "Open the Rift terminal and descend to the surface.",
+      "instructionText": "Walk to the bridge terminal. HELIX will route the first descent through tmux.",
+      "trigger": {
+        "event": "session:created",
+        "name": "0"
+      },
+      "unlocks": ["tmux"]
+    },
+    {
+      "id": "collect-rift-code",
+      "zoneId": "surface",
+      "missionText": "Find the Rift Code on the village perimeter.",
+      "instructionText": "Talk to Zrix, then follow the path until you reach the glowing glyph.",
+      "trigger": {
+        "event": "inventory:collected",
+        "item": "RIFT_CODE"
+      }
+    },
+    {
+      "id": "open-armory",
+      "zoneId": "surface",
+      "challengeId": "village-open-armory",
+      "missionText": "Use the Rift Code to open the armory session.",
+      "instructionText": "Return to Zrix. The armory can only be reached with tmux new -s armory.",
+      "trigger": {
+        "event": "session:created",
+        "name": "armory"
+      },
+      "unlocks": ["tmux new -s armory"]
+    },
+    {
+      "id": "retrieve-weapon",
+      "zoneId": "armory",
+      "missionText": "Collect the bracket cannon from the armory.",
+      "instructionText": "Step onto the weapon stand and retrieve the only tool that can erase the overflow.",
+      "trigger": {
+        "event": "inventory:collected",
+        "item": "ARMORY_WEAPON"
+      }
+    },
+    {
+      "id": "return-to-bridge",
+      "zoneId": "armory",
+      "challengeId": "armory-detach",
+      "missionText": "Detach from the armory and return to the CLULIX bridge.",
+      "instructionText": "Speak with the Armorer, then use Ctrl+b d to leave the armory alive behind you.",
+      "trigger": {
+        "event": "session:detached"
+      },
+      "unlocks": ["Ctrl+b d"]
+    },
+    {
+      "id": "inspect-manifest",
+      "zoneId": "bridge",
+      "challengeId": "bridge-manifest-return",
+      "missionText": "Inspect the Rift Manifest from the bridge terminal.",
+      "instructionText": "Use tmux ls to confirm the surviving destinations before you jump back down.",
+      "trigger": {
+        "event": "session:listed"
+      },
+      "unlocks": ["tmux ls"]
+    },
+    {
+      "id": "reattach-surface",
+      "zoneId": "bridge",
+      "missionText": "Return to the surface Rift with the armory weapon.",
+      "instructionText": "Finish the bridge terminal sequence and reattach to session 0.",
+      "trigger": {
+        "event": "session:attached",
+        "name": "0"
+      },
+      "unlocks": ["tmux attach -t 0"]
+    },
+    {
+      "id": "clear-overflow",
+      "zoneId": "surface",
+      "missionText": "Clear the overflow buffer blocking Starfall Village.",
+      "instructionText": "Walk to the overflow front and press E to fire the bracket cannon.",
+      "trigger": {
+        "event": "world:overflow-cleared"
+      }
+    }
+  ]
+}

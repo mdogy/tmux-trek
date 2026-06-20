@@ -73,4 +73,82 @@ describe("TmuxEngine", () => {
     expect(closed.status.sessions[0].windows[0].panes).toHaveLength(2);
     expect(closed.status.activePaneId).toBe(1);
   });
+
+  it("restores persisted engine state", () => {
+    engine.execute("tmux");
+    engine.execute("tmux new -s armory");
+    const snapshot = engine.getSnapshot();
+
+    const restored = new TmuxEngine();
+    restored.restore(snapshot);
+
+    expect(restored.getStatus().activeSessionName).toBe("armory");
+    expect(restored.getStatus().sessions).toHaveLength(2);
+  });
+
+  it("kills a session with tmux kill-session -t", () => {
+    engine.execute("tmux new -s clulix");
+    engine.handleKeybinding("d");
+    const result = engine.execute("tmux kill-session -t clulix");
+
+    expect(result.ok).toBe(true);
+    expect(result.status.sessions).toHaveLength(0);
+  });
+
+  it("returns a fail result for an unknown command", () => {
+    const result = engine.execute("not-a-command");
+
+    expect(result.ok).toBe(false);
+    expect(engine.getLastError()).toContain("unknown command");
+  });
+
+  it("reattaches to the first detached session when tmux is run with sessions present", () => {
+    engine.execute("tmux new -s alpha");
+    engine.handleKeybinding("d");
+    engine.execute("tmux new -s beta");
+    engine.handleKeybinding("d");
+
+    const result = engine.execute("tmux");
+
+    expect(result.ok).toBe(true);
+    expect(result.status.activeSessionName).toBe("alpha");
+  });
+
+  it("getLastError is empty after a successful command", () => {
+    engine.execute("not-a-command");
+    engine.execute("tmux");
+
+    expect(engine.getLastError()).toBe("");
+  });
+
+  it("tmux ls with no sessions returns the no-server message", () => {
+    const result = engine.execute("tmux ls");
+
+    expect(result.ok).toBe(true);
+    expect(result.output[0]).toContain("no server running");
+  });
+
+  it("Ctrl+b s lists sessions the same as tmux ls", () => {
+    engine.execute("tmux new -s clulix");
+    const result = engine.handleKeybinding("s");
+
+    expect(result.ok).toBe(true);
+    expect(result.output[0]).toContain("clulix");
+  });
+
+  it("returns a fail result for an unsupported keybinding", () => {
+    engine.execute("tmux new -s clulix");
+    const result = engine.handleKeybinding("z");
+
+    expect(result.ok).toBe(false);
+    expect(result.output[0]).toContain("unsupported keybinding");
+  });
+
+  it("reset clears all engine state", () => {
+    engine.execute("tmux");
+    engine.reset();
+
+    expect(engine.getStatus().sessions).toHaveLength(0);
+    expect(engine.getStatus().activeSessionName).toBeNull();
+  });
 });

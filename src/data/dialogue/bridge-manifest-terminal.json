@@ -1,0 +1,18 @@
+[
+  {
+    "speaker": "HELIX",
+    "text": "The armory survived your departure. Verify the manifest before you pick a destination."
+  },
+  {
+    "speaker": "HELIX",
+    "text": "Two sessions exist now: armory and 0. The manifest shows every live Rift. Run tmux ls to inspect it."
+  },
+  {
+    "speaker": "HELIX",
+    "text": "You are carrying the only weapon that can erase the overflow buffer. Session 0 will take you back to the village."
+  },
+  {
+    "speaker": "HELIX",
+    "text": "Run tmux ls, then tmux attach -t 0 to step back in. The overflow is waiting."
+  }
+]
