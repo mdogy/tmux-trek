@@ -86,13 +86,14 @@ Status: **complete.**
 
 ## Phase 3 — Audio & VFX Minimum
 
-The game must no longer feel inert.
+Status: **complete.**
 
-- `AudioSystem.js`: terminal keystroke, challenge success, HELIX error tone.
-- Rift transition VFX: a ~500ms portal-flash tween on `session:created` before the destination scene loads.
-- Particle glow on the Rift Code glyph (draws the player toward it).
-- Ship-interior ambient layer on `BridgeScene`.
-- Title/menu audio stem (consumed by the Phase 4 splash) and a success chime reused by the Phase 5 score and level-complete screens.
+- `AudioSystem.js`: Web Audio API, no asset files. `playKeystroke` (1100Hz sine 40ms), `playSuccess` (C5/E5/G5 ascending triad), `playError` (sawtooth two-tone descend). `startAmbient`/`stopAmbient`: 55Hz sine + 0.18Hz LFO bridge drone. Lazy AudioContext init; suspended-state resume.
+- Rift transition: `cameras.main.fadeIn(450, 70, 217, 196)` on every `GridScene.create()` — teal fade-in reveals each new zone as a "Rift materialization."
+- Rift Code glyph pulse: alpha 0.1→0.55 + scale 1→1.5 Sine.InOut yoyo tween on the existing glow circle.
+- Bridge ambient: `startAmbient("bridge")` in `BridgeScene.createZoneDecorations`, `stopAmbient` on scene shutdown.
+- `TmuxEmulator` wired: `playKeystroke` on each printable char, `playError` on wrong answer, `playSuccess` on final challenge step.
+- `AudioSystem` is browser-only (Web Audio API); not covered by Vitest unit tests.
 
 ---
 

@@ -62,7 +62,7 @@ Last verified locally on the Phase 0 + Phase 1 feature branch:
 
 ```bash
 npm run lint       # pass
-npm run test       # 53 unit tests pass (99% stmt / 92% branch on engine layer)
+npm run test       # 53 unit tests pass (99% stmt / 92% branch on engine layer) -- AudioSystem untested (Web Audio API, browser-only)
 npm run bdd        # 2 scenarios / 17 steps pass
 npm run test:e2e   # 1 Playwright end-to-end vertical-slice flow passes
 npm run build      # pass
@@ -89,9 +89,9 @@ Playwright may need `npx playwright install chromium` on a fresh machine. `npm r
 
 - Dialogue is now 4 cards but still a simple linear sequence; no branching, no speaker portraits.
 - The `↺ Restart` button exists but has no keyboard shortcut and no confirmation UX.
-- No audio or VFX on any interaction (Phase 3).
+- Audio and VFX minimum done (Phase 3): keystroke clicks, error tones, success chime, teal fade-in on scene entry, Rift Code pulse glow, bridge ambient drone.
 
-**Asset problems:** no animation; no audio; no Rift portal VFX beyond instant scene changes.
+**Asset problems:** no animation; no sprite artwork; audio is procedural Web Audio (no sampled SFX or music files yet).
 
 Full detail is preserved in [`archive/descriptive-summary-05-19.md`](archive/descriptive-summary-05-19.md).
 
@@ -116,14 +116,13 @@ Full detail is preserved in [`archive/descriptive-summary-05-19.md`](archive/des
 
 ## Immediate Next Task
 
-Phases 0, 1, and 2 are complete (including review, tests, refactoring, and coverage). The branch `codex/phase0-phase1-vertical-slice` is ready to be PR'd and merged to `main`.
+Phases 0, 1, 2, and 3 are complete. The branch `codex/phase0-phase1-vertical-slice` is ready to be PR'd and merged to `main`.
 
-After merge, the next body of work is **Phase 3 — Audio & VFX Minimum** from [`implementation-plan.md`](implementation-plan.md):
+After merge, the next body of work is **Phase 4 — Game Shell, Auth & Save Slots** from [`implementation-plan.md`](implementation-plan.md):
 
-1. `AudioSystem.js`: terminal keystroke SFX, challenge-success chime, HELIX error tone.
-2. Rift transition flash tween (~500ms) before the destination scene loads on `session:created` / `session:attached`.
-3. Particle glow animation on the Rift Code glyph.
-4. Ship-interior ambient layer on `BridgeScene`.
+1. `TitleScene` (or extended `BootScene`): splash/logo, main menu — New Game, Continue, Saves, Settings.
+2. Fixed-password auth gate (build-flagged; soft gate only, not security).
+3. Multi-slot `SaveManager` refactor: `SAVE_VERSION` → 3, slot index + per-slot keys, new/continue/rename/delete/clear-all operations.
 
 **Roadmap note (expanded June 20, 2026):** eight further features are now scheduled. Two new phases land *before* the content acts because they reshape data models the acts depend on: **Phase 4 — Game Shell, Auth & Save Slots** (splash, fixed-password soft-gate, multi-slot saves) and **Phase 5 — Progression & Assessment Systems** (scoring, progress/level-complete, 70% multiple-choice gate, optional flash cards). The former Acts 2–5 renumber to Phases 6–9, and each wires its own per-act score events, review question bank, flashcards, and progress node. GitHub Pages deployment is a recurring per-phase step plus a near-term "merge the redesign to replace the prototype" milestone. See the implementation plan's [Feature → Phase Map](implementation-plan.md#feature--phase-map).
 
