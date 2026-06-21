@@ -87,7 +87,9 @@ h2 {
 }
 
 .terminal-root,
-.dialogue-root {
+.dialogue-root,
+.review-root,
+.completion-root {
   position: absolute;
   inset: 0;
   z-index: 3;
@@ -115,7 +117,9 @@ h2 {
   border-color: var(--teal);
 }
 
-.dialogue-root {
+.dialogue-root,
+.review-root,
+.completion-root {
   display: flex;
   align-items: end;
   padding: 1.5rem;
@@ -129,6 +133,76 @@ h2 {
   border-radius: 18px;
   background: var(--panel-strong);
   box-shadow: var(--shadow);
+}
+
+.completion-root {
+  align-items: center;
+  justify-content: center;
+}
+
+.completion-card,
+.review-card {
+  width: min(100%, 520px);
+  padding: 1.5rem;
+  border: 1px solid rgba(255, 179, 0, 0.35);
+  border-radius: 18px;
+  background: var(--panel-strong);
+  box-shadow: var(--shadow);
+}
+
+.completion-title {
+  margin: 0 0 1rem;
+  color: var(--amber);
+  font-family: "Press Start 2P", cursive;
+  font-size: 1rem;
+  line-height: 1.4;
+}
+
+.completion-stats,
+.completion-next,
+.score-total,
+.progress-text {
+  margin: 0 0 0.85rem;
+  line-height: 1.5;
+}
+
+.review-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.65rem;
+}
+
+.review-choice-list {
+  display: grid;
+  gap: 0.65rem;
+  margin: 0 0 1rem;
+}
+
+.review-button {
+  border: 1px solid rgba(70, 217, 196, 0.32);
+  border-radius: 10px;
+  padding: 0.65rem 0.8rem;
+  background: rgba(255, 255, 255, 0.03);
+  color: var(--teal);
+  font-family: "Share Tech Mono", monospace;
+  font-size: 0.9rem;
+  cursor: pointer;
+}
+
+.review-button.selected {
+  border-color: var(--amber);
+  color: var(--amber);
+  background: rgba(255, 179, 0, 0.08);
+}
+
+.review-button:disabled {
+  opacity: 0.45;
+  cursor: default;
+}
+
+.review-stats {
+  margin: 0 0 1rem;
+  color: var(--muted);
 }
 
 .dialogue-speaker {

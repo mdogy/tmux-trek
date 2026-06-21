@@ -1,0 +1,62 @@
+{
+  "actId": "act-01-sessions",
+  "title": "First Descent Readiness Check",
+  "passPercent": 70,
+  "questions": [
+    {
+      "id": "start-rift",
+      "prompt": "HELIX sealed the bridge exit. Which command opens the first Rift?",
+      "choices": [
+        { "id": "a", "text": "tmux" },
+        { "id": "b", "text": "tmux ls" },
+        { "id": "c", "text": "tmux attach -t 0" }
+      ],
+      "correctChoiceId": "a",
+      "explanation": "`tmux` starts the first live session and turns the terminal into travel."
+    },
+    {
+      "id": "open-armory",
+      "prompt": "Zrix loaded the Rift Code. Which command opens the armory destination?",
+      "choices": [
+        { "id": "a", "text": "tmux attach -t armory" },
+        { "id": "b", "text": "tmux new -s armory" },
+        { "id": "c", "text": "tmux ls armory" }
+      ],
+      "correctChoiceId": "b",
+      "explanation": "The armory is created as a named session with `tmux new -s armory`."
+    },
+    {
+      "id": "detach",
+      "prompt": "You have the bracket cannon and need to return to the bridge without destroying the armory. What do you press?",
+      "choices": [
+        { "id": "a", "text": "Ctrl+b d" },
+        { "id": "b", "text": "Ctrl+b c" },
+        { "id": "c", "text": "Ctrl+b x" }
+      ],
+      "correctChoiceId": "a",
+      "explanation": "`Ctrl+b d` detaches, leaving the session alive."
+    },
+    {
+      "id": "manifest",
+      "prompt": "On the bridge, which command lists the surviving Rift destinations?",
+      "choices": [
+        { "id": "a", "text": "tmux attach -t 0" },
+        { "id": "b", "text": "tmux new -s manifest" },
+        { "id": "c", "text": "tmux ls" }
+      ],
+      "correctChoiceId": "c",
+      "explanation": "`tmux ls` shows the manifest of active sessions."
+    },
+    {
+      "id": "return-surface",
+      "prompt": "You want to return to the original surface Rift with the weapon already secured. Which command gets you there?",
+      "choices": [
+        { "id": "a", "text": "tmux attach -t 0" },
+        { "id": "b", "text": "tmux new -s 0" },
+        { "id": "c", "text": "tmux ls -t 0" }
+      ],
+      "correctChoiceId": "a",
+      "explanation": "`tmux attach -t 0` re-enters the existing surface session with its prior state."
+    }
+  ]
+}

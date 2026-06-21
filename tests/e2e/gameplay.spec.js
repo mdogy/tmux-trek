@@ -53,13 +53,17 @@ async function pressTmuxKeybinding(page, key) {
 test("TMUX Trek completes the Phase 1 vertical slice and restores on reload", async ({
   page,
 }) => {
-  test.setTimeout(60_000);
+  test.setTimeout(120_000);
   await page.goto("/?testMode=1");
   await page.evaluate(() => window.localStorage.clear());
   await page.reload();
   await waitForGrid(page, [4, 7], "bridge");
   await expect(page.locator("#mission-text")).toContainText(
     "Open the Rift terminal",
+  );
+  await expect(page.locator("#score-total")).toContainText("Score: 0");
+  await expect(page.locator("#progress-text")).toContainText(
+    "First Descent: 0/8 objectives",
   );
 
   await moveAlong(page, [
@@ -81,6 +85,7 @@ test("TMUX Trek completes the Phase 1 vertical slice and restores on reload", as
   await expect(page.locator("#mission-text")).toContainText(
     "Find the Rift Code",
   );
+  await expect(page.locator("#score-total")).toContainText("Score: 100");
 
   await moveAlong(page, [
     ["KeyD", [4, 15]],
@@ -106,6 +111,23 @@ test("TMUX Trek completes the Phase 1 vertical slice and restores on reload", as
     "Return to Zrix and open the armory session",
   );
   await expect(page.locator("#codex-list")).toContainText("tmux new -s armory");
+  await page.getByRole("button", { name: "Review Commands" }).click();
+  await expect(page.locator("#review-root")).toHaveAttribute(
+    "data-review-mode",
+    "flashcards",
+  );
+  await expect(page.locator("#review-root")).toContainText(
+    "What command turns the Rift terminal into a live route?",
+  );
+  await page.getByRole("button", { name: "Flip Card" }).click();
+  await expect(page.locator("#review-root")).toContainText("tmux");
+  await page.getByRole("button", { name: "Got It" }).click();
+  await expect(page.locator("#review-root")).toHaveAttribute(
+    "data-review-card",
+    "tmux new -s armory",
+  );
+  await page.getByRole("button", { name: "Close" }).click();
+  await expect(page.locator("#review-root")).toHaveClass(/hidden/);
 
   await page.reload();
   await waitForGrid(page, [3, 15], "surface");
@@ -219,4 +241,59 @@ test("TMUX Trek completes the Phase 1 vertical slice and restores on reload", as
   await expect(page.locator("#instruction-text")).toContainText(
     "The overflow buffer collapses",
   );
+  await expect(page.locator("#score-total")).toContainText("Score: 1050");
+  await expect(page.locator("#progress-text")).toContainText(
+    "First Descent: 8/8 objectives, 1/1 acts complete",
+  );
+  await expect(page.locator("#completion-root")).toHaveAttribute(
+    "data-act-complete",
+    "true",
+  );
+  await expect(page.locator("#completion-root")).toContainText(
+    "First Descent complete",
+  );
+  await expect(
+    page.getByRole("button", { name: "Start Readiness Check" }),
+  ).toBeVisible();
+
+  await page.reload();
+  await waitForGrid(page, [3, 15], "surface");
+  await expect(page.locator("#completion-root")).toHaveAttribute(
+    "data-act-complete",
+    "true",
+  );
+
+  await page.getByRole("button", { name: "Start Readiness Check" }).click();
+  await expect(page.locator("#review-root")).toHaveAttribute(
+    "data-review-mode",
+    "gate",
+  );
+  await expect(page.locator("#review-root")).toHaveAttribute(
+    "data-review-question",
+    "start-rift",
+  );
+  const review = page.locator("#review-root");
+  await review.getByRole("button", { name: "tmux", exact: true }).click();
+  await review.getByRole("button", { name: "Next", exact: true }).click();
+  await review
+    .getByRole("button", { name: "tmux new -s armory", exact: true })
+    .click();
+  await review.getByRole("button", { name: "Next", exact: true }).click();
+  await review.getByRole("button", { name: "Ctrl+b d", exact: true }).click();
+  await review.getByRole("button", { name: "Next", exact: true }).click();
+  await review.getByRole("button", { name: "tmux ls", exact: true }).click();
+  await review.getByRole("button", { name: "Next", exact: true }).click();
+  await review
+    .getByRole("button", { name: "tmux attach -t 0", exact: true })
+    .click();
+  await review.getByRole("button", { name: "Submit Check", exact: true }).click();
+  await expect(page.locator("#review-root")).toContainText(
+    "HELIX certifies you at 100%",
+  );
+  await review.getByRole("button", { name: "Close", exact: true }).click();
+  await expect(page.locator("#review-root")).toHaveClass(/hidden/);
+
+  await page.reload();
+  await waitForGrid(page, [3, 15], "surface");
+  await expect(page.locator("#completion-root")).toHaveClass(/hidden/);
 });

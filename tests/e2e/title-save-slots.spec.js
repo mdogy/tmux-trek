@@ -1,6 +1,7 @@
 import { expect, test } from "@playwright/test";
 
 const GRID_READY_TIMEOUT = 15_000;
+const TITLE_READY_TIMEOUT = 15_000;
 
 async function waitForGrid(page, grid, zoneId) {
   await expect(page.locator("#game-root")).toHaveAttribute(
@@ -24,11 +25,13 @@ async function waitForTitleScreen(page, screen, selectionPattern) {
   await expect(page.locator("#game-root")).toHaveAttribute(
     "data-title-screen",
     screen,
+    { timeout: TITLE_READY_TIMEOUT },
   );
   if (selectionPattern) {
     await expect(page.locator("#game-root")).toHaveAttribute(
       "data-title-selection",
       selectionPattern,
+      { timeout: TITLE_READY_TIMEOUT },
     );
   }
 }
@@ -90,4 +93,41 @@ test("TitleScene creates, continues, renames, and deletes save slots", async ({
   index = await getSaveIndex(page);
   expect(index.slots).toHaveLength(0);
   expect(index.activeId).toBeNull();
+});
+
+test("TitleScene can open flash-card review from an existing save", async ({
+  page,
+}) => {
+  test.setTimeout(60_000);
+
+  await page.goto("/");
+  await page.evaluate(() => {
+    window.localStorage.clear();
+    window.sessionStorage.clear();
+  });
+  await page.reload();
+  await waitForTitleScreen(page, "menu", "NEW GAME");
+  await pressTitleKey(page, "Enter");
+  await expect(page.locator("#title-input-overlay input")).toBeVisible();
+  await page.locator("#title-input-overlay input").fill("Review Run");
+  await page.keyboard.press("Enter");
+  await waitForGrid(page, [4, 7], "bridge");
+  await page.evaluate(() => {
+    const app = window.__tmuxTrekApp;
+    app.state.restoreUnlockedCommands(["tmux"]);
+    app.saveProgress();
+  });
+  await page.reload();
+  await waitForTitleScreen(page, "menu", "CONTINUE");
+  await pressTitleKey(page, "ArrowDown");
+  await waitForTitleScreen(page, "menu", "REVIEW COMMANDS");
+  await pressTitleKey(page, "Enter");
+  await waitForGrid(page, [4, 7], "bridge");
+  await expect(page.locator("#review-root")).toHaveAttribute(
+    "data-review-mode",
+    "flashcards",
+  );
+  await expect(page.locator("#review-root")).toContainText(
+    "What command turns the Rift terminal into a live route?",
+  );
 });

@@ -3,6 +3,7 @@ import {
   deleteSlot,
   getActiveSlotId,
   hasSave,
+  loadGame,
   listSlots,
   newSlot,
   renameSlot,
@@ -108,6 +109,10 @@ export class TitleScene extends Phaser.Scene {
 
     const slots = listSlots();
     const hasActive = hasSave();
+    const activeSnapshot = hasActive ? loadGame() : null;
+    const canReview =
+      Array.isArray(activeSnapshot?.unlockedCommands) &&
+      activeSnapshot.unlockedCommands.length > 0;
 
     const items = [
       {
@@ -116,6 +121,9 @@ export class TitleScene extends Phaser.Scene {
       },
       ...(hasActive
         ? [{ label: "CONTINUE", action: () => this._continue() }]
+        : []),
+      ...(canReview
+        ? [{ label: "REVIEW COMMANDS", action: () => this._reviewCommands() }]
         : []),
       ...(slots.length
         ? [
@@ -266,6 +274,12 @@ export class TitleScene extends Phaser.Scene {
 
   _continue() {
     this.app.restoreActiveSave();
+    this.scene.start("boot");
+  }
+
+  _reviewCommands() {
+    this.app.restoreActiveSave();
+    this.app.openFlashCards();
     this.scene.start("boot");
   }
 

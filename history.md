@@ -1,5 +1,40 @@
 # Project History
 
+## 2026-06-21 — Phase 5 readiness-check boundary wiring
+
+Finished the remaining gate-integration work inside the existing Act 1 boundary flow.
+
+- Added act-level review-gate metadata to `act-01-sessions.json`.
+- Wired the completion overlay to open the readiness check automatically when Act 1 is complete and its gate has not been passed yet.
+- Added a scored multiple-choice review mode to the shared review overlay, including retry and flash-card fallback on failure.
+- Persisted passed-gate state strongly enough that reloading a completed save re-prompts the readiness check only until the player passes it.
+- Extended Playwright coverage to verify the full boundary path: act completion, reload with pending gate, passing the readiness check, and reload without re-prompt.
+- Verification after this slice: `npm run lint`, `npm run test` (75 tests), `npm run bdd` (2 scenarios / 17 steps), `npm run test:e2e` (3 Playwright tests), and `npm run build` pass.
+
+## 2026-06-21 — Phase 5 flash-card review and review-state framework
+
+Extended the earlier score/progress slice into the review half of Phase 5.
+
+- Added `ReviewSystem` to build flash cards from unlocked curriculum entries, persist self-ratings, and store review-gate attempts / passed gates.
+- Added `src/data/reviews/act-01-sessions.json` as the first concrete question-bank file and schema anchor for future gates.
+- Expanded `session-curriculum.json` with review-specific prompt/explanation fields so the codex and flash cards stay on one data path.
+- Added a flash-card review overlay reachable from both the HUD and the TitleScene menu when the active save has unlocked commands.
+- Extended save persistence to include `review` state.
+- Added unit coverage for `ReviewSystem` and browser coverage for both in-game review and title-menu review launch.
+- Verification after this slice: `npm run lint`, `npm run test` (75 tests), `npm run bdd` (2 scenarios / 17 steps), `npm run test:e2e` (3 Playwright tests), and `npm run build` pass.
+
+## 2026-06-21 — Phase 5 score and progress slice
+
+Implemented the first half of Phase 5 and verified it across unit, browser, and build checks.
+
+- Added `ScoreSystem` with once-only point awards for objective completion and act completion, aggregated per act and total.
+- Added `ProgressSystem` to track act start/completion timestamps plus completed objective IDs for persistence and HUD rendering.
+- Extended the save snapshot shape to persist `score` and `progress` alongside engine, mission, inventory, unlocked commands, and current zone.
+- Added a sidebar Progress panel showing total score and current act completion status.
+- Added a level-complete overlay that appears when Act 1 finishes and shows act score plus elapsed time.
+- Added unit coverage for `ScoreSystem` and `ProgressSystem`, and extended Playwright coverage to assert score/progress HUD state and the completion overlay.
+- Verification baseline after this slice: `npm run lint`, `npm run test` (71 tests), `npm run bdd` (2 scenarios / 17 steps), `npm run test:e2e` (2 Playwright tests), and `npm run build` all pass.
+
 ## 2026-06-20 — Demo automation and actor AI planning
 
 Planning-only update for two utility features:
