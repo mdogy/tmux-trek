@@ -2,6 +2,7 @@ import Phaser from "phaser";
 import act01Sessions from "../data/acts/act-01-sessions.json";
 import sessionCurriculum from "../data/commands/session-curriculum.json";
 import phase01Challenges from "../data/commands/phase-01-vertical-slice-challenges.json";
+import act01Review from "../data/reviews/act-01-sessions.json";
 import armoryArmorerDialogue from "../data/dialogue/armory-armorer.json";
 import armoryDetachDialogue from "../data/dialogue/armory-detach.json";
 import bridgeManifestDialogue from "../data/dialogue/bridge-manifest-terminal.json";
@@ -20,6 +21,8 @@ import { TitleScene } from "./scenes/TitleScene.js";
 import { GameState } from "./systems/GameState.js";
 import { INVENTORY_ITEMS, InventorySystem } from "./systems/InventorySystem.js";
 import { MissionSystem } from "./systems/MissionSystem.js";
+import { ProgressSystem } from "./systems/ProgressSystem.js";
+import { ReviewSystem } from "./systems/ReviewSystem.js";
 import {
   hasSave,
   loadGame,
@@ -27,6 +30,7 @@ import {
   newSlot,
   saveGame,
 } from "./systems/SaveManager.js";
+import { ScoreSystem } from "./systems/ScoreSystem.js";
 import { TransitionSystem } from "./systems/TransitionSystem.js";
 import { UIController } from "./systems/UIController.js";
 
@@ -61,6 +65,10 @@ export class TmuxTrekApp {
     this.currentZoneId = "bridge";
     this.missionSystem = new MissionSystem([act01Sessions]);
     this.inventory = new InventorySystem();
+    this.scoreSystem = new ScoreSystem();
+    this.progressSystem = new ProgressSystem([act01Sessions]);
+    this.reviewSystem = new ReviewSystem([act01Review]);
+    this.lastMissionSnapshot = null;
 
     this.state = new GameState({
       zoneName: this.zones.bridge.name,
@@ -74,7 +82,23 @@ export class TmuxTrekApp {
       state: this.state,
       terminalRoot: document.querySelector("#terminal-root"),
       dialogueRoot: document.querySelector("#dialogue-root"),
+      reviewRoot: document.querySelector("#review-root"),
+      completionRoot: document.querySelector("#completion-root"),
       toastRoot: document.querySelector("#toast-root"),
+      onOpenReview: () => this.openFlashCards(),
+      onReviewPrevious: () => this.state.previousReviewCard(),
+      onReviewNext: () => this.state.nextReviewCard(),
+      onReviewFlip: () => this.state.flipReviewCard(),
+      onReviewClose: () => {
+        this.state.hideReviewOverlay();
+        this.focusGame();
+      },
+      onReviewRate: (cardId, rating) => this.rateFlashCard(cardId, rating),
+      onReviewSelectChoice: (questionId, choiceId) =>
+        this.selectReviewChoice(questionId, choiceId),
+      onReviewSubmitGate: () => this.submitReviewGate(),
+      onReviewRetryGate: () => this.retryReviewGate(),
+      onCompletionAcknowledge: () => this.handleCompletionAcknowledge(),
     });
 
     this.terminal = new TmuxEmulator({
@@ -109,10 +133,13 @@ export class TmuxTrekApp {
       ),
     ];
 
-    this.missionSystem.subscribe(() => this.#applyObjectiveState());
+    this.missionSystem.subscribe((snapshot) => this.#handleMissionUpdate(snapshot));
 
     migrate();
     this.missionSystem.loadAct("act-01-sessions");
+    this.progressSystem.ensureActStarted("act-01-sessions");
+    this.#syncProgressState();
+    this.state.setScore(this.scoreSystem.getSnapshot());
     this.state.syncStatus(this.terminal.engine.getStatus());
   }
 
@@ -154,11 +181,20 @@ export class TmuxTrekApp {
 
   resetToNewGame() {
     this.terminal.engine.reset();
+    this.scoreSystem.restore();
+    this.progressSystem.restore();
+    this.reviewSystem.restore();
+    this.lastMissionSnapshot = null;
     this.missionSystem.restore({});
     this.inventory.restore({ items: [] });
     this.state.restoreUnlockedCommands([]);
     this.currentZoneId = "bridge";
     this.missionSystem.loadAct("act-01-sessions");
+    this.progressSystem.ensureActStarted("act-01-sessions");
+    this.state.setScore(this.scoreSystem.getSnapshot());
+    this.#syncProgressState();
+    this.state.hideReviewOverlay();
+    this.state.hideCompletionOverlay();
     this.state.syncStatus(this.terminal.engine.getStatus());
   }
 
@@ -200,11 +236,135 @@ export class TmuxTrekApp {
 
   isOverlayOpen() {
     const snapshot = this.state.getState();
-    return snapshot.dialogueOpen || snapshot.terminalOpen;
+    return Boolean(
+      snapshot.dialogueOpen ||
+        snapshot.terminalOpen ||
+        snapshot.reviewOverlay ||
+        snapshot.completionOverlay,
+    );
   }
 
   hasItem(item) {
     return this.inventory.has(item);
+  }
+
+  openFlashCards() {
+    const cards = this.#buildFlashCards();
+
+    if (cards.length === 0) {
+      this.state.setToast("No commands unlocked for review yet.");
+      return false;
+    }
+
+    this.state.showReviewOverlay({
+      mode: "flashcards",
+      title: "TMUX Codex Review",
+      cards,
+      currentIndex: 0,
+      showAnswer: false,
+    });
+    return true;
+  }
+
+  rateFlashCard(cardId, rating) {
+    const stats = this.reviewSystem.rateFlashCard(cardId, rating);
+    const overlay = this.#getReviewOverlay();
+    if (!stats || !overlay) {
+      return;
+    }
+
+    const cards = overlay.cards.map((card) =>
+      card.id === cardId ? { ...card, stats } : card,
+    );
+    const currentIndex = Math.min(overlay.currentIndex + 1, cards.length - 1);
+    this.state.updateReviewOverlay({
+      cards,
+      currentIndex,
+      showAnswer: false,
+    });
+    this.#saveProgress();
+  }
+
+  openReviewGate(actId, options = {}) {
+    const bank = this.reviewSystem.getQuestionBank(actId);
+    if (!bank) {
+      this.state.setToast("No readiness check is configured for this act yet.");
+      return false;
+    }
+
+    this.state.showReviewOverlay({
+      mode: "gate",
+      actId,
+      title: bank.title,
+      questions: bank.questions,
+      passPercent: bank.passPercent ?? 70,
+      answers: {},
+      currentIndex: 0,
+      result: null,
+      fromCompletion: Boolean(options.fromCompletion),
+    });
+    return true;
+  }
+
+  selectReviewChoice(questionId, choiceId) {
+    const overlay = this.#getReviewOverlay();
+    if (!overlay || overlay.mode !== "gate" || overlay.result) {
+      return;
+    }
+
+    this.state.updateReviewOverlay({
+      answers: {
+        ...(overlay.answers ?? {}),
+        [questionId]: choiceId,
+      },
+    });
+  }
+
+  submitReviewGate() {
+    const overlay = this.#getReviewOverlay();
+    if (!overlay || overlay.mode !== "gate" || overlay.result) {
+      return;
+    }
+
+    const result = this.reviewSystem.gradeGate(overlay.actId, overlay.answers ?? {});
+    const reviewGate = this.missionSystem.getReviewGate();
+    const nextActLabel = reviewGate?.nextActLabel ?? "the next act";
+
+    this.state.updateReviewOverlay({
+      result: {
+        ...result,
+        nextStep: result.passed
+          ? `${nextActLabel} is cleared once that act exists in this branch.`
+          : "Review the unlocked commands, then retry.",
+      },
+    });
+    this.#saveProgress();
+  }
+
+  retryReviewGate() {
+    const overlay = this.#getReviewOverlay();
+    if (!overlay || overlay.mode !== "gate") {
+      return;
+    }
+
+    this.state.updateReviewOverlay({
+      answers: {},
+      currentIndex: 0,
+      result: null,
+    });
+  }
+
+  handleCompletionAcknowledge() {
+    const actId = this.missionSystem.getSnapshot().currentActId;
+
+    if (actId && this.#hasPendingReviewGate(actId)) {
+      this.state.hideCompletionOverlay();
+      this.openReviewGate(actId, { fromCompletion: true });
+      return;
+    }
+
+    this.state.hideCompletionOverlay();
+    this.focusGame();
   }
 
   navigateTo({ sceneKey, zoneId }) {
@@ -390,6 +550,9 @@ export class TmuxTrekApp {
       engine: this.terminal.engine.getSnapshot().engine,
       mission: this.missionSystem.getSnapshot(),
       inventory: this.inventory.getSnapshot(),
+      score: this.scoreSystem.getSnapshot(),
+      progress: this.progressSystem.getSnapshot(),
+      review: this.reviewSystem.getSnapshot(),
       unlockedCommands: this.state.getState().unlockedCommands,
       view: {
         currentZoneId: this.currentZoneId,
@@ -402,13 +565,21 @@ export class TmuxTrekApp {
       return;
     }
 
+    this.lastMissionSnapshot = null;
+    this.state.hideCompletionOverlay();
     this.terminal.engine.restore({ engine: saved.engine });
+    this.scoreSystem.restore(saved.score);
+    this.progressSystem.restore(saved.progress);
+    this.reviewSystem.restore(saved.review);
     this.missionSystem.restore(saved.mission);
     this.inventory.restore(saved.inventory);
     this.state.restoreUnlockedCommands(saved.unlockedCommands ?? []);
+    this.state.setScore(this.scoreSystem.getSnapshot());
     this.currentZoneId =
       saved.view?.currentZoneId ?? this.#deriveZoneFromEngineState();
     this.#applyObjectiveState();
+    this.#syncProgressState();
+    this.#reopenPendingBoundaryGate();
   }
 
   #deriveZoneFromEngineState() {
@@ -418,6 +589,116 @@ export class TmuxTrekApp {
 
   #saveProgress() {
     saveGame(this.#buildSnapshot());
+  }
+
+  #buildFlashCards() {
+    const snapshot = this.state.getState();
+    return this.reviewSystem.buildFlashCards(
+      snapshot.commands,
+      snapshot.unlockedCommands,
+    );
+  }
+
+  #getReviewOverlay() {
+    return this.state.getState().reviewOverlay;
+  }
+
+  #handleMissionUpdate(snapshot) {
+    const previousCompleted = new Set(this.lastMissionSnapshot?.completedObjectives ?? []);
+    const nextCompleted = new Set(snapshot.completedObjectives ?? []);
+    const currentActId = snapshot.currentActId;
+    let latestDelta = 0;
+
+    if (currentActId) {
+      this.progressSystem.ensureActStarted(currentActId);
+    }
+
+    for (const objectiveId of nextCompleted) {
+      if (previousCompleted.has(objectiveId)) {
+        continue;
+      }
+
+      latestDelta += this.scoreSystem.awardObjective({ actId: currentActId, objectiveId });
+      this.progressSystem.markObjectiveComplete({ actId: currentActId, objectiveId });
+    }
+
+    const currentProgress = this.missionSystem.getProgress();
+    if (currentProgress?.isActComplete && !this.lastMissionSnapshot) {
+      this.progressSystem.completeAct({ actId: currentActId });
+    } else if (
+      currentProgress?.isActComplete &&
+      this.lastMissionSnapshot?.currentObjectiveId !== null
+    ) {
+      latestDelta += this.scoreSystem.awardActComplete({ actId: currentActId });
+      this.progressSystem.completeAct({ actId: currentActId });
+      this.#showLevelComplete(currentActId);
+    }
+
+    this.lastMissionSnapshot = structuredClone(snapshot);
+    this.state.setScore({ ...this.scoreSystem.getSnapshot(), latestDelta });
+    this.#syncProgressState();
+    this.#applyObjectiveState();
+  }
+
+  #syncProgressState() {
+    const missionProgress = this.missionSystem.getProgress();
+    const overall = this.progressSystem.getOverallSummary(
+      missionProgress?.currentActId ?? this.missionSystem.getSnapshot().currentActId,
+    );
+    const currentAct = overall.currentAct;
+
+    this.state.setProgress({
+      completedActs: overall.completedActs,
+      totalActs: overall.totalActs,
+      currentActTitle: currentAct?.title ?? "",
+      completedObjectives: currentAct?.completedObjectives ?? 0,
+      totalObjectives: currentAct?.totalObjectives ?? 0,
+    });
+  }
+
+  #showLevelComplete(actId) {
+    const actSummary = this.progressSystem.getActSummary(actId);
+    const reviewGate = this.missionSystem.getReviewGate();
+    const hasPendingGate = this.#hasPendingReviewGate(actId);
+    this.state.showCompletionOverlay({
+      title: `${actSummary.title} complete`,
+      score: this.scoreSystem.getSnapshot().byAct[actId] ?? 0,
+      elapsedLabel: this.#formatElapsed(actSummary.elapsedMs),
+      nextStep: hasPendingGate
+        ? `HELIX requires the ${reviewGate?.title ?? "readiness check"} before ${reviewGate?.nextActLabel ?? "the next act"}.`
+        : `${reviewGate?.nextActLabel ?? "The next act"} is cleared once that content exists in this branch.`,
+      buttonLabel: hasPendingGate ? "Start Readiness Check" : "Acknowledge",
+    });
+  }
+
+  #formatElapsed(elapsedMs) {
+    const totalSeconds = Math.max(0, Math.round(elapsedMs / 1000));
+    const minutes = String(Math.floor(totalSeconds / 60)).padStart(2, "0");
+    const seconds = String(totalSeconds % 60).padStart(2, "0");
+    return `${minutes}:${seconds}`;
+  }
+
+  #hasPendingReviewGate(actId) {
+    const gate = this.missionSystem.getReviewGate();
+    if (!gate?.questionBankId || gate.questionBankId !== actId) {
+      return false;
+    }
+
+    return !this.reviewSystem.hasPassedGate(actId);
+  }
+
+  #reopenPendingBoundaryGate() {
+    const progress = this.missionSystem.getProgress();
+    if (!progress?.isActComplete) {
+      return;
+    }
+
+    const actId = progress.currentActId;
+    if (!this.#hasPendingReviewGate(actId)) {
+      return;
+    }
+
+    this.#showLevelComplete(actId);
   }
 
   #persistSnapshot = () => {

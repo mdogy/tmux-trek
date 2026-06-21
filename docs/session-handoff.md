@@ -1,12 +1,12 @@
 # TMUX Trek — Session Handoff
 
-_The start-here document for resuming or restarting work. Last updated June 20, 2026._
+_The start-here document for resuming or restarting work. Last updated June 21, 2026._
 
 This is the operational resume doc: what is built today, how to verify it, what is wrong with it, and the immediate next task. It is written so that **a new session, model, or coding agent can pick up the project with no other context.** Read this first, then [`game-design.md`](game-design.md), [`architecture.md`](architecture.md), and [`implementation-plan.md`](implementation-plan.md).
 
 - Live build: <https://mdogy.github.io/tmux-trek/>
 - Latest gameplay baseline commit on `main`: `fb6041f` (merged PR #12)
-- Active feature branch: `codex/phase0-phase1-vertical-slice` (not yet PR'd)
+- Active feature branch: `codex/phase5-score-progress`
 - Documentation index: [`README.md`](README.md)
 
 ---
@@ -29,7 +29,7 @@ Build TMUX Trek as an educational game where the story makes real tmux actions n
 
 ## What Is Built Today
 
-The live implementation has a **three-scene Act 0 + Act 1 vertical slice** plus a **Phase 4 game shell (TitleScene, multi-slot SaveManager, auth gate)**.
+The live implementation has a **three-scene Act 0 + Act 1 vertical slice** plus a **Phase 4 game shell (TitleScene, multi-slot SaveManager, auth gate)** and a **broader Phase 5 slice (score, progress HUD, level-complete overlay, flash-card review, persisted review state)**.
 
 | Order | Scene   | Lesson                            | Required actions                                    |
 | ----- | ------- | --------------------------------- | --------------------------------------------------- |
@@ -48,17 +48,28 @@ Movement: vim `h/j/k/l` (primary), WASD and arrows (secondary). Interaction radi
 - **`BootScene`** updated: `init(data)` lifecycle method added to receive `nextScene` via Phaser data argument from callers. Falls back to `app.currentZoneId` if no data passed.
 - **`TmuxTrekApp`** updated: `resetToNewGame()` and `restoreActiveSave()` public methods added; `migrate()` called in constructor; `start()` handles the `?testMode=1` bypass path before Phaser boot.
 
+### Phase 5 additions now live
+
+- **`ScoreSystem`** added: objective completion awards 100 points, act completion awards 250 points, points are tracked once-only per event, aggregated per act and total, and persisted in the active save slot.
+- **`ProgressSystem`** added: tracks act start/completion timestamps plus completed objective IDs, persists in the active save slot, and feeds the HUD progress summary.
+- **HUD progression panel** added: the sidebar now shows total score and current act progress.
+- **Level-complete overlay** added: when Act 1 finishes, the player now gets a visible completion card with act score and elapsed time.
+- **`ReviewSystem`** added: builds flash cards from unlocked curriculum entries, persists self-rating history, and stores review-gate attempts / passed gates for future act-boundary use.
+- **Flash-card review surface** added: unlocked commands can now be reviewed from both the HUD button and the TitleScene menu (`REVIEW COMMANDS`) when the active save has reviewable commands.
+- **Question-bank data path** added: `src/data/reviews/act-01-sessions.json` establishes the per-act gate-bank format, though automatic act-boundary blocking is still deferred until Act 2 wiring.
+- **Persistence shape extended**: save blobs now include `score`, `progress`, and `review` alongside engine, mission, inventory, unlocked commands, and current zone.
+
 ---
 
 ## Verification Baseline
 
-**As of June 20, 2026 the local baseline is clean:**
+**As of June 21, 2026 the local baseline is clean:**
 
 ```bash
 npm run lint       # PASS — clean
-npm run test       # PASS — 67 unit tests pass
+npm run test       # PASS — 75 unit tests pass
 npm run bdd        # PASS — 2 scenarios / 17 steps
-npm run test:e2e   # PASS — 2 Playwright tests
+npm run test:e2e   # PASS — 3 Playwright tests
 npm run build      # PASS
 ```
 
@@ -97,6 +108,7 @@ Verification after the fix:
 - Multi-slot SaveManager with migration from v2 → v3
 - Unit, BDD, Playwright, lint, and build all pass
 - Front-door save-slot management has Playwright coverage in `tests/e2e/title-save-slots.spec.js`
+- Score/progress HUD, flash-card review, and the Act 1 level-complete overlay are live and covered by Playwright
 
 **What is broken:**
 
@@ -107,7 +119,7 @@ Verification after the fix:
 - `WorldScene.js` still in repo — no longer in the active scene flow, can be deleted
 - `npm run format:check` is not a clean gate
 - No in-game "Save & Quit to Menu" path yet
-- No scoring, flash cards, or review gate (Phase 5)
+- The readiness check is wired into the Act 1 completion boundary, but there is still no downstream Act 2 content on this branch for it to unlock
 - No demo-video E2E capture or shared route-following actor AI yet (planned Phase 6)
 - Acts 2-5 not migrated to new scene architecture (Phases 7-10)
 
@@ -115,7 +127,7 @@ Verification after the fix:
 
 ## Immediate Next Task
 
-Phase 4 is no longer blocked locally. Next planned work is **Phase 5 — Progression & Assessment Systems** per [`implementation-plan.md`](implementation-plan.md): scoring, progress/level-complete, review gate framework, and optional flash cards.
+Most of **Phase 5 — Progression & Assessment Systems** is now live locally. The next planned work is **Phase 7 — Act 2: Windows**, where the existing readiness-check pass state can become a real unlock for downstream content.
 
 After Phase 5, a new **Phase 6 — Demo Automation & Basic Actor AI** is planned before the content acts. It will add Playwright-driven video capture, a default captioned highlight reel for human visual/audio/gameplay review, full speedrun recording, watchdogs to prevent e2e hangs, and a reusable grid route-following service for the demo player and future NPC movement.
 

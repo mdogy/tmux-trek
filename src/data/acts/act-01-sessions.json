@@ -1,6 +1,10 @@
 {
   "id": "act-01-sessions",
   "title": "First Descent",
+  "reviewGate": {
+    "questionBankId": "act-01-sessions",
+    "nextActLabel": "Act 2 — Windows"
+  },
   "objectives": [
     {
       "id": "activate-rift-terminal",

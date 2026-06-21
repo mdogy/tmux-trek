@@ -42,7 +42,7 @@ The codebase strictly separates concerns. This separation is the most important 
 Layer 1: Pure engine   (src/engine/)        tmux state machine — NO DOM, Phaser, or xterm
 Layer 2: Terminal      (src/terminal/)      xterm.js integration + challenge orchestration
 Layer 3: Game world    (src/game/scenes/)   Phaser maps, camera, actors, movement
-Layer 4: Game systems  (src/game/systems/)  UI state, HUD, dialogue, (planned) progression
+Layer 4: Game systems  (src/game/systems/)  UI state, HUD, dialogue, progression
 Layer 5: Data          (src/data/)          curriculum, challenges, dialogue, zones (JSON)
 ```
 
@@ -54,7 +54,7 @@ Layer 5: Data          (src/data/)          curriculum, challenges, dialogue, zo
 
 ```
 tmux-trek/
-├── index.html                       Entry; #game-root, #terminal-root, #dialogue-root, #toast-root, HUD skeleton
+├── index.html                       Entry; #game-root, #terminal-root, #dialogue-root, #completion-root, #toast-root, HUD skeleton
 ├── src/
 │   ├── main.js                      Instantiates TmuxTrekApp; calls .start()
 │   ├── styles.css                   Dark sci-fi palette; all layout and HUD
@@ -84,13 +84,16 @@ tmux-trek/
 │   │   │   ├── ArmoryScene.js       Weapon pickup scene
 │   │   │   └── WorldScene.js        Legacy one-map scene; still present, not in active flow
 │   │   └── systems/
-│   │       ├── GameState.js         Observable state store (mission, instruction, codex, sessions, flags, toast)
+│   │       ├── GameState.js         Observable state store (mission, instruction, codex, sessions, score, progress, overlays, toast)
 │   │       ├── UIController.js      Subscribes to GameState; renders HUD, codex, session list,
-│   │       │                        dialogue cards, toasts
+│   │       │                        dialogue cards, completion overlay, toasts
 │   │       ├── MissionSystem.js     Objective progression and active mission state
 │   │       ├── InventorySystem.js   Collected item state and gating
 │   │       ├── TransitionSystem.js  Scene routing by tmux/world events
-│   │       └── SaveManager.js       Versioned browser snapshot persistence
+│   │       ├── SaveManager.js       Versioned browser snapshot persistence
+│   │       ├── ScoreSystem.js       Per-objective / per-act points ledger
+│   │       ├── ProgressSystem.js    Act timing + objective completion progress
+│   │       └── ReviewSystem.js      Flash-card review data + persisted gate results
 │   │
 │   └── data/
 │       ├── acts/
@@ -98,6 +101,8 @@ tmux-trek/
 │       ├── commands/
 │       │   ├── session-curriculum.json              Codex entries updated for `armory` / `0`
 │       │   └── phase-01-vertical-slice-challenges.json
+│       ├── reviews/
+│       │   └── act-01-sessions.json                 First review-gate question bank / schema
 │       ├── dialogue/
 │       │   ├── bridge-rift-terminal.json
 │       │   ├── bridge-manifest-terminal.json
@@ -112,9 +117,9 @@ tmux-trek/
 │
 ├── tests/
 │   ├── unit/                       TmuxEngine, SessionManager, MissionSystem, InventorySystem,
-│   │                               SaveManager, TransitionSystem (67 tests; 99%/92% engine coverage)
+│   │                               SaveManager, TransitionSystem, ScoreSystem, ProgressSystem, ReviewSystem
 │   ├── e2e/                        gameplay.spec.js (full vertical-slice flow + reload/restore),
-│   │                               title-save-slots.spec.js (front-door save-slot flow)
+│   │                               title-save-slots.spec.js (front-door save-slot + review flow)
 │   ├── step-definitions/           sessions.steps.js
 │   └── integration/                (present, empty)
 │
@@ -194,9 +199,10 @@ The redesign kept the stack and the layer separation, and the first migration tr
 | `AudioSystem.js`                    | `src/game/systems/`                   | Implemented. Procedural Web Audio keystroke, success, error, and ambient bridge sounds.                                                                                                                                                           |
 | `SaveManager.js`                    | `src/game/systems/`                   | Implemented as multi-slot `localStorage` persistence (`SAVE_VERSION = 3`): slot index + per-slot blobs, new / continue / rename / delete / clear-all, and v2 migration. See [`design/save-manager-strategy.md`](design/save-manager-strategy.md). |
 | `DialogueSystem.js`                 | `src/game/systems/`                   | Not implemented as a separate system; dialogue remains scene/app-driven.                                                                                                                                                                          |
-| `ScoreSystem.js`                    | `src/game/systems/`                   | **Planned (Phase 5).** Points model fed by mission/challenge/quiz events; aggregates per act and total; persists in the active save slot.                                                                                                         |
-| `ReviewSystem.js`                   | `src/game/systems/`                   | **Planned (Phase 5).** Two surfaces: an optional flash-card self-assessment over unlocked commands, and a blocking multiple-choice gate (70% pass) wired into `TransitionSystem` at act boundaries. Question banks live in `src/data/reviews/`.   |
-| Progress / level-complete           | `src/game/systems/` + HUD             | **Planned (Phase 5).** A `mission:act-completed` event drives a HUD progress widget and a level-complete overlay (score, time, next up).                                                                                                          |
+| `ScoreSystem.js`                    | `src/game/systems/`                   | Implemented. Points model currently fed by objective completion and act completion; aggregates per act and total and persists in the active save slot. Quiz / hint / retry weighting remains future Phase 5 work.                                |
+| `ProgressSystem.js`                 | `src/game/systems/`                   | Implemented. Tracks per-act objective completion, start/completion timestamps, HUD progress summaries, and level-complete timing.                                                                                                                |
+| `ReviewSystem.js`                   | `src/game/systems/`                   | Implemented for both flash cards and readiness checks. Builds flash cards from unlocked commands, persists self-rating history, stores gate attempts / pass results, and loads per-act question banks from `src/data/reviews/`. Act 1 completion now opens its readiness check automatically when still pending. |
+| Progress / level-complete           | `src/game/systems/` + HUD             | Implemented for Act 1. The HUD progress widget and level-complete overlay are live, and the completion flow can hand off directly into the readiness check.                                                                                      |
 | `ActorNavigation` / `GridNavigator` | `src/game/systems/` or `src/game/ai/` | **Planned (Phase 6).** Deterministic grid route-following for demo automation and later NPC movement.                                                                                                                                             |
 
 ### New scenes
@@ -211,7 +217,7 @@ src/data/
 ├── commands/    session-curriculum.json + per-act challenge JSONs
 ├── dialogue/    bridge / surface / armory JSON files today
 ├── inventory/   (not yet split into separate data files)
-├── reviews/     (planned, Phase 5) per-act multiple-choice question banks
+├── reviews/     act-01-sessions.json today; per-act multiple-choice question banks later
 └── zones/       zone-bridge / zone-village / zone-armory live; storm/archive future
 ```
 

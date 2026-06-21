@@ -31,6 +31,8 @@
           <div id="game-root" class="game-root"></div>
           <div id="terminal-root" class="terminal-root hidden"></div>
           <div id="dialogue-root" class="dialogue-root hidden"></div>
+          <div id="review-root" class="review-root hidden"></div>
+          <div id="completion-root" class="completion-root hidden"></div>
           <div id="toast-root" class="toast-root"></div>
         </section>
         <aside class="sidebar">
@@ -54,6 +56,12 @@
             <p class="panel-label">Session Status</p>
             <p id="active-session"></p>
             <ul id="session-list" class="session-list"></ul>
+          </section>
+          <section class="panel">
+            <p class="panel-label">Progress</p>
+            <p id="score-total" class="score-total">Score: 0</p>
+            <p id="progress-text" class="progress-text">Act progress will appear here.</p>
+            <button id="review-button" class="review-button" type="button">Review Commands</button>
           </section>
         </aside>
       </main>

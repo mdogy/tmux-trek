@@ -15,7 +15,7 @@ GitHub Issues remain the canonical _per-task_ surface; this document is the cano
 - Phase 0 foundation: `TmuxEvents`, `MissionSystem`, `InventorySystem`, `TransitionSystem`, and `SaveManager` are implemented, tested, and wired into the live app.
 - Phase 1 vertical slice: the full bridge → `tmux` → surface → Rift Code → `tmux new -s armory` → armory → `Ctrl+b d` → bridge → `tmux ls` → `tmux attach -t 0` → clear overflow loop is playable end-to-end.
 - Phase 4 additions: `TitleScene` (keyboard-nav menu, auth gate, DOM overlays), multi-slot `SaveManager` (SAVE_VERSION=3, 17 focused SaveManager unit tests), `BootScene` init-data update, `TmuxTrekApp` public restore/reset methods.
-- Current local baseline: `npm run lint` ✓, `npm run test` (67 unit tests) ✓, `npm run bdd` (2 scenarios / 17 steps) ✓, `npm run test:e2e` (2 Playwright tests) ✓, `npm run build` ✓. Stress check: `npm run test:e2e -- --repeat-each=5 --workers=1` passed 5/5 before the TitleScene e2e spec was added.
+- Current local baseline: `npm run lint` ✓, `npm run test` (75 unit tests) ✓, `npm run bdd` (2 scenarios / 17 steps) ✓, `npm run test:e2e` (3 Playwright tests) ✓, `npm run build` ✓. Stress check: `npm run test:e2e -- --repeat-each=5 --workers=1` passed 5/5 before the TitleScene e2e spec was added.
 - Phase 4's E2E reload flake is resolved. The cause was a too-short default Playwright attribute assertion timeout during slow headless Phaser startup after reload; `waitForGrid()` now uses an explicit 15s scene-readiness timeout.
 - Phase 2 player experience complete: vim `h/j/k/l` movement, 2-tile interaction radius, specific HELIX error feedback, Restart Challenge button, HUD hierarchy, 4-card NPC dialogues. (see `history.md`)
 
@@ -129,6 +129,8 @@ Status: **complete.**
 ## Phase 5 — Progression & Assessment Systems _(new)_
 
 **Why here:** scoring, the progress indicator, the multiple-choice gate, and flash cards are cross-cutting systems that _wrap_ content. Build their frameworks before the content acts so each new act plugs in its own data (score events, question bank, flashcard entries, progress node) as it ships — rather than forcing a retrofit edit across already-built acts. The gate in particular sits inside the act-transition flow; if Acts 2–5 are built first with direct transitions, adding gates later means editing every transition.
+
+**Status:** complete as a framework locally as of June 21, 2026. `ScoreSystem`, `ProgressSystem`, sidebar score/progress HUD, save persistence for those fields, the Act 1 level-complete overlay, `ReviewSystem`, flash-card review UI, per-act review-bank data, and the Act 1 readiness-check boundary flow are implemented and passing all current checks. The remaining work is downstream content work in Phase 7, where that pass state will gate real Act 2 progression.
 
 **Features delivered:** #7 scoring, #6 progress / level-complete, #3 multiple-choice gate, #2 flash cards. Per-act _content_ for each is wired in Phases 7–10 (see those phases).
 

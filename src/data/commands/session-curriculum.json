@@ -2,27 +2,37 @@
   {
     "id": "tmux",
     "label": "tmux",
-    "summary": "Start or enter a session."
+    "summary": "Start or enter a session.",
+    "storyPrompt": "The bridge exit is sealed. What command turns the Rift terminal into a live route?",
+    "explanation": "Use `tmux` to start the first session and make the terminal become travel."
   },
   {
     "id": "tmux new -s armory",
     "label": "tmux new -s armory",
-    "summary": "Create a named session that opens the armory destination."
+    "summary": "Create a named session that opens the armory destination.",
+    "storyPrompt": "Zrix loaded the Rift Code. Which command names and opens the armory destination?",
+    "explanation": "Use `tmux new -s armory` to create a stable named session for the armory."
   },
   {
     "id": "Ctrl+b d",
     "label": "Ctrl+b d",
-    "summary": "Detach without killing the session."
+    "summary": "Detach without killing the session.",
+    "storyPrompt": "You need to leave the armory and return to the ship without collapsing it. Which chord preserves the session?",
+    "explanation": "`Ctrl+b d` detaches, leaving the current session alive for later return."
   },
   {
     "id": "tmux ls",
     "label": "tmux ls",
-    "summary": "List the sessions that currently exist."
+    "summary": "List the sessions that currently exist.",
+    "storyPrompt": "HELIX asks for a manifest of surviving destinations. Which command lists active sessions?",
+    "explanation": "`tmux ls` shows the current session manifest."
   },
   {
     "id": "tmux attach -t 0",
     "label": "tmux attach -t 0",
-    "summary": "Re-enter the surface session with intent."
+    "summary": "Re-enter the surface session with intent.",
+    "storyPrompt": "You need to return to the original surface Rift with the weapon already secured. Which command re-enters session 0?",
+    "explanation": "`tmux attach -t 0` reattaches to the existing surface session instead of creating a fresh one."
   },
   {
     "id": "Ctrl+b c",

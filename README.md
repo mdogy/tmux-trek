@@ -6,7 +6,7 @@ Live build: <https://mdogy.github.io/tmux-trek/>
 
 ## Current State
 
-The **Phase 0 + Phase 1 vertical slice** is complete on branch `codex/phase0-phase1-vertical-slice` (not yet merged to `main`). The live build on `main` still shows the older one-map prototype (PR #12). The new loop is:
+The active work on this branch is the **Act 0 + Act 1 vertical slice** plus the **Phase 4 shell** and the **Phase 5 progression/review framework**. The live build on `main` still shows the older one-map prototype (PR #12). The current loop is:
 
 1. Start on the CLULIX **bridge** — the only exit is the Rift terminal.
 2. Type `tmux` → descend into surface session `0` (Starfall Village).
@@ -17,7 +17,15 @@ The **Phase 0 + Phase 1 vertical slice** is complete on branch `codex/phase0-pha
 7. Use `tmux ls` to inspect the Rift Manifest, then `tmux attach -t 0` to return to the surface.
 8. Walk to the overflow front → press `E` → defeat it with the weapon.
 
-This implements the central metaphor: **sessions as travel between distinct places**. What's built, what's wrong, and what's next are all in the docs below.
+The branch also adds:
+
+- a keyboard-driven title screen with multi-slot saves
+- score + progress HUD
+- a level-complete overlay
+- optional flash-card review from both the HUD and title menu
+- an Act 1 readiness check that persists pass state across reloads
+
+This implements the central metaphor: **sessions as travel between distinct places**. Current truth, known gaps, and next work live in the docs below.
 
 ## Documentation
 
@@ -50,14 +58,14 @@ npm run bdd
 npm run build
 ```
 
-Verified baseline (feature branch): 67 unit tests (99%/92% stmt/branch on engine layer), 2 BDD scenarios, 2 Playwright tests (vertical slice plus title/save-slot flow), lint, and production build all pass. `npm run format:check` reports pre-existing formatting drift and is not yet a clean CI gate.
+Verified baseline (feature branch): 75 unit tests, 2 BDD scenarios, 3 Playwright tests (vertical slice, title/save-slot flow, and title review launch), lint, and production build all pass. `npm run format:check` reports pre-existing formatting drift and is not yet a clean CI gate.
 
 ## Repository Layout
 
 - `src/engine/` — deterministic tmux state (`TmuxEvents`, `TmuxEngine`, `SessionManager`); no DOM or Phaser.
 - `src/terminal/` — xterm rendering, key handling, and challenge orchestration.
 - `src/game/scenes/` — Phaser scenes (`TitleScene`, `BridgeScene`, `SurfaceScene`, `ArmoryScene`, shared `GridScene`).
-- `src/game/systems/` — `MissionSystem`, `InventorySystem`, `TransitionSystem`, multi-slot `SaveManager`, `GameState`, `UIController`.
+- `src/game/systems/` — `MissionSystem`, `InventorySystem`, `TransitionSystem`, multi-slot `SaveManager`, `ScoreSystem`, `ProgressSystem`, `ReviewSystem`, `GameState`, `UIController`.
 - `src/data/` — act definitions, challenge scripts, dialogue, and zone metadata (all JSON).
 - `public/assets/` — runtime assets deployed by Vite.
 - `features/` and `tests/` — Cucumber, Vitest, and Playwright coverage.

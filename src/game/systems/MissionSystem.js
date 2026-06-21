@@ -87,6 +87,36 @@ export class MissionSystem {
     return objective ? structuredClone(objective) : null;
   }
 
+  getCurrentAct() {
+    const act = this.#getCurrentAct();
+    return act ? structuredClone(act) : null;
+  }
+
+  getProgress() {
+    const act = this.#getCurrentAct();
+    if (!act) {
+      return null;
+    }
+
+    const completedObjectives = act.objectives.filter((objective) =>
+      this.completedObjectives.has(objective.id)
+    ).length;
+
+    return {
+      currentActId: act.id,
+      currentActTitle: act.title,
+      totalObjectives: act.objectives.length,
+      completedObjectives,
+      currentObjectiveId: this.currentObjectiveId,
+      isActComplete: completedObjectives >= act.objectives.length,
+    };
+  }
+
+  getReviewGate() {
+    const act = this.#getCurrentAct();
+    return act?.reviewGate ? structuredClone(act.reviewGate) : null;
+  }
+
   isUnlocked(commandId) {
     const currentAct = this.#getCurrentAct();
 
