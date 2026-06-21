@@ -6,7 +6,7 @@ Live build: <https://mdogy.github.io/tmux-trek/>
 
 ## Current State
 
-The active work on this branch is the **Act 0 + Act 1 vertical slice** plus the **Phase 4 shell** and the **Phase 5 progression/review framework**. The live build on `main` still shows the older one-map prototype (PR #12). The current loop is:
+The current `main` branch ships the **Act 0 + Act 1 vertical slice** plus the **Phase 4 shell** and the **Phase 5 progression/review framework**. The current loop is:
 
 1. Start on the CLULIX **bridge** — the only exit is the Rift terminal.
 2. Type `tmux` → descend into surface session `0` (Starfall Village).
@@ -58,7 +58,7 @@ npm run bdd
 npm run build
 ```
 
-Verified baseline (feature branch): 75 unit tests, 2 BDD scenarios, 3 Playwright tests (vertical slice, title/save-slot flow, and title review launch), lint, and production build all pass. `npm run format:check` reports pre-existing formatting drift and is not yet a clean CI gate.
+Verified baseline (`main`): 75 unit tests, 2 BDD scenarios, 3 Playwright tests (vertical slice, title/save-slot flow, and title review launch), lint, coverage reporting for `src/engine/**`, and production build all pass. `npm run format:check` reports pre-existing formatting drift and is not yet a clean CI gate.
 
 ## Repository Layout
 

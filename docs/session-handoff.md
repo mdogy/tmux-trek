@@ -5,8 +5,8 @@ _The start-here document for resuming or restarting work. Last updated June 21, 
 This is the operational resume doc: what is built today, how to verify it, what is wrong with it, and the immediate next task. It is written so that **a new session, model, or coding agent can pick up the project with no other context.** Read this first, then [`game-design.md`](game-design.md), [`architecture.md`](architecture.md), and [`implementation-plan.md`](implementation-plan.md).
 
 - Live build: <https://mdogy.github.io/tmux-trek/>
-- Latest gameplay baseline commit on `main`: `fb6041f` (merged PR #12)
-- Active feature branch: `codex/phase5-score-progress`
+- Latest gameplay baseline commit on `main`: `c0e1299` (merged PR #15)
+- Active branch at last verification: `main`
 - Documentation index: [`README.md`](README.md)
 
 ---
@@ -66,11 +66,12 @@ Movement: vim `h/j/k/l` (primary), WASD and arrows (secondary). Interaction radi
 **As of June 21, 2026 the local baseline is clean:**
 
 ```bash
-npm run lint       # PASS — clean
-npm run test       # PASS — 75 unit tests pass
-npm run bdd        # PASS — 2 scenarios / 17 steps
-npm run test:e2e   # PASS — 3 Playwright tests
-npm run build      # PASS
+npm run lint                 # PASS — clean
+npm run test                 # PASS — 75 unit tests pass
+npm run test -- --coverage   # PASS — coverage report emits for src/engine only
+npm run bdd                  # PASS — 2 scenarios / 17 steps
+npm run test:e2e             # PASS — 3 Playwright tests
+npm run build                # PASS
 ```
 
 Stress check run after the fix:
@@ -107,6 +108,7 @@ Verification after the fix:
 - TitleScene (keyboard-navigated menu, auth gate, DOM overlays) — works in normal (non-test) use
 - Multi-slot SaveManager with migration from v2 → v3
 - Unit, BDD, Playwright, lint, and build all pass
+- Automated coverage reporting exists and is healthy for `src/engine/**`; browser and game-layer confidence currently come from targeted unit tests plus Playwright / Cucumber flows rather than one whole-app coverage number
 - Front-door save-slot management has Playwright coverage in `tests/e2e/title-save-slots.spec.js`
 - Score/progress HUD, flash-card review, and the Act 1 level-complete overlay are live and covered by Playwright
 
@@ -122,14 +124,124 @@ Verification after the fix:
 - The readiness check is wired into the Act 1 completion boundary, but there is still no downstream Act 2 content on this branch for it to unlock
 - No demo-video E2E capture or shared route-following actor AI yet (planned Phase 6)
 - Acts 2-5 not migrated to new scene architecture (Phases 7-10)
+- The Vitest coverage report is scoped to `src/engine/**/*.js`; there is no single automated coverage percentage for `src/game/` or `src/terminal/` yet
+- Mobile support is viable today only for keyboard-equipped devices. Touch-only usage is appropriate for review surfaces, but capability-based routing into a dedicated Review Mode is not implemented yet
+
+---
+
+## Code Review Findings — June 21, 2026
+
+Full-source review run against `main` at `c0e1299`. Findings are grouped by severity. Items already in the Known Gaps list above are excluded.
+
+**Exact implementation instructions for every fix are in [`docs/code-review-fixes.md`](code-review-fixes.md).** That document has the precise code deltas, verification steps, and a PR sequence. This section is the summary; go there to implement.
+
+### CRITICAL — must fix before next feature branch
+
+**CR-1 · Engine event listeners leak on app reload**
+`src/game/TmuxTrekApp.js` — constructor, lines ≈121–134.
+Four engine event unsubscribers are stored in `engineMissionUnsubscribers` but never called. `TransitionSystem.dispose()` is also never called. If the app is recreated or Phaser restarts, the old listeners accumulate, fire duplicate events, and hold stale closure references.
+_Fix:_ Add a `TmuxTrekApp.dispose()` method that calls every unsubscriber and `this.transitionSystem.dispose()`. Call it from the Phaser `destroy` callback or wherever the game is torn down.
+
+**CR-2 · `beforeunload` listener added but never removed**
+`src/game/TmuxTrekApp.js` — `start()`, line ≈179.
+`window.addEventListener("beforeunload", this.#persistSnapshot)` is registered on every `start()` call. No matching `removeEventListener` exists anywhere. On hot-reload or any path that calls `start()` more than once, listeners stack.
+_Fix:_ Store the bound reference and call `window.removeEventListener` in `dispose()`.
+
+**CR-3 · UIController DOM button listeners leak on every render**
+`src/game/systems/UIController.js` — `render()` and overlay methods, lines ≈48, 183, 217, 373.
+Each call to `render()` creates new DOM buttons via `replaceChildren()` and attaches fresh event listeners. The old listeners are not removed before the nodes are replaced. Over a long session, the listener count grows unboundedly.
+_Fix:_ Either use event delegation on a stable parent container, or explicitly `removeEventListener` before every `replaceChildren`. The least-churn option: delegate all overlay clicks to a single parent listener keyed on `data-action` attributes.
+
+### HIGH — fix before Phase 7 content lands
+
+**CR-4 · Fragile restore contract in `#restoreSnapshot` — unnecessary re-processing of all objectives**
+`src/game/TmuxTrekApp.js` — `#restoreSnapshot()`, line 568.
+`this.lastMissionSnapshot = null` is set before `missionSystem.restore()` fires `#notify()` → `#handleMissionUpdate`. Every restored completed objective appears "new" (diff against empty set), so `awardObjective` and `markObjectiveComplete` are called for all of them. The double-award is coincidentally blocked by `ScoreSystem.awardedEvents` (which is restored first), and `markObjectiveComplete` is idempotent — so the save file is not corrupted. But the code depends on that implicit guard, which is undocumented and fragile. If the call order in `#restoreSnapshot` changes, double-awards become real.
+_Fix:_ Replace `this.lastMissionSnapshot = null` with `this.lastMissionSnapshot = saved.mission ? structuredClone(saved.mission) : null` so the diff is empty on restore and no calls are made unnecessarily. See `code-review-fixes.md § CR-4` for the exact one-line change and test.
+
+**CR-5 · Prefix key can be re-armed while already armed**
+`src/terminal/TmuxEmulator.js` — prefix key handler, lines ≈84–99.
+There is no guard against `Ctrl+b` being pressed a second time while `prefixArmed` is already `true`. The second `Ctrl+b` resets the arm flag, which is confusing (and differs from real tmux behavior where the second `Ctrl+b` sends a literal `Ctrl+b` to the active pane).
+_Fix:_ Early-return if `this.prefixArmed` is already true. If matching real tmux is desired, send the literal character to the terminal output instead.
+
+**CR-6 · Auth gate silently disabled when env var is empty string**
+`src/game/scenes/TitleScene.js` — auth check, lines ≈43–48.
+The gate condition is `if (password && ...)`. An empty `VITE_AUTH_PASSWORD=""` in `.env` makes `password` falsy, so the gate is completely skipped with no warning. A developer setting the variable to an empty string believes they have enabled the gate when they have not.
+_Fix:_ Replace with `if (password?.trim()) { ... }` and add a `console.warn` when the auth env var is defined but empty. Document the behaviour in `Phase 4` notes inside `implementation-plan.md`.
+
+**CR-7 · FALSE POSITIVE — `MissionSystem.restore()` already notifies**
+`src/game/systems/MissionSystem.js` — `restore()`, line 138.
+The original review claimed `restore()` does not call `#notify()`. Reading the actual code confirms it does — `this.#notify()` is the last line of `restore()`. No production change needed. The `#notify()` call is in fact what causes the CR-4 issue in `TmuxTrekApp`.
+_Action:_ Add TG-2 unit test only: "MissionSystem listeners receive updated snapshot after restore." See `code-review-fixes.md § TG-2`.
+
+### MEDIUM — fix before Phase 7 or in a dedicated cleanup PR
+
+**CR-8 · SaveManager migration passes corrupt v2 data through to v3**
+`src/game/systems/SaveManager.js` — `migrate()`, lines ≈53–80.
+A malformed v2 save (null `mission`, missing `engine`, etc.) is cloned verbatim into a v3 slot. `normalizeIndex()` runs only on the slot index, not the per-slot payload. Later `loadGame()` returns the corrupt blob without any shape validation.
+_Fix:_ After migration, run each system's `restore()` in a try/catch; if it throws, log the error and skip migration (leaving the corrupted legacy key untouched so it can be inspected). Define a `validateSaveBlob(blob)` helper that checks required top-level keys.
+
+**CR-9 · `UIController.render()` rebuilds review overlay from scratch on every state change**
+`src/game/systems/UIController.js` — overlay render methods, lines ≈101–113.
+Every state change that leaves the review overlay open tears down and rebuilds the entire card DOM. This causes focus loss, interrupts any CSS transition, and feeds the listener leak in CR-3. The issue compounds as Phase 7 adds more complex overlays.
+_Fix:_ Extract each overlay into a class with `mount()` / `update()` / `unmount()` methods. Call `update()` when the overlay is already mounted; `mount()`/`unmount()` only when visibility changes.
+
+**CR-10 · ProgressSystem timestamp ranges not validated on restore**
+`src/game/systems/ProgressSystem.js` — `restore()`, lines ≈101–123.
+`Number.isFinite()` is checked but not the constraint `startedAt ≤ completedAt ≤ Date.now()`. A tampered save with `startedAt = 9999999999999999` produces a negative `elapsedMs`, which the HUD renders as a nonsense time.
+_Fix:_ Add `if (startedAt > Date.now() || completedAt < startedAt)` guards in restore and clamp or reject accordingly.
+
+**CR-11 · ArmoryScene has no ambient audio; bridge ambient may bleed through**
+`src/game/scenes/ArmoryScene.js` — zone decorations.
+`BridgeScene` calls `startAmbient("bridge")` and `stopAmbient()` on shutdown. `SurfaceScene` and `ArmoryScene` do not call `stopAmbient()` at shutdown, so if the audio system has a running drone from a prior bridge visit, it persists until the next bridge load.
+_Fix:_ Call `this.app.audioSystem?.stopAmbient()` in every `GridScene` subclass `shutdown()` handler (or move it to `GridScene.shutdown()` itself, which is the shared base).
+
+**CR-12 · Password input value not cleared before DOM removal**
+`src/game/scenes/TitleScene.js` — `_removeDomInput()`.
+The password `<input>` element is removed from the DOM without first clearing its `value`. The element lives in memory until GC; browser autofill databases may also cache the value.
+_Fix:_ `input.value = "";` immediately before `overlay.remove()` in `_removeDomInput()`.
+
+**CR-13 · `TransitionSystem` never disposed by `TmuxTrekApp`**
+`src/game/systems/TransitionSystem.js` has a `dispose()` method that unsubscribes engine events. `TmuxTrekApp` never calls it (this is partly covered by CR-1 above but is a distinct call path).
+_Fix:_ Include `this.transitionSystem.dispose()` in the `TmuxTrekApp.dispose()` method introduced in CR-1.
+
+### LOW — address opportunistically
+
+**CR-14 · `ReviewSystem.getQuestionBank()` clones on every call**
+`src/game/systems/ReviewSystem.js`, lines ≈55–58. `structuredClone(bank)` is called every time the review gate opens. For current bank sizes this is harmless, but it scales badly with larger question banks.
+_Fix:_ Return the bank directly (callers do not mutate it) or freeze and cache the clone once.
+
+**CR-15 · Codex locked-item display gives no count**
+`src/game/systems/UIController.js`, line ≈72. Multiple locked commands all render as `"???"` with no indication of count. Players cannot tell whether one or ten commands remain locked.
+_Fix:_ Render a single `"(N commands locked)"` summary line rather than N identical `"???"` entries.
+
+**CR-16 · `SessionManager` window/pane ID allocation (`Math.max`) undocumented**
+`src/engine/SessionManager.js`, lines ≈107, 150. The `Math.max(...ids) + 1` ID scheme is fine for the current game but will silently misbehave if IDs ever arrive as non-integers (e.g., from a corrupt save). No comment explains the contract.
+_Fix:_ Add a single-line comment documenting the monotonic-integer-ID assumption, and validate that snapshot IDs are non-negative integers in `restore()`.
+
+### Test gaps — no unit or e2e test exists for these behaviours
+
+| ID | Behaviour | Risk |
+|----|-----------|------|
+| TG-1 | Score not re-awarded on save restore (CR-4) | HIGH — data integrity |
+| TG-2 | `MissionSystem` notifies listeners after `restore()` (CR-7) | MEDIUM |
+| TG-3 | `TmuxTrekApp` removes all event listeners on `dispose()` (CR-1, CR-2) | MEDIUM |
+| TG-4 | Auth gate bypassed when `VITE_AUTH_PASSWORD` is empty (CR-6) | MEDIUM |
+| TG-5 | Prefix key not re-armed while already armed (CR-5) | MEDIUM |
+| TG-6 | `GridScene` interaction radius: finds target at Chebyshev ≤ 2, not at 3 | LOW |
+| TG-7 | Ambient audio stopped on every scene shutdown | LOW |
 
 ---
 
 ## Immediate Next Task
 
-Most of **Phase 5 — Progression & Assessment Systems** is now live locally. The next planned work is **Phase 7 — Act 2: Windows**, where the existing readiness-check pass state can become a real unlock for downstream content.
+**Phase 5 — Progression & Assessment Systems** is now live on `main`. The next planned content work is **Phase 7 — Act 2: Windows**, where the existing readiness-check pass state can become a real unlock for downstream progression.
 
-After Phase 5, a new **Phase 6 — Demo Automation & Basic Actor AI** is planned before the content acts. It will add Playwright-driven video capture, a default captioned highlight reel for human visual/audio/gameplay review, full speedrun recording, watchdogs to prevent e2e hangs, and a reusable grid route-following service for the demo player and future NPC movement.
+Before or alongside that content work, the remaining cross-cutting gaps are:
+
+- **Phase 6 — Demo Automation & Basic Actor AI**: Playwright-driven video capture, captioned highlight reel, full-run watchdogs, and a reusable route-following service.
+- **Coverage broadening**: keep the current engine coverage report, but add explicit coverage reporting or focused unit suites for `src/game/systems/` and `src/terminal/` where risk is growing.
+- **Mobile capability routing**: make the current responsive shell honest on touch-only devices by detecting capability and routing them toward review-first surfaces instead of the full execution loop.
 
 ---
 
