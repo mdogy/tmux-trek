@@ -1,0 +1,37 @@
+[
+  {
+    "id": "01-title",
+    "label": "Title screen",
+    "trim_from_end": 7
+  },
+  {
+    "id": "02-bridge",
+    "label": "Bridge — first mission",
+    "trim_from_end": 10
+  },
+  {
+    "id": "03-open-rift",
+    "label": "Open Rift terminal — type tmux",
+    "trim_from_end": 12
+  },
+  {
+    "id": "04-surface",
+    "label": "Surface zone arrival",
+    "trim_from_end": 10
+  },
+  {
+    "id": "05-named-session",
+    "label": "Named session — tmux new -s armory",
+    "trim_from_end": 12
+  },
+  {
+    "id": "06-detach",
+    "label": "Keybinding — Ctrl+b d",
+    "trim_from_end": 12
+  },
+  {
+    "id": "07-act-complete",
+    "label": "Act complete — 1050 points",
+    "trim_from_end": 14
+  }
+]
