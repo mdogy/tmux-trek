@@ -59,6 +59,16 @@ export function migrate(storage = globalThis.localStorage) {
     const parsed = JSON.parse(legacy);
     const index = readIndex(storage);
     if (parsed.v === 2 && index.slots.length === 0) {
+      // Reject saves where a known-object key is present but the wrong type.
+      // Absent keys are fine — each system's restore() handles undefined gracefully.
+      const objectKeys = ["engine", "mission", "inventory"];
+      const isCorrupt = objectKeys.some(
+        (key) => key in parsed && (parsed[key] === null || typeof parsed[key] !== "object"),
+      );
+      if (isCorrupt) {
+        storage?.removeItem("tmux-trek-save");
+        return;
+      }
       const id = uid();
       storage.setItem(
         SLOT_PREFIX + id,

@@ -35,4 +35,20 @@ describe("ScoreSystem", () => {
       awardedEvents: ["objective:open-rift"],
     });
   });
+
+  it("does not re-award objectives already present in a restored awardedEvents list (TG-1)", () => {
+    // Simulates the restore path in TmuxTrekApp: scoreSystem.restore() is called
+    // before missionSystem.restore() fires #handleMissionUpdate, which then calls
+    // awardObjective for every completed objective.
+    const score = new ScoreSystem();
+    score.restore({
+      total: 100,
+      byAct: { "act-01-sessions": 100 },
+      awardedEvents: ["objective:open-rift"],
+    });
+
+    const awarded = score.awardObjective({ actId: "act-01-sessions", objectiveId: "open-rift" });
+    expect(awarded).toBe(0);
+    expect(score.getSnapshot().total).toBe(100);
+  });
 });

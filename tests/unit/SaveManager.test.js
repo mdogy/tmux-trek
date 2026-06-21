@@ -169,4 +169,23 @@ describe("SaveManager (multi-slot)", () => {
     expect(listSlots(storage)).toHaveLength(0);
     expect(storage.getItem("tmux-trek-save")).toBeNull();
   });
+
+  it("migrate discards a v2 save missing required top-level keys (CR-8)", () => {
+    storage.setItem(
+      "tmux-trek-save",
+      JSON.stringify({ v: 2, mission: null, engine: null, inventory: null }),
+    );
+    migrate(storage);
+    expect(listSlots(storage)).toHaveLength(0);
+    expect(storage.getItem("tmux-trek-save")).toBeNull();
+  });
+
+  it("migrate discards a v2 save with a non-object engine field (CR-8)", () => {
+    storage.setItem(
+      "tmux-trek-save",
+      JSON.stringify({ v: 2, mission: {}, engine: "broken", inventory: {} }),
+    );
+    migrate(storage);
+    expect(listSlots(storage)).toHaveLength(0);
+  });
 });
