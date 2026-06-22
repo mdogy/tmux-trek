@@ -13,6 +13,8 @@ This folder is the complete, self-contained documentation set for TMUX Trek. It 
 
 - **[`delivery-workflow.md`](delivery-workflow.md)** — branch, PR, CI, merge, and GitHub Pages deployment steps.
 - **[`engineering-practices.md`](engineering-practices.md)** — BDD/TDD methodology, Git discipline, commit conventions, CI/CD. A broad reference with some aspirational examples; the implemented truth is in `session-handoff.md`.
+- **[`design/world-design-critique-and-plan.md`](design/world-design-critique-and-plan.md)** — comparative critique of the current maps, tiles, movement, and NPCs against other 2D adventure games, plus the phased remediation plan (Phase 6.5: world structure, modular tiles, NPC behavior).
+- **[`design/map-data-model.md`](design/map-data-model.md)** — the tile/semantic data model (grid of string keys → registry → verbs), location regions, and NPC movement mechanics, grounded in the Civ/Freeciv terrain-ruleset and StarCraft visual-vs-mechanics models. Documents the `build_zones.py` / `generate_tiles.py` / `render_map.py` toolchain (`make maps`).
 - **[`design/save-manager-strategy.md`](design/save-manager-strategy.md)** — the browser-persistence (`localStorage`) design for save/resume.
 - **[`assets/image-generation-prompts.md`](assets/image-generation-prompts.md)** — canonical prompt catalog for every planned sprite, tile, VFX, UI element, and background.
 

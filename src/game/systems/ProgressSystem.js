@@ -101,17 +101,27 @@ export class ProgressSystem {
   restore(snapshot = {}) {
     const nextActs = {};
     const acts = snapshot?.acts;
+    const now = Date.now();
 
     if (acts && typeof acts === "object") {
       for (const [actId, entry] of Object.entries(acts)) {
         if (typeof actId !== "string") {
           continue;
         }
-        nextActs[actId] = {
-          startedAt: Number.isFinite(entry?.startedAt) ? entry.startedAt : null,
-          completedAt: Number.isFinite(entry?.completedAt)
+        const startedAt =
+          Number.isFinite(entry?.startedAt) && entry.startedAt <= now
+            ? entry.startedAt
+            : null;
+        const completedAt =
+          startedAt !== null &&
+          Number.isFinite(entry?.completedAt) &&
+          entry.completedAt >= startedAt &&
+          entry.completedAt <= now
             ? entry.completedAt
-            : null,
+            : null;
+        nextActs[actId] = {
+          startedAt,
+          completedAt,
           completedObjectiveIds: Array.isArray(entry?.completedObjectiveIds)
             ? entry.completedObjectiveIds.filter((id) => typeof id === "string")
             : [],

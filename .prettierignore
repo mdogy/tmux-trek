@@ -1,0 +1,7 @@
+# Generated zone maps — authored by scripts/build_zones.py (see docs/design/map-data-model.md).
+# Formatting these would churn against the generator output.
+src/data/zones/v2/
+
+# Python files — no Prettier parser available.
+*.py
+tests/python/

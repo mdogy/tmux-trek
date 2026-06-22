@@ -1,0 +1,174 @@
+{
+  "id": "bridge",
+  "name": "CLULIX Bridge",
+  "tileSize": 48,
+  "size": {
+    "cols": 15,
+    "rows": 11
+  },
+  "legend": {
+    " ": "void",
+    "#": "bulkhead_wall",
+    "=": "viewscreen",
+    ".": "deck_floor",
+    "T": "turbolift"
+  },
+  "grid": [
+    " #===========# ",
+    "#.............#",
+    "#.............#",
+    "#.............#",
+    "#.............#",
+    "#.............#",
+    "#.............#",
+    "#.............#",
+    "#.............#",
+    "#.............#",
+    " ######T###### "
+  ],
+  "playerStart": [
+    7,
+    9
+  ],
+  "locations": [
+    {
+      "id": "command_deck",
+      "label": "Command Deck",
+      "category": "station",
+      "rect": [
+        1,
+        1,
+        13,
+        9
+      ],
+      "verbs": [
+        "look"
+      ],
+      "description": "The CLULIX command bridge. Crew stations ring the captain's chair."
+    }
+  ],
+  "objects": [
+    {
+      "id": "chair",
+      "type": "captain_chair",
+      "at": [
+        7,
+        5
+      ]
+    },
+    {
+      "id": "helm",
+      "type": "console",
+      "at": [
+        3,
+        2
+      ]
+    },
+    {
+      "id": "nav",
+      "type": "console",
+      "at": [
+        11,
+        2
+      ]
+    },
+    {
+      "id": "ops",
+      "type": "console",
+      "at": [
+        2,
+        4
+      ]
+    },
+    {
+      "id": "science",
+      "type": "console",
+      "at": [
+        12,
+        4
+      ]
+    },
+    {
+      "id": "comms",
+      "type": "console",
+      "at": [
+        4,
+        7
+      ]
+    },
+    {
+      "id": "rift-terminal",
+      "type": "rift_terminal",
+      "at": [
+        10,
+        7
+      ]
+    }
+  ],
+  "items": [],
+  "npcs": [
+    {
+      "id": "helm-officer",
+      "name": "Helm Officer",
+      "role": "ambient",
+      "behavior": "idle",
+      "home": [
+        3,
+        3
+      ],
+      "pauseRadius": 2
+    },
+    {
+      "id": "comms-officer",
+      "name": "Comms Officer",
+      "role": "ambient",
+      "behavior": "idle",
+      "home": [
+        5,
+        7
+      ],
+      "pauseRadius": 2
+    },
+    {
+      "id": "first-officer",
+      "name": "First Officer",
+      "role": "guide",
+      "behavior": "patrol",
+      "home": [
+        6,
+        4
+      ],
+      "waypoints": [
+        [
+          6,
+          4
+        ],
+        [
+          8,
+          4
+        ],
+        [
+          8,
+          6
+        ],
+        [
+          6,
+          6
+        ]
+      ],
+      "pauseRadius": 2,
+      "hint": "The Rift console is aft-starboard, by Comms."
+    }
+  ],
+  "transitions": [
+    {
+      "at": [
+        7,
+        10
+      ],
+      "via": "turbolift",
+      "to": "(entry)",
+      "note": "Crew turbolift; story entry point."
+    }
+  ]
+}

@@ -53,4 +53,40 @@ describe("ProgressSystem", () => {
       completedActs: 1,
     });
   });
+
+  it("clamps a future startedAt to null on restore (CR-10)", () => {
+    const progress = new ProgressSystem([TEST_ACT]);
+    progress.restore({
+      acts: {
+        "act-01-sessions": {
+          startedAt: 9_999_999_999_999,
+          completedAt: 9_999_999_999_999,
+          completedObjectiveIds: [],
+        },
+      },
+    });
+
+    const summary = progress.getActSummary("act-01-sessions");
+    expect(summary.startedAt).toBeNull();
+    expect(summary.completedAt).toBeNull();
+    expect(summary.elapsedMs).toBe(0);
+  });
+
+  it("clamps a completedAt that precedes startedAt to null (CR-10)", () => {
+    const past = Date.now() - 10_000;
+    const progress = new ProgressSystem([TEST_ACT]);
+    progress.restore({
+      acts: {
+        "act-01-sessions": {
+          startedAt: past,
+          completedAt: past - 1,
+          completedObjectiveIds: [],
+        },
+      },
+    });
+
+    const summary = progress.getActSummary("act-01-sessions");
+    expect(summary.startedAt).toBe(past);
+    expect(summary.completedAt).toBeNull();
+  });
 });

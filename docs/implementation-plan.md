@@ -11,13 +11,15 @@ GitHub Issues remain the canonical _per-task_ surface; this document is the cano
 ## Where We Are
 
 - `main` is deployed at <https://mdogy.github.io/tmux-trek/>.
-- Phases 0–4 are complete locally. The branch `codex/phase0-phase1-vertical-slice` is not yet merged to `main`.
+- Phases 0–5 are complete on `main`.
 - Phase 0 foundation: `TmuxEvents`, `MissionSystem`, `InventorySystem`, `TransitionSystem`, and `SaveManager` are implemented, tested, and wired into the live app.
 - Phase 1 vertical slice: the full bridge → `tmux` → surface → Rift Code → `tmux new -s armory` → armory → `Ctrl+b d` → bridge → `tmux ls` → `tmux attach -t 0` → clear overflow loop is playable end-to-end.
 - Phase 4 additions: `TitleScene` (keyboard-nav menu, auth gate, DOM overlays), multi-slot `SaveManager` (SAVE_VERSION=3, 17 focused SaveManager unit tests), `BootScene` init-data update, `TmuxTrekApp` public restore/reset methods.
-- Current local baseline: `npm run lint` ✓, `npm run test` (75 unit tests) ✓, `npm run bdd` (2 scenarios / 17 steps) ✓, `npm run test:e2e` (3 Playwright tests) ✓, `npm run build` ✓. Stress check: `npm run test:e2e -- --repeat-each=5 --workers=1` passed 5/5 before the TitleScene e2e spec was added.
+- Current baseline on `main`: `npm run lint` ✓, `npm run test` (75 unit tests) ✓, `npm run test -- --coverage` ✓, `npm run bdd` (2 scenarios / 17 steps) ✓, `npm run test:e2e` (3 Playwright tests) ✓, `npm run build` ✓. Stress check: `npm run test:e2e -- --repeat-each=5 --workers=1` passed 5/5 before the TitleScene e2e spec was added.
 - Phase 4's E2E reload flake is resolved. The cause was a too-short default Playwright attribute assertion timeout during slow headless Phaser startup after reload; `waitForGrid()` now uses an explicit 15s scene-readiness timeout.
 - Phase 2 player experience complete: vim `h/j/k/l` movement, 2-tile interaction radius, specific HELIX error feedback, Restart Challenge button, HUD hierarchy, 4-card NPC dialogues. (see `history.md`)
+- Coverage reporting currently measures `src/engine/**/*.js` only. Shared game and terminal behavior are covered by focused unit tests plus Playwright / Cucumber flows, but there is not yet a whole-app coverage metric.
+- Mobile posture is now explicit: the current shell is responsive enough to function on smaller screens, but the full execution curriculum remains viable only with a real keyboard. Touch-only users should be routed toward review-first surfaces once capability detection lands.
 
 The redesign's premise: the current build is a working _loop prototype_ but does not yet implement the central metaphor (sessions as travel between places). The phases below rebuild the relationship between world and command, then extend act by act.
 
@@ -130,13 +132,13 @@ Status: **complete.**
 
 **Why here:** scoring, the progress indicator, the multiple-choice gate, and flash cards are cross-cutting systems that _wrap_ content. Build their frameworks before the content acts so each new act plugs in its own data (score events, question bank, flashcard entries, progress node) as it ships — rather than forcing a retrofit edit across already-built acts. The gate in particular sits inside the act-transition flow; if Acts 2–5 are built first with direct transitions, adding gates later means editing every transition.
 
-**Status:** complete as a framework locally as of June 21, 2026. `ScoreSystem`, `ProgressSystem`, sidebar score/progress HUD, save persistence for those fields, the Act 1 level-complete overlay, `ReviewSystem`, flash-card review UI, per-act review-bank data, and the Act 1 readiness-check boundary flow are implemented and passing all current checks. The remaining work is downstream content work in Phase 7, where that pass state will gate real Act 2 progression.
+**Status:** complete on `main` as of June 21, 2026. `ScoreSystem`, `ProgressSystem`, sidebar score/progress HUD, save persistence for those fields, the Act 1 level-complete overlay, `ReviewSystem`, flash-card review UI, per-act review-bank data, and the Act 1 readiness-check boundary flow are implemented and passing all current checks. The remaining work is downstream content work in Phase 7, where that pass state will gate real Act 2 progression.
 
 **Features delivered:** #7 scoring, #6 progress / level-complete, #3 multiple-choice gate, #2 flash cards. Per-act _content_ for each is wired in Phases 7–10 (see those phases).
 
 - **`ScoreSystem`** (#7): a points model emitted from existing events — objective completed, challenge passed first-try vs. after retries, hints used, quiz score. Aggregate per act and total; persist in the active save slot; render in the HUD and the level-complete screen. Define the event hooks now so each act emits them as it ships.
 - **Progress indicator + level-complete** (#6): standardize a `mission:act-completed` event; add a HUD progress widget (acts/objectives done) and a level-complete overlay (score, time, next up). Persist progress per slot.
-- **Multiple-choice review gate** (#3): a quiz mechanism with per-act question banks (`src/data/reviews/*.json`), a **70% pass threshold**, wired into `TransitionSystem` / `MissionSystem` so the next act stays locked until the player passes; allow retry and "review then retry." Persist pass state and score per slot. The framework lands here; the **first live gate is the Act 1 → Act 2 boundary, deployed in Phase 7**.
+- **Multiple-choice review gate** (#3): a quiz mechanism with per-act question banks (`src/data/reviews/*.json`), a **70% pass threshold**, wired into `TransitionSystem` / `MissionSystem` so the next act stays locked until the player passes; allow retry and "review then retry." Persist pass state and score per slot. The framework is live now; its first downstream content consumer is the Act 2 unlock path in Phase 7.
 - **Flash cards / `ReviewSystem`** (#2): an _optional_ self-assessment overlay listing every command unlocked up to the player's current point (reads the curriculum/codex filtered by `MissionSystem` unlocked commands). Front = story prompt, back = command + explanation; "got it / review again" self-rating, no pass gate. Reachable from the main menu and a HUD button.
 
 **Acceptance for Phase 5:**
@@ -145,6 +147,11 @@ Status: **complete.**
 - The progress indicator reflects completed acts/objectives and survives reload.
 - A blocking multiple-choice review can be configured at an act boundary; <70% blocks and offers retry, ≥70% unlocks.
 - Flash cards list exactly the commands unlocked so far and can be reviewed at any time.
+
+**Follow-up now visible after Phase 5 shipped:**
+
+- Keep the existing engine coverage report, but add a second layer of automated confidence for `src/game/systems/` and `src/terminal/` as those modules grow.
+- Make the review surfaces the real touch-first entrypoint once capability-based mobile routing exists, instead of letting touch-only sessions fall straight into the keyboard curriculum.
 
 ---
 
@@ -193,6 +200,49 @@ Status: **complete.**
 - Computer-vision control. The first version is allowed to use game state and debug hooks.
 - Automatic polished video editing beyond segment selection and captions. If later needed, add a separate post-processing step.
 - Complex combat, flocking, or multi-agent pathfinding. Keep this to deterministic single-actor routing.
+
+---
+
+## Phase 6.5 — World Structure, Tiles & NPC Behavior _(foundational overhaul)_
+
+**Status:** proposed June 21, 2026. Full critique, per-zone redesigns, tile taxonomy, NPC
+schema, and acceptance criteria live in
+[`design/world-design-critique-and-plan.md`](design/world-design-critique-and-plan.md).
+
+**Why before the content acts:** today's zones are large open rectangles with a single marked
+target, floors paved with whole-object tiles, and static signpost NPCs — none of which matches
+a competent 2D top-down adventure game. Every future act inherits this map/NPC grammar, so the
+overhaul must precede Act 2+. It is sequenced after Phase 6 so it can reuse the `ActorNavigation`
+planner for NPC routines.
+
+**Workstreams (each its own PR):**
+
+- **A — Tilemap engine upgrade:** layered map loader (`floor`/`walls`/`objects`/`entities`),
+  collision derived from layers + object footprints, dual-grid autotiling. Retires the
+  `obstacles.tiles` hash.
+- **B — Modular tile + prop art:** three environment sets (ship/village/armory) as modular
+  _parts_ plus separate prop sprites; no whole-object floor tiles. Revise the prompt catalog;
+  prefer CC0 kits (see [`research/asset-research.md`](research/asset-research.md)).
+- **C — Zone redesigns:** Bridge (~15×11 dense command deck), Starfall Village (~40×30 _filled_
+  with buildings/streets/square/wall+gate/landmarks), Kesh Armory (~16×12 workshop). Straight-
+  line traversal becomes impossible; village gains ≥1 branch.
+- **D — NPC behavior system:** `NpcSystem` + schema (`role`: target/guide/distractor/ambient;
+  `behavior`: idle/wander/patrol/work; `waypoints`; `hint`; `pauseOnApproach`), reusing
+  `ActorNavigation`.
+- **E — Gameplay/objective redesign:** find-the-place/find-the-person objectives, guide-NPC
+  hints referencing landmarks, denial-gated exits; migrate E2E from hard-coded tile paths to
+  goal-based assertions.
+
+**Acceptance for Phase 6.5:**
+
+- No zone is traversable in a straight line; collision comes from layers, not a per-tile hash.
+- No whole-object tile is used as floor; props are placed sprites with footprints at consistent
+  scale.
+- The village has buildings, streets, a square, a wall+gate, ≥2 landmarks, and ≥4 NPCs spanning
+  all four roles; at least one target NPC works-and-pauses-on-approach.
+- No objective resolves by walking to a glowing marker, and mission text no longer states the
+  target's location.
+- E2E asserts goals (reach landmark / talk to NPC / run command), not fixed tile sequences.
 
 ---
 
@@ -251,7 +301,7 @@ Evaluated June 20, 2026 — see [`design/mobile-web-strategy.md`](design/mobile-
 - **Tier 2 — touch-only devices get a "Review Mode"** built from the Phase 5 assessment systems (flash cards, multiple-choice, codex, progress). Honest framing: review, not execution. Largely free-rides on Phase 5.
 - **Tier 3 — on-screen touch control bar** (D-pad + `Ctrl+b` button): optional, **research-gated**, with a hard caveat that it teaches tapping, not muscle memory. Terminal apps (Termius, Blink, a-Shell, Prompt) already solve the missing-`Ctrl` problem with accessory key bars + sticky modifiers; a short research note on their patterns is a prerequisite before any Tier-3 build. Deferred/declined until then.
 
-**Churn argument (decide before Phase 4):** like save slots and the gate hook, the cheap moment is _before_ the UI exists. Build the Phase 4 shell (splash, menu, save slots) and Phase 5 assessment UIs **responsive from day one**, and add a capability check that routes touch-only sessions to Review Mode.
+**Current reality check:** the shell and overlays do collapse to one column under `980px`, which makes the site usable on smaller screens, but the implementation has not yet added capability-based routing into Review Mode. Today the product is mobile-viable only with a real keyboard; touch-only support remains an honest review-first product decision, not a completed feature.
 
 **Anticipate Tier 3 while building Tiers 1–2** (so it stays additive, not a rewrite): route all input through one engine intent path (`execute` / `handleKeybinding`); make capability a shared service; gate `Ctrl+b` content on _can-send-prefix_, not _has-keyboard_; reserve a bottom safe-area band for a future key bar; and drive the codex/flash cards from a single keybinding registry the key bar can reuse. Full detail in [`design/mobile-web-strategy.md`](design/mobile-web-strategy.md) §5. A focused Tier-1 responsive/scale pass can ride alongside Phase 10 polish. **Do not** market touch-phone play as muscle-memory learning.
 

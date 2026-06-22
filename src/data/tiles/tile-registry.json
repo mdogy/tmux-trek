@@ -1,0 +1,156 @@
+{
+  "_doc": "Tile-type registry. The map grid stores single-char keys; a zone's `legend` maps each char to one of these tile keys. Semantics (walkable/sight/verbs) come from HERE, not from the art (StarCraft model: visual decoupled from mechanics). Categories follow FreeCiv's terrain-ruleset idea: each type carries a property table.",
+  "_categories": {
+    "void": "Off-map. Not part of the playable area; never walkable, never rendered as floor (StarCraft 'null terrain').",
+    "wall": "Solid structure. Blocks movement and (unless transparent) line of sight.",
+    "floor": "Walkable ground, indoor or outdoor.",
+    "door": "Walkable threshold. Carries the `enter` verb; a zone `transition` or `location` entry says where it leads.",
+    "obstruction": "Blocks movement but is not a built wall (water, fence). May still be transparent to sight."
+  },
+  "_verbs": {
+    "look": "Examine. Returns the description of the most specific thing at the target (object > tile > location).",
+    "enter": "Cross a door into a linked location or zone.",
+    "talk": "Speak with an adjacent NPC (added dynamically, not stored on tiles).",
+    "use": "Operate an interactive object (terminal/console).",
+    "take": "Pick up an item.",
+    "read": "Read a signpost/notice (guide hint)."
+  },
+  "tiles": {
+    "void": {
+      "category": "void",
+      "walkable": false,
+      "transparent": false,
+      "verbs": [],
+      "description": "Beyond the playable area.",
+      "placeholder": { "color": "#05080c", "label": "", "motif": "void" }
+    },
+    "deck_floor": {
+      "category": "floor",
+      "walkable": true,
+      "transparent": true,
+      "verbs": ["look"],
+      "description": "Plated decking of the command bridge.",
+      "placeholder": { "color": "#13344a", "label": "deck", "motif": "floor" }
+    },
+    "bulkhead_wall": {
+      "category": "wall",
+      "walkable": false,
+      "transparent": false,
+      "verbs": ["look"],
+      "description": "A reinforced ship bulkhead.",
+      "placeholder": { "color": "#33506a", "label": "blk", "motif": "wall" }
+    },
+    "viewscreen": {
+      "category": "wall",
+      "walkable": false,
+      "transparent": true,
+      "verbs": ["look"],
+      "description": "The forward viewscreen. You can see through it, but not pass.",
+      "placeholder": { "color": "#0e2a3a", "label": "view", "motif": "screen" }
+    },
+    "grass": {
+      "category": "floor",
+      "walkable": true,
+      "transparent": true,
+      "verbs": ["look"],
+      "description": "Scrubby surface grass.",
+      "placeholder": { "color": "#2f5d34", "label": "grs", "motif": "floor" }
+    },
+    "dirt_path": {
+      "category": "floor",
+      "walkable": true,
+      "transparent": true,
+      "verbs": ["look"],
+      "description": "A worn dirt path.",
+      "placeholder": { "color": "#6b5234", "label": "pth", "motif": "floor" }
+    },
+    "cobblestone": {
+      "category": "floor",
+      "walkable": true,
+      "transparent": true,
+      "verbs": ["look"],
+      "description": "The cobbled town square.",
+      "placeholder": { "color": "#7a7d85", "label": "sqr", "motif": "floor" }
+    },
+    "building_floor": {
+      "category": "floor",
+      "walkable": true,
+      "transparent": true,
+      "verbs": ["look"],
+      "description": "The interior floor of a building.",
+      "placeholder": { "color": "#3a2f24", "label": "in", "motif": "floor" }
+    },
+    "stone_floor": {
+      "category": "floor",
+      "walkable": true,
+      "transparent": true,
+      "verbs": ["look"],
+      "description": "Cold stone-and-metal workshop floor.",
+      "placeholder": { "color": "#2c2c33", "label": "flr", "motif": "floor" }
+    },
+    "building_wall": {
+      "category": "wall",
+      "walkable": false,
+      "transparent": false,
+      "verbs": ["look"],
+      "description": "A building wall.",
+      "placeholder": { "color": "#5a4632", "label": "wal", "motif": "wall" }
+    },
+    "palisade_wall": {
+      "category": "wall",
+      "walkable": false,
+      "transparent": false,
+      "verbs": ["look"],
+      "description": "The village perimeter palisade.",
+      "placeholder": { "color": "#6b5436", "label": "pal", "motif": "wall" }
+    },
+    "stone_wall": {
+      "category": "wall",
+      "walkable": false,
+      "transparent": false,
+      "verbs": ["look"],
+      "description": "A thick stone wall.",
+      "placeholder": { "color": "#4a4a52", "label": "stn", "motif": "wall" }
+    },
+    "water": {
+      "category": "obstruction",
+      "walkable": false,
+      "transparent": true,
+      "verbs": ["look"],
+      "description": "Open water. Impassable on foot.",
+      "placeholder": { "color": "#1f6f8c", "label": "h2o", "motif": "water" }
+    },
+    "fence": {
+      "category": "obstruction",
+      "walkable": false,
+      "transparent": true,
+      "verbs": ["look"],
+      "description": "A low fence. Blocks the way but not the view.",
+      "placeholder": { "color": "#7a5a32", "label": "fen", "motif": "fence" }
+    },
+    "turbolift": {
+      "category": "door",
+      "walkable": true,
+      "transparent": false,
+      "verbs": ["look", "enter"],
+      "description": "A turbolift connecting decks.",
+      "placeholder": { "color": "#46d9c4", "label": "lift", "motif": "door" }
+    },
+    "building_door": {
+      "category": "door",
+      "walkable": true,
+      "transparent": false,
+      "verbs": ["look", "enter"],
+      "description": "A doorway into a building.",
+      "placeholder": { "color": "#caa34a", "label": "dr", "motif": "door" }
+    },
+    "gate": {
+      "category": "door",
+      "walkable": true,
+      "transparent": false,
+      "verbs": ["look", "enter"],
+      "description": "A gate through the perimeter.",
+      "placeholder": { "color": "#ffb300", "label": "gate", "motif": "door" }
+    }
+  }
+}

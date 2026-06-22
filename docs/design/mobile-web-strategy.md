@@ -2,7 +2,7 @@
 
 _Written June 20, 2026. Evaluates whether TMUX Trek can optionally run on mobile-web browsers, and — more importantly — what it can honestly teach there._
 
-> **Status: evaluation + recommendation. Not yet scheduled into a phase.** This is a decision document. The recommendation is to support mobile in **tiers keyed on input capability, not device class**, and to lock the responsive stance in _before_ Phase 4 builds the shell UI, because retrofitting responsive layout is far more expensive than building it responsive.
+> **Status: adopted product stance; implementation still partial.** The roadmap now treats mobile support as a cross-cutting capability decision: the shell and review surfaces should stay responsive, and touch-only sessions should eventually route into review-first flows. The recommendation remains to support mobile in **tiers keyed on input capability, not device class**.
 
 ---
 

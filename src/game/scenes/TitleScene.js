@@ -40,7 +40,12 @@ export class TitleScene extends Phaser.Scene {
     this.cameras.main.setBackgroundColor(C.bg);
     this._drawLogo();
 
-    const password = import.meta.env.VITE_AUTH_PASSWORD ?? "";
+    const password = (import.meta.env.VITE_AUTH_PASSWORD ?? "").trim();
+    if (import.meta.env.VITE_AUTH_PASSWORD !== undefined && !password) {
+      console.warn(
+        "[TmuxTrek] VITE_AUTH_PASSWORD is set but empty or whitespace — auth gate is disabled.",
+      );
+    }
     if (password && sessionStorage.getItem(AUTH_KEY) !== "1") {
       this._promptPassword(password);
     } else {
@@ -378,8 +383,9 @@ export class TitleScene extends Phaser.Scene {
       e.preventDefault();
       if (e.key === "Enter") {
         this._suppressKeysUntil = performance.now() + 1000;
+        const captured = input.value;
         this._removeDomInput();
-        onSubmit(input.value);
+        onSubmit(captured);
       }
       if (e.key === "Escape") {
         this._suppressKeysUntil = performance.now() + 1000;
@@ -395,6 +401,8 @@ export class TitleScene extends Phaser.Scene {
       return;
     }
 
+    const input = overlay.querySelector("input");
+    if (input) input.value = "";
     overlay.remove();
     requestAnimationFrame(() => document.querySelector("#game-root")?.focus());
   }

@@ -176,7 +176,16 @@ export class TmuxTrekApp {
     });
 
     this.game.registry.set("app", this);
+    this.game.events.once("destroy", () => this.dispose());
+    window.removeEventListener("beforeunload", this.#persistSnapshot);
     window.addEventListener("beforeunload", this.#persistSnapshot);
+  }
+
+  dispose() {
+    for (const unsub of this.engineMissionUnsubscribers) unsub();
+    this.engineMissionUnsubscribers = [];
+    this.transitionSystem.dispose();
+    window.removeEventListener("beforeunload", this.#persistSnapshot);
   }
 
   resetToNewGame() {
@@ -565,7 +574,11 @@ export class TmuxTrekApp {
       return;
     }
 
-    this.lastMissionSnapshot = null;
+    // Pre-populate lastMissionSnapshot with the incoming mission state so that
+    // #handleMissionUpdate (fired synchronously by missionSystem.restore below)
+    // computes an empty diff. Without this, every restored objective looks "new"
+    // and runs unnecessary awardObjective / markObjectiveComplete calls.
+    this.lastMissionSnapshot = saved.mission ? structuredClone(saved.mission) : null;
     this.state.hideCompletionOverlay();
     this.terminal.engine.restore({ engine: saved.engine });
     this.scoreSystem.restore(saved.score);

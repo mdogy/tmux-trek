@@ -47,6 +47,22 @@ export class UIController {
 
     this.reviewButton?.addEventListener("click", () => this.onOpenReview?.());
 
+    // Single delegated listener per overlay root — no per-button addEventListener
+    // needed. #overlayHandlers is repopulated each render; the root listeners live
+    // forever on stable DOM nodes, so they never accumulate.
+    this._overlayHandlers = new Map();
+    this._reviewRenderKey = null;
+    this._completionRenderKey = null;
+
+    const delegate = (root) =>
+      root?.addEventListener("click", (e) => {
+        const btn = e.target.closest("button[data-action]");
+        if (btn) this._overlayHandlers.get(btn.dataset.action)?.();
+      });
+    delegate(this.dialogueRoot);
+    delegate(this.reviewRoot);
+    delegate(this.completionRoot);
+
     this.state.subscribe((snapshot) => this.render(snapshot));
   }
 
@@ -99,12 +115,17 @@ export class UIController {
     this.completionRoot.classList.toggle("hidden", !snapshot.completionOverlay);
 
     if (snapshot.reviewOverlay) {
-      if (snapshot.reviewOverlay.mode === "gate") {
-        this.#renderReviewGateOverlay(snapshot.reviewOverlay);
-      } else {
-        this.#renderReviewOverlay(snapshot.reviewOverlay);
+      const key = this.#reviewKey(snapshot.reviewOverlay);
+      if (key !== this._reviewRenderKey) {
+        this._reviewRenderKey = key;
+        if (snapshot.reviewOverlay.mode === "gate") {
+          this.#renderReviewGateOverlay(snapshot.reviewOverlay);
+        } else {
+          this.#renderReviewOverlay(snapshot.reviewOverlay);
+        }
       }
-    } else {
+    } else if (this._reviewRenderKey !== null) {
+      this._reviewRenderKey = null;
       this.reviewRoot.replaceChildren();
       delete this.reviewRoot.dataset.reviewMode;
       delete this.reviewRoot.dataset.reviewCard;
@@ -113,8 +134,13 @@ export class UIController {
     }
 
     if (snapshot.completionOverlay) {
-      this.#renderCompletionOverlay(snapshot.completionOverlay);
-    } else {
+      const key = `completion:${snapshot.completionOverlay.title}`;
+      if (key !== this._completionRenderKey) {
+        this._completionRenderKey = key;
+        this.#renderCompletionOverlay(snapshot.completionOverlay);
+      }
+    } else if (this._completionRenderKey !== null) {
+      this._completionRenderKey = null;
       this.completionRoot.replaceChildren();
       delete this.completionRoot.dataset.actComplete;
     }
@@ -180,7 +206,8 @@ export class UIController {
     button.className = "dialogue-button";
     button.type = "button";
     button.textContent = "Continue";
-    button.addEventListener("click", onAdvance);
+    button.dataset.action = "dialogue-advance";
+    this._overlayHandlers.set("dialogue-advance", onAdvance);
 
     const hint = document.createElement("p");
     hint.className = "dialogue-hint";
@@ -214,7 +241,8 @@ export class UIController {
     button.className = "dialogue-button";
     button.type = "button";
     button.textContent = summary.buttonLabel ?? "Acknowledge";
-    button.addEventListener("click", () => this.onCompletionAcknowledge?.());
+    button.dataset.action = "completion-ack";
+    this._overlayHandlers.set("completion-ack", () => this.onCompletionAcknowledge?.());
 
     card.append(title, stats, next, button);
     this.completionRoot.replaceChildren(card);
@@ -257,23 +285,24 @@ export class UIController {
     const actions = document.createElement("div");
     actions.className = "review-actions";
 
-    const previous = this.#reviewButton("Previous", () => this.onReviewPrevious?.());
+    const previous = this.#reviewButton("Previous", "review-prev", () => this.onReviewPrevious?.());
     previous.disabled = overlay.currentIndex === 0;
     const flip = this.#reviewButton(
       overlay.showAnswer ? "Hide Answer" : "Flip Card",
+      "review-flip",
       () => this.onReviewFlip?.(),
     );
-    const next = this.#reviewButton("Next", () => this.onReviewNext?.());
+    const next = this.#reviewButton("Next", "review-next", () => this.onReviewNext?.());
     next.disabled = overlay.currentIndex >= overlay.cards.length - 1;
-    const gotIt = this.#reviewButton("Got It", () =>
+    const gotIt = this.#reviewButton("Got It", "review-got-it", () =>
       this.onReviewRate?.(currentCard.id, "got-it")
     );
     gotIt.disabled = !overlay.showAnswer;
-    const reviewAgain = this.#reviewButton("Review Again", () =>
+    const reviewAgain = this.#reviewButton("Review Again", "review-again", () =>
       this.onReviewRate?.(currentCard.id, "review-again")
     );
     reviewAgain.disabled = !overlay.showAnswer;
-    const close = this.#reviewButton("Close", () => this.onReviewClose?.());
+    const close = this.#reviewButton("Close", "review-close", () => this.onReviewClose?.());
 
     actions.append(previous, flip, next, gotIt, reviewAgain, close);
     card.append(heading, label, body, explanation, stats, actions);
@@ -305,7 +334,7 @@ export class UIController {
     actions.className = "review-choice-list";
 
     for (const choice of question.choices) {
-      const button = this.#reviewButton(choice.text, () =>
+      const button = this.#reviewButton(choice.text, `gate-choice-${choice.id}`, () =>
         this.onReviewSelectChoice?.(question.id, choice.id)
       );
       const selected = overlay.answers?.[question.id] === choice.id;
@@ -317,11 +346,11 @@ export class UIController {
     const footer = document.createElement("div");
     footer.className = "review-actions";
 
-    const previous = this.#reviewButton("Previous", () =>
+    const previous = this.#reviewButton("Previous", "gate-prev", () =>
       this.onReviewPrevious?.()
     );
     previous.disabled = overlay.currentIndex === 0 || Boolean(overlay.result);
-    const next = this.#reviewButton("Next", () => this.onReviewNext?.());
+    const next = this.#reviewButton("Next", "gate-next", () => this.onReviewNext?.());
     next.disabled =
       overlay.currentIndex >= overlay.questions.length - 1 || Boolean(overlay.result);
     footer.append(previous, next);
@@ -335,6 +364,7 @@ export class UIController {
 
       const primary = this.#reviewButton(
         overlay.result.passed ? "Close" : "Retry",
+        "gate-primary",
         () =>
           overlay.result.passed
             ? this.onReviewClose?.()
@@ -344,16 +374,16 @@ export class UIController {
 
       if (!overlay.result.passed) {
         footer.append(
-          this.#reviewButton("Review Flash Cards", () => this.onOpenReview?.()),
+          this.#reviewButton("Review Flash Cards", "gate-review-flash", () => this.onOpenReview?.()),
         );
       }
 
       card.append(heading, prompt, actions, result, footer);
     } else {
-      const submit = this.#reviewButton("Submit Check", () =>
+      const submit = this.#reviewButton("Submit Check", "gate-submit", () =>
         this.onReviewSubmitGate?.()
       );
-      footer.append(submit, this.#reviewButton("Close", () => this.onReviewClose?.()));
+      footer.append(submit, this.#reviewButton("Close", "gate-close", () => this.onReviewClose?.()));
       card.append(heading, prompt, actions, footer);
     }
 
@@ -365,12 +395,20 @@ export class UIController {
     card.querySelector("button")?.focus();
   }
 
-  #reviewButton(text, onClick) {
+  #reviewButton(text, actionKey, onClick) {
     const button = document.createElement("button");
     button.className = "review-button";
     button.type = "button";
     button.textContent = text;
-    button.addEventListener("click", onClick);
+    button.dataset.action = actionKey;
+    this._overlayHandlers.set(actionKey, onClick);
     return button;
+  }
+
+  #reviewKey(overlay) {
+    if (overlay.mode === "gate") {
+      return `gate:${overlay.actId}:${overlay.currentIndex}:${Boolean(overlay.result)}:${JSON.stringify(overlay.answers ?? {})}`;
+    }
+    return `fc:${overlay.currentIndex}:${overlay.showAnswer}:${overlay.cards?.[overlay.currentIndex]?.id ?? ""}`;
   }
 }

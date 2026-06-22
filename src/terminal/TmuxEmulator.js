@@ -83,6 +83,9 @@ export class TmuxEmulator {
 
     if (domEvent.ctrlKey && domEvent.key.toLowerCase() === "b") {
       domEvent.preventDefault();
+      if (this.prefixArmed) {
+        return;
+      }
       this.prefixArmed = true;
       this.renderer.writeln("^B");
       this.renderer.writeln("HELIX: prefix accepted. Awaiting the next key.");

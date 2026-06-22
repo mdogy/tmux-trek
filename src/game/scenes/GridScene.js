@@ -1,4 +1,5 @@
 import Phaser from "phaser";
+import { stopAmbient } from "../systems/AudioSystem.js";
 
 const TERRAIN_SHEET_KEY = "z-shell-terrain";
 const TERRAIN_SHEET_PATH = "assets/tiles/z-shell-terrain.png";
@@ -101,6 +102,10 @@ export class GridScene extends Phaser.Scene {
     return TERRAIN_FRAMES.border[
       (column * 5 + row * 3) % TERRAIN_FRAMES.border.length
     ];
+  }
+
+  shutdown() {
+    stopAmbient();
   }
 
   createZoneDecorations() {}
