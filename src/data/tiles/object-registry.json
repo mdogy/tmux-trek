@@ -1,0 +1,90 @@
+{
+  "_doc": "Object-type registry. Objects are placed ON the base tile grid (StarCraft 'doodads'/units, FreeCiv 'units/cities on terrain') — they are NOT base tiles. Each has a footprint (w,h in tiles), whether it blocks movement, and the verbs it offers. A zone's `objects` list places instances by type + position.",
+  "objects": {
+    "rift_terminal": {
+      "blocks": true,
+      "footprint": [1, 1],
+      "verbs": ["look", "use"],
+      "description": "A Rift terminal. Use it to run tmux commands.",
+      "placeholder": { "color": "#46d9c4", "label": "TERM" }
+    },
+    "console": {
+      "blocks": true,
+      "footprint": [1, 1],
+      "verbs": ["look", "use"],
+      "description": "A crew station console.",
+      "placeholder": { "color": "#3a7d8c", "label": "cons" }
+    },
+    "captain_chair": {
+      "blocks": true,
+      "footprint": [1, 1],
+      "verbs": ["look"],
+      "description": "The captain's command chair. The center of the bridge.",
+      "placeholder": { "color": "#b08436", "label": "CHR" }
+    },
+    "forge": {
+      "blocks": true,
+      "footprint": [1, 1],
+      "verbs": ["look"],
+      "description": "A roaring forge.",
+      "placeholder": { "color": "#c2502a", "label": "FRG" }
+    },
+    "anvil": {
+      "blocks": true,
+      "footprint": [1, 1],
+      "verbs": ["look"],
+      "description": "A scarred anvil.",
+      "placeholder": { "color": "#555560", "label": "anv" }
+    },
+    "workbench": {
+      "blocks": true,
+      "footprint": [1, 1],
+      "verbs": ["look"],
+      "description": "A cluttered workbench.",
+      "placeholder": { "color": "#7a5a32", "label": "bnch" }
+    },
+    "weapon_stand": {
+      "blocks": true,
+      "footprint": [1, 1],
+      "verbs": ["look", "take"],
+      "description": "A display stand holding the Bracket Cannon.",
+      "placeholder": { "color": "#ffb300", "label": "WPN" }
+    },
+    "well": {
+      "blocks": true,
+      "footprint": [1, 1],
+      "verbs": ["look"],
+      "description": "The village well. The heart of the square.",
+      "placeholder": { "color": "#2f86a6", "label": "WELL" }
+    },
+    "market_stall": {
+      "blocks": true,
+      "footprint": [1, 1],
+      "verbs": ["look"],
+      "description": "A market stall.",
+      "placeholder": { "color": "#a8763a", "label": "stl" }
+    },
+    "signpost": {
+      "blocks": true,
+      "footprint": [1, 1],
+      "verbs": ["look", "read"],
+      "description": "A wooden signpost.",
+      "placeholder": { "color": "#caa34a", "label": "SIGN" }
+    },
+    "crate": {
+      "blocks": true,
+      "footprint": [1, 1],
+      "verbs": ["look"],
+      "description": "A storage crate.",
+      "placeholder": { "color": "#6b5436", "label": "crt" }
+    },
+    "overflow_blocker": {
+      "blocks": true,
+      "footprint": [1, 1],
+      "verbs": ["look"],
+      "description": "An overflow buffer surge. Clear it with the Bracket Cannon.",
+      "clearedByObjective": "clear-overflow",
+      "placeholder": { "color": "#7b2d8b", "label": "OVR" }
+    }
+  }
+}

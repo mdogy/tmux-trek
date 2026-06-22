@@ -1,0 +1,166 @@
+{
+  "id": "armory",
+  "name": "Kesh Armory",
+  "tileSize": 48,
+  "size": {
+    "cols": 16,
+    "rows": 12
+  },
+  "legend": {
+    "#": "stone_wall",
+    ".": "stone_floor",
+    "D": "building_door"
+  },
+  "grid": [
+    "################",
+    "#..............#",
+    "#..............#",
+    "#..............#",
+    "#..............#",
+    "#..............#",
+    "#..............#",
+    "#..............#",
+    "#..............#",
+    "#..............#",
+    "#..............#",
+    "#######D########"
+  ],
+  "playerStart": [
+    7,
+    10
+  ],
+  "locations": [
+    {
+      "id": "workshop",
+      "label": "Kesh Workshop",
+      "category": "interior",
+      "rect": [
+        1,
+        1,
+        14,
+        10
+      ],
+      "verbs": [
+        "look"
+      ],
+      "description": "Armorer Kesh's workshop. Racks, a forge, and the Bracket Cannon on its stand."
+    }
+  ],
+  "objects": [
+    {
+      "id": "stand",
+      "type": "weapon_stand",
+      "at": [
+        8,
+        5
+      ]
+    },
+    {
+      "id": "forge",
+      "type": "forge",
+      "at": [
+        2,
+        3
+      ]
+    },
+    {
+      "id": "anvil",
+      "type": "anvil",
+      "at": [
+        2,
+        5
+      ]
+    },
+    {
+      "id": "bench-a",
+      "type": "workbench",
+      "at": [
+        13,
+        3
+      ]
+    },
+    {
+      "id": "bench-b",
+      "type": "workbench",
+      "at": [
+        13,
+        5
+      ]
+    },
+    {
+      "id": "crate-a",
+      "type": "crate",
+      "at": [
+        5,
+        3
+      ]
+    },
+    {
+      "id": "crate-b",
+      "type": "crate",
+      "at": [
+        10,
+        8
+      ]
+    },
+    {
+      "id": "crate-c",
+      "type": "crate",
+      "at": [
+        2,
+        9
+      ]
+    }
+  ],
+  "items": [],
+  "npcs": [
+    {
+      "id": "armorer",
+      "name": "Armorer Kesh",
+      "role": "target",
+      "behavior": "work",
+      "home": [
+        3,
+        4
+      ],
+      "waypoints": [
+        [
+          3,
+          3
+        ],
+        [
+          3,
+          5
+        ],
+        [
+          12,
+          3
+        ]
+      ],
+      "pauseRadius": 2
+    },
+    {
+      "id": "apprentice",
+      "name": "Apprentice",
+      "role": "guide",
+      "behavior": "idle",
+      "home": [
+        10,
+        9
+      ],
+      "pauseRadius": 2,
+      "hint": "Master Kesh works the forge \u2014 mind the hot anvil."
+    }
+  ],
+  "transitions": [
+    {
+      "at": [
+        7,
+        11
+      ],
+      "via": "building_door",
+      "to": "bridge",
+      "note": "Detach (Ctrl+b d) returns to the bridge."
+    }
+  ]
+}

@@ -203,6 +203,49 @@ Status: **complete.**
 
 ---
 
+## Phase 6.5 — World Structure, Tiles & NPC Behavior _(foundational overhaul)_
+
+**Status:** proposed June 21, 2026. Full critique, per-zone redesigns, tile taxonomy, NPC
+schema, and acceptance criteria live in
+[`design/world-design-critique-and-plan.md`](design/world-design-critique-and-plan.md).
+
+**Why before the content acts:** today's zones are large open rectangles with a single marked
+target, floors paved with whole-object tiles, and static signpost NPCs — none of which matches
+a competent 2D top-down adventure game. Every future act inherits this map/NPC grammar, so the
+overhaul must precede Act 2+. It is sequenced after Phase 6 so it can reuse the `ActorNavigation`
+planner for NPC routines.
+
+**Workstreams (each its own PR):**
+
+- **A — Tilemap engine upgrade:** layered map loader (`floor`/`walls`/`objects`/`entities`),
+  collision derived from layers + object footprints, dual-grid autotiling. Retires the
+  `obstacles.tiles` hash.
+- **B — Modular tile + prop art:** three environment sets (ship/village/armory) as modular
+  _parts_ plus separate prop sprites; no whole-object floor tiles. Revise the prompt catalog;
+  prefer CC0 kits (see [`research/asset-research.md`](research/asset-research.md)).
+- **C — Zone redesigns:** Bridge (~15×11 dense command deck), Starfall Village (~40×30 _filled_
+  with buildings/streets/square/wall+gate/landmarks), Kesh Armory (~16×12 workshop). Straight-
+  line traversal becomes impossible; village gains ≥1 branch.
+- **D — NPC behavior system:** `NpcSystem` + schema (`role`: target/guide/distractor/ambient;
+  `behavior`: idle/wander/patrol/work; `waypoints`; `hint`; `pauseOnApproach`), reusing
+  `ActorNavigation`.
+- **E — Gameplay/objective redesign:** find-the-place/find-the-person objectives, guide-NPC
+  hints referencing landmarks, denial-gated exits; migrate E2E from hard-coded tile paths to
+  goal-based assertions.
+
+**Acceptance for Phase 6.5:**
+
+- No zone is traversable in a straight line; collision comes from layers, not a per-tile hash.
+- No whole-object tile is used as floor; props are placed sprites with footprints at consistent
+  scale.
+- The village has buildings, streets, a square, a wall+gate, ≥2 landmarks, and ≥4 NPCs spanning
+  all four roles; at least one target NPC works-and-pauses-on-approach.
+- No objective resolves by walking to a glowing marker, and mission text no longer states the
+  target's location.
+- E2E asserts goals (reach landmark / talk to NPC / run command), not fixed tile sequences.
+
+---
+
 ## Phase 7 — Act 2: Windows
 
 Only begin after Phase 1 is stable and fun, and the Phase 4–6 frameworks are in place.

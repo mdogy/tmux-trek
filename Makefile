@@ -1,12 +1,15 @@
-# tmux-trek demo reel pipeline
+# tmux-trek Makefile
 #
 # make demo          — full pipeline: install deps, record clips, assemble reel
 # make demo-clips    — record Playwright highlight clips only
 # make demo-reel     — assemble reel.mp4 from existing clips
 # make demo-clean    — remove clips and work files (reel.mp4 is preserved)
 # make demo-clean-all — remove everything under test-results/demo/
+# make maps          — build zone JSON + placeholder tiles + render + validate
+# make test-maps     — Python unit tests for map toolchain (75 tests)
 
-.PHONY: demo demo-clips demo-reel demo-clean demo-clean-all _ffmpeg _python3
+.PHONY: demo demo-clips demo-reel demo-clean demo-clean-all _ffmpeg _python3 _pillow \
+	maps maps-build maps-tiles maps-render test-maps
 
 # ── Entry points ──────────────────────────────────────────────────────────────
 
@@ -20,6 +23,23 @@ demo-clips: _ffmpeg
 
 demo-reel: _ffmpeg _python3
 	python3 scripts/demo-reel.py
+
+# ── Map data model & placeholder art (Phase 6.5 structure pass) ──────────────────
+# See docs/design/map-data-model.md
+
+maps: _python3 _pillow maps-build maps-tiles maps-render
+
+maps-build: _python3
+	python3 scripts/build_zones.py
+
+maps-tiles: _python3 _pillow
+	python3 scripts/generate_tiles.py
+
+maps-render: _python3 _pillow
+	python3 scripts/render_map.py
+
+test-maps: _python3
+	python3 -m unittest discover -s tests/python -p "test_*.py" -v
 
 # ── Guards ─────────────────────────────────────────────────────────────────────
 
