@@ -244,6 +244,8 @@ planner for NPC routines.
   target's location.
 - E2E asserts goals (reach landmark / talk to NPC / run command), not fixed tile sequences.
 
+**Execution constraint for weak agents:** implement Phase 6.5 as five committed checkpoints, in order: loader spike, collision/verbs, bridge art, remaining active-biome art, then NPC/objective redesign. After each checkpoint: refactor locally, run the smallest relevant verification first, then the broader baseline, and commit before continuing. Use subagents only for narrow inspection tasks with exact file lists and explicit output limits. If the same failure repeats 3 times without a new hypothesis, stop the loop, record the blocker, and resume from the last green checkpoint rather than continuing to burn tokens.
+
 ---
 
 ## Phase 7 — Act 2: Windows

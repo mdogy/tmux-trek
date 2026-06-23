@@ -1,5 +1,8 @@
 import Phaser from "phaser";
+import objectRegistry from "../../data/tiles/object-registry.json";
+import tileRegistry from "../../data/tiles/tile-registry.json";
 import { stopAmbient } from "../systems/AudioSystem.js";
+import { buildBlockedTiles } from "../data/zoneSemantics.js";
 
 const TERRAIN_SHEET_KEY = "z-shell-terrain";
 const TERRAIN_SHEET_PATH = "assets/tiles/z-shell-terrain.png";
@@ -37,6 +40,20 @@ export class GridScene extends Phaser.Scene {
       frameWidth: 48,
       frameHeight: 48,
     });
+
+    for (const tileKey of Object.keys(tileRegistry.tiles)) {
+      this.load.image(
+        `tile-${tileKey}`,
+        `assets/tiles/placeholder/tile_${tileKey}.png`,
+      );
+    }
+
+    for (const objectKey of Object.keys(objectRegistry.objects)) {
+      this.load.image(
+        `object-${objectKey}`,
+        `assets/tiles/placeholder/obj_${objectKey}.png`,
+      );
+    }
   }
 
   create() {
@@ -48,11 +65,7 @@ export class GridScene extends Phaser.Scene {
     this.playerGrid = { ...this.zone.playerStart };
     this.itemObjects = new Map();
     this.interactiveTargets = [];
-    this.blockedTiles = new Set(
-      (this.zone.obstacles?.tiles ?? []).map(
-        ([column, row]) => `${column},${row}`,
-      ),
-    );
+    this.blockedTiles = buildBlockedTiles(this.zone);
 
     for (const blocker of this.zone.blockers ?? []) {
       if (!this.app.isObjectiveComplete(blocker.clearedByObjective)) {
@@ -66,6 +79,7 @@ export class GridScene extends Phaser.Scene {
     this.cameras.main.setBackgroundColor(this.getBackgroundColor());
     this.#createSpriteTextures();
     this.#drawTileMap();
+    this.#createWorldObjects();
     this.createZoneDecorations();
     this.#createPlayer();
     this.#createInteractives();
@@ -127,6 +141,11 @@ export class GridScene extends Phaser.Scene {
   }
 
   #drawTileMap() {
+    if (this.zone.renderMode === "v2") {
+      this.#drawV2TileMap();
+      return;
+    }
+
     for (let row = 0; row < this.rows; row += 1) {
       for (let column = 0; column < this.columns; column += 1) {
         const isBorder =
@@ -139,6 +158,16 @@ export class GridScene extends Phaser.Scene {
           : this.getGroundFrame(column, row);
         const center = this.#tileCenter(column, row);
         this.add.image(center.x, center.y, TERRAIN_SHEET_KEY, frame);
+      }
+    }
+  }
+
+  #drawV2TileMap() {
+    for (let row = 0; row < this.rows; row += 1) {
+      for (let column = 0; column < this.columns; column += 1) {
+        const tileKey = this.zone.legend[this.zone.grid[row][column]];
+        const center = this.#tileCenter(column, row);
+        this.add.image(center.x, center.y, `tile-${tileKey}`);
       }
     }
   }
@@ -227,6 +256,27 @@ export class GridScene extends Phaser.Scene {
         glow,
         sprite,
         label,
+      });
+    }
+  }
+
+  #createWorldObjects() {
+    if (this.zone.renderMode !== "v2" || !this.zone.objects?.length) {
+      return;
+    }
+
+    const skipTypes = new Set(["rift_terminal", "overflow_blocker"]);
+    for (const object of this.zone.objects) {
+      if (skipTypes.has(object.type)) {
+        continue;
+      }
+
+      const center = this.#tileCenter(object.at[0], object.at[1]);
+      const sprite = this.add.image(center.x, center.y, `object-${object.type}`);
+      this.worldObjects ??= [];
+      this.worldObjects.push({
+        ...object,
+        sprite,
       });
     }
   }

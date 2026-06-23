@@ -9,10 +9,8 @@ import bridgeManifestDialogue from "../data/dialogue/bridge-manifest-terminal.js
 import bridgeRiftDialogue from "../data/dialogue/bridge-rift-terminal.json";
 import surfaceZrixArmoryDialogue from "../data/dialogue/surface-zrix-armory.json";
 import surfaceZrixArrivalDialogue from "../data/dialogue/surface-zrix-arrival.json";
-import bridgeZone from "../data/zones/zone-bridge.json";
-import armoryZone from "../data/zones/zone-armory.json";
-import surfaceZone from "../data/zones/zone-village.json";
 import { TmuxEmulator } from "../terminal/TmuxEmulator.js";
+import { getZones, shouldUseV2Zones } from "./data/zoneLoader.js";
 import { ArmoryScene } from "./scenes/ArmoryScene.js";
 import { BootScene } from "./scenes/BootScene.js";
 import { BridgeScene } from "./scenes/BridgeScene.js";
@@ -48,19 +46,14 @@ const DIALOGUE_BY_ID = {
   "armory-detach": armoryDetachDialogue,
 };
 
-const ZONES = {
-  bridge: bridgeZone,
-  surface: surfaceZone,
-  armory: armoryZone,
-};
-
 function isTestMode() {
   return new URLSearchParams(window.location.search).get("testMode") === "1";
 }
 
 export class TmuxTrekApp {
   constructor() {
-    this.zones = ZONES;
+    this.useV2Zones = shouldUseV2Zones();
+    this.zones = getZones({ useV2Zones: this.useV2Zones });
     this.challenges = phase01Challenges;
     this.currentZoneId = "bridge";
     this.missionSystem = new MissionSystem([act01Sessions]);

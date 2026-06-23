@@ -270,7 +270,193 @@ _Fix:_ Add a single-line comment documenting the monotonic-integer-ID assumption
 
 Full acceptance criteria in [`design/world-design-critique-and-plan.md`](design/world-design-critique-and-plan.md) and [`implementation-plan.md`](implementation-plan.md) § Phase 6.5.
 
+Checkpoint A is now complete behind a debug flag: `?useV2Zones=1` normalizes the v2 bridge/surface/armory data into the current scene shape and renders it with the placeholder tile/object atlas. Checkpoint B is also complete: collision now comes from tile and object semantics through `zoneSemantics.js`, and `getCellSemantics()` resolves tile, object, terminal, blocker, and location verbs for v2 zones. The default live flow still uses the legacy zones; next checkpoint is bridge art integration.
+
 Code review fixes (PR #16) should also be merged before the Phase 6.5 content work begins.
+
+### Low-Capability Agent Execution Plan
+
+Use this plan if the agent is weak, loses context easily, or is likely to burn tokens by over-exploring.
+
+#### Hard rules
+
+- Do not try to finish Phase 6.5 in one pass.
+- Do not mix art generation, runtime integration, gameplay redesign, and test refactors in the same checkpoint.
+- Do not read the whole repo repeatedly. Read only the files named in the current checkpoint.
+- Stop and reassess after every green verification gate, even if momentum is good.
+- If the same failure repeats 3 times without a new hypothesis, stop the loop and checkpoint.
+
+#### Minimal context pack
+
+Before any checkpoint, read only:
+
+- this file
+- [`game-design.md`](game-design.md) §§ 1, 4, 7
+- [`architecture.md`](architecture.md) §§ 2, 3, 6
+- [`implementation-plan.md`](implementation-plan.md) § Phase 6.5
+- [`design/world-design-critique-and-plan.md`](design/world-design-critique-and-plan.md) §§ 2, 3, 4, 8
+- [`design/map-data-model.md`](design/map-data-model.md) §§ 2, 3, 4, 6, 7
+
+Do not load archived docs unless blocked.
+
+#### Subagent policy
+
+The main agent should stay orchestration-only and give subagents narrowly scoped tasks with need-to-know context only.
+
+Good subagent task shapes:
+
+- "Inspect `GridScene.js` and `src/data/zones/v2/*.json`; report the minimum runtime changes required to load v2 floor/wall/object layers. No implementation."
+- "Inspect `tests/e2e/*.js` and report which assertions depend on fixed tile paths. No code changes."
+- "Inspect `docs/assets/image-generation-prompts.md`, `tile-registry.json`, and `object-registry.json`; propose a normalized asset manifest and prompt gaps. No generation yet."
+- "Inspect current `public/assets/tiles/**`; report which assets are legacy-runtime-only versus reusable for v2."
+
+Bad subagent task shapes:
+
+- "Understand the repo and propose a full migration."
+- "Implement Phase 6.5."
+- "Fix whatever tests fail."
+
+Every subagent brief should include:
+
+- exact files to inspect
+- exact question to answer
+- explicit ban on unrelated edits
+- requested output size: 5-15 bullets max
+
+#### Checkpoint sequence
+
+1. **Checkpoint A — Runtime loader spike**
+Goal: load one v2 zone in a non-destructive way.
+Scope:
+- Add the smallest possible adapter/loader for one v2 zone.
+- Render floor/wall/object separation for a single scene or test fixture.
+- Keep current gameplay behavior intact where possible.
+Verification:
+- targeted unit tests for loader/semantics
+- `make test-maps`
+- `npm run test`
+Exit gate:
+- commit if loader behavior is understandable and bounded
+- stop if scene wiring starts spreading across unrelated systems
+
+2. **Checkpoint B — Collision and verb semantics**
+Goal: replace `obstacles.tiles` dependency with data-derived collision and object footprints.
+Scope:
+- derive collision from tile registry + object registry
+- keep movement and interaction prompts working
+- do not start NPC movement yet
+Verification:
+- new unit tests for passability/verb lookup
+- `npm run test`
+- one focused Playwright spec or update
+Exit gate:
+- commit only if old and new collision paths are not mixed ambiguously
+
+3. **Checkpoint C — Bridge art integration**
+Goal: prove the modular art direction in the smallest biome.
+Scope:
+- bridge floor/walls/props only
+- captain + bridge crew sprite replacement only if needed for visual consistency
+- no village/armory art yet
+Verification:
+- `npm run build`
+- one browser check or screenshot-based demo artifact
+- `npm run test:e2e` if scene rendering assumptions changed
+Exit gate:
+- commit once the bridge reads as a coherent place without placeholder chips
+
+4. **Checkpoint D — Surface + armory art integration**
+Goal: extend the established style to the remaining active biomes.
+Scope:
+- village and armory tiles/props
+- Zrix, Kesh, overflow, pickups
+- no future-act assets
+Verification:
+- `npm run build`
+- `npm run test:e2e`
+- demo reel or targeted screenshots if pathing/readability changed
+Exit gate:
+- commit only if all active zones share one visual language
+
+5. **Checkpoint E — NPC behavior and objective redesign**
+Goal: make the world teach through place rather than highlighted markers.
+Scope:
+- add `NpcSystem`
+- guide/target/ambient behavior
+- migrate current objectives away from direct marker-following
+- update E2E to goal-based assertions
+Verification:
+- unit tests for NPC behavior / deterministic routing
+- `npm run test`
+- `npm run test:e2e`
+- `npm run bdd`
+Exit gate:
+- commit only after tests assert goals, not hand-authored tile walks
+
+#### Verification and coverage rhythm
+
+At the end of every checkpoint:
+
+- run the narrowest relevant tests first
+- fix only the failures caused by the current checkpoint
+- then run the broader baseline:
+  - `npm run test`
+  - `npm run build`
+  - add `npm run test:e2e` when scene flow, rendering hooks, or objectives changed
+  - add `npm run bdd` when player-facing progression semantics changed
+- inspect whether new code has direct unit coverage before moving on
+
+Coverage rule: do not accept a checkpoint that adds a new semantic layer without at least one direct unit test for that layer.
+
+#### Refactor rule
+
+After each green checkpoint and before new feature work:
+
+- remove dead compatibility shims if safe
+- rename unclear adapters/helpers while context is fresh
+- collapse duplicated mapping logic
+- update docs while the change is still local and understandable
+
+Do not carry more than one checkpoint of known cleanup debt.
+
+#### Commit rule
+
+Commit after every successful checkpoint with a conventional commit message. Good examples:
+
+- `feat(game): add v2 zone loader spike for bridge`
+- `refactor(game): derive collision from tile and object registries`
+- `feat(assets): replace bridge placeholder tiles with modular set`
+- `feat(game): add deterministic npc routing for phase 6.5`
+
+Do not continue stacking work after a green checkpoint without committing first.
+
+#### Loop and token-burn safeties
+
+Stop immediately and checkpoint if any of these happen:
+
+- the same file is being rewritten repeatedly without net test improvement
+- the same failing test has consumed 3 diagnosis/fix attempts
+- the agent is about to touch more than 5 files outside the active checkpoint scope
+- a runtime issue cannot be reproduced by a deterministic test or screenshot
+- subagent outputs are broad summaries rather than direct answers
+
+When stopped by a safety:
+
+- write a short blocker note in the working doc or PR draft
+- state the last known-good commit or green checkpoint
+- state one concrete next experiment, not a list of ideas
+- do not keep digging in the same turn
+
+#### Minimal-human-interaction rule
+
+Default to continuing autonomously. Ask a human only when one of these is true:
+
+- image generation quality is ambiguous between two materially different art directions
+- replacing an existing asset would destroy a user-authored artifact
+- a required command needs network or privileged access not already approved
+- the plan hits the same blocker across 3 consecutive turns
+
+Otherwise, choose the smallest reversible path, checkpoint, verify, and commit.
 
 ---
 

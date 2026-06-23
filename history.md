@@ -1,5 +1,31 @@
 # Project History
 
+## 2026-06-23 — Phase 6.5 low-capability agent execution plan
+
+Added a constrained execution plan for Phase 6.5 aimed at weak or failure-prone coding agents.
+
+- Updated `docs/session-handoff.md` with a checkpointed handoff plan covering minimal context loading, narrow subagent delegation, verification rhythm, mandatory refactor/commit gates, and loop-detection safeties.
+- Updated `docs/implementation-plan.md` Phase 6.5 notes to require five committed checkpoints in order: loader spike, collision/verbs, bridge art, remaining active-biome art, then NPC/objective redesign.
+- The new guidance is optimized for minimal human interaction while still stopping on repeated failures, scope creep, or token-burn patterns.
+
+## 2026-06-23 — Phase 6.5 v2 loader spike
+
+Completed the first runtime checkpoint for the world-structure overhaul.
+
+- Added a `zoneLoader` helper that can normalize the v2 bridge/surface/armory data into the legacy scene shape.
+- Added a debug-gated `?useV2Zones=1` / `?v2Zones=1` path so the current scene renderer can display v2 zones without changing the default live flow.
+- Extended `GridScene` to load placeholder tile and object assets and render v2 tile/object layouts when the flag is enabled.
+- Added unit coverage for v2 zone normalization, and the full browser suite still passes with the default legacy path.
+
+## 2026-06-23 — Phase 6.5 collision and verb semantics
+
+Completed the second runtime checkpoint for the world-structure overhaul.
+
+- Added `zoneSemantics.js` to compute blocked tiles from tile registry, object footprints, terminals, and blockers.
+- Added `getCellSemantics()` so tile, object, terminal, blocker, and location verbs are resolved from the v2 zone data instead of scene-local logic.
+- Refactored `GridScene` to consume the shared collision helper while keeping the legacy slice and the debug v2 slice both working.
+- Added unit coverage for the collision helper and cell semantics, and the Playwright suite still passes.
+
 ## 2026-06-21 — Phase 5 readiness-check boundary wiring
 
 Finished the remaining gate-integration work inside the existing Act 1 boundary flow.
