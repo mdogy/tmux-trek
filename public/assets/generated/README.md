@@ -9,6 +9,8 @@ can replace the procedural placeholders in a controlled way.
 
 - `tiles/bridge-tiles.png`
 - `tiles/bridge-tiles-source.png`
+- `tiles/bridge-scene-background.png`
+- `tiles/bridge-scene-background-source.png`
 - `tiles/village-armory.png`
 - `tiles/village-armory-source.png`
 
@@ -20,6 +22,7 @@ can replace the procedural placeholders in a controlled way.
 ## Intended use
 
 - `bridge-tiles.png` establishes the CLULIX bridge visual language.
+- `bridge-scene-background.png` is the first full bridge-room backdrop for the v2 bridge debug path.
 - `village-armory.png` provides the shared outdoor and workshop palette for the surface and armory.
 - `crew-sprites.png` establishes the shared character silhouette and shading style.
 

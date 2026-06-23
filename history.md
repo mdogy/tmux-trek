@@ -26,6 +26,16 @@ Completed the second runtime checkpoint for the world-structure overhaul.
 - Refactored `GridScene` to consume the shared collision helper while keeping the legacy slice and the debug v2 slice both working.
 - Added unit coverage for the collision helper and cell semantics, and the Playwright suite still passes.
 
+## 2026-06-23 — Phase 6.5 bridge art integration
+
+Completed the bridge art checkpoint for the world-structure overhaul.
+
+- Added a generated bridge-room backdrop asset and wired it into `BridgeScene` behind the v2 zone flag.
+- Kept the live bridge flow unchanged while giving the debug v2 bridge path a real art layer above the tile/object layout.
+- Added a stable `data-zone-art="bridge-background"` debug marker and a Playwright check so the v2 bridge art path is covered directly.
+- Updated the generated-art manifest and prompt catalog notes to reflect the new bridge backdrop asset.
+- Verified `npm run test`, `npm run build`, and `npm run test:e2e` after the integration.
+
 ## 2026-06-21 — Phase 5 readiness-check boundary wiring
 
 Finished the remaining gate-integration work inside the existing Act 1 boundary flow.

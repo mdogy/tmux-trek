@@ -27,6 +27,7 @@ export class GridScene extends Phaser.Scene {
   constructor(sceneKey, zoneId) {
     super(sceneKey);
     this.zoneId = zoneId;
+    this.zoneArtId = "";
     this.isMoving = false;
     this.playerGrid = { column: 0, row: 0 };
     this.moveQueue = [];
@@ -628,6 +629,7 @@ export class GridScene extends Phaser.Scene {
     host.dataset.lastInteractionResult = lastInteractionResult ?? "";
     host.dataset.lastMoveResult =
       lastMoveResult ?? host.dataset.lastMoveResult ?? "";
+    host.dataset.zoneArt = this.zoneArtId;
     host.dataset.zoneId = this.zoneId;
   }
 }

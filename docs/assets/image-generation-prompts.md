@@ -2,7 +2,7 @@
 
 > Reference prompt catalog. The current runtime uses the terrain atlas documented in `public/assets/tiles/README.md` and Phaser-generated character textures. See [`session-handoff.md`](../session-handoff.md) before planning asset integration.
 
-> Generated style anchors from the first Phase 6.5 pass now live in `public/assets/generated/`. They are the current visual reference for bridge tiles, crew sprites, and the shared village/armory environment language.
+> Generated style anchors from the first Phase 6.5 pass now live in `public/assets/generated/`. They are the current visual reference for bridge tiles, the full bridge-room backdrop, crew sprites, and the shared village/armory environment language.
 
 This document is the canonical list of sprite and tile prompts to feed to Nano Banana (or any equivalent pixel-art generator) for TMUX Trek. Each prompt is written for **16×16 or 32×32 pixel art** in a consistent sci-fi alien-planet aesthetic, top-down view, with no anti-aliasing.
 

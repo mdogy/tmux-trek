@@ -1,9 +1,21 @@
 import { startAmbient } from "../systems/AudioSystem.js";
 import { GridScene } from "./GridScene.js";
+import { shouldUseV2Zones } from "../data/zoneLoader.js";
 
 export class BridgeScene extends GridScene {
   constructor() {
     super("bridge", "bridge");
+  }
+
+  preload() {
+    super.preload();
+
+    if (shouldUseV2Zones()) {
+      this.load.image(
+        "bridge-art-background",
+        "assets/generated/tiles/bridge-scene-background.png",
+      );
+    }
   }
 
   getBackgroundColor() {
@@ -15,6 +27,14 @@ export class BridgeScene extends GridScene {
   }
 
   createZoneDecorations() {
+    if (this.zone.renderMode === "v2") {
+      this.zoneArtId = "bridge-background";
+      this.add
+        .image(480, 360, "bridge-art-background")
+        .setDisplaySize(960, 720)
+        .setDepth(-10);
+    }
+
     this.add.text(378, 82, "CLULIX BRIDGE", {
       color: "#ffb300",
       fontFamily: '"Press Start 2P"',
