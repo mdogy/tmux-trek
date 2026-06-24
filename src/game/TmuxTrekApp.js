@@ -20,6 +20,7 @@ import { GameState } from "./systems/GameState.js";
 import { INVENTORY_ITEMS, InventorySystem } from "./systems/InventorySystem.js";
 import { MissionSystem } from "./systems/MissionSystem.js";
 import { ProgressSystem } from "./systems/ProgressSystem.js";
+import { InputCapability } from "./systems/InputCapability.js";
 import { ReviewSystem } from "./systems/ReviewSystem.js";
 import {
   hasSave,
@@ -50,6 +51,13 @@ function isTestMode() {
   return new URLSearchParams(window.location.search).get("testMode") === "1";
 }
 
+function detectInputCapability() {
+  return new InputCapability({
+    hasTouch: navigator.maxTouchPoints > 0,
+    hasFinePointer: window.matchMedia?.("(pointer: fine)")?.matches ?? false,
+  });
+}
+
 export class TmuxTrekApp {
   constructor() {
     this.useV2Zones = shouldUseV2Zones();
@@ -61,6 +69,7 @@ export class TmuxTrekApp {
     this.scoreSystem = new ScoreSystem();
     this.progressSystem = new ProgressSystem([act01Sessions]);
     this.reviewSystem = new ReviewSystem([act01Review]);
+    this.inputCapability = detectInputCapability();
     this.lastMissionSnapshot = null;
 
     this.state = new GameState({
@@ -172,6 +181,7 @@ export class TmuxTrekApp {
     this.game.events.once("destroy", () => this.dispose());
     window.removeEventListener("beforeunload", this.#persistSnapshot);
     window.addEventListener("beforeunload", this.#persistSnapshot);
+    window.addEventListener("keydown", this.#handleKeyboardInput);
   }
 
   dispose() {
@@ -179,6 +189,7 @@ export class TmuxTrekApp {
     this.engineMissionUnsubscribers = [];
     this.transitionSystem.dispose();
     window.removeEventListener("beforeunload", this.#persistSnapshot);
+    window.removeEventListener("keydown", this.#handleKeyboardInput);
   }
 
   resetToNewGame() {
@@ -207,6 +218,10 @@ export class TmuxTrekApp {
 
   saveProgress() {
     this.#saveProgress();
+  }
+
+  getInputCapabilitySnapshot() {
+    return this.inputCapability.getSnapshot();
   }
 
   focusGame() {
@@ -527,6 +542,10 @@ export class TmuxTrekApp {
   #showDialogue(dialogueId, onComplete) {
     this.ui.showDialogue(DIALOGUE_BY_ID[dialogueId], onComplete);
   }
+
+  #handleKeyboardInput = (event) => {
+    this.inputCapability.recordKeyboardInput(event);
+  };
 
   #applyObjectiveState() {
     const objective = this.getCurrentObjective();

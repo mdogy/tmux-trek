@@ -1,5 +1,14 @@
 # Project History
 
+## 2026-06-24 — Mobile capability service
+
+Started the first mobile implementation checkpoint.
+
+- Added `InputCapability` as a pure, unit-tested service that tracks touch/fine-pointer state, first real keyboard input, explicit keyboard override, and derived prefix capability.
+- Wired `TmuxTrekApp` to construct the capability service, record global keyboard input, and clean up the listener on shutdown without changing gameplay routing yet.
+- Updated `docs/session-handoff.md` so the mobile gap now says the capability service exists but touch-only Review Mode routing is still pending.
+- Verification after this step: `npm run lint`, `npm run test` (97 tests), and `npm run build` pass.
+
 ## 2026-06-24 — Mobile implementation handoff plan
 
 Added a checkpointed mobile-web implementation plan for lower-capability agents.
