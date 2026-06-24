@@ -1,13 +1,13 @@
 # TMUX Trek — Session Handoff
 
-_The start-here document for resuming or restarting work. Last updated June 22, 2026._
+_The start-here document for resuming or restarting work. Last updated June 24, 2026._
 
 This is the operational resume doc: what is built today, how to verify it, what is wrong with it, and the immediate next task. It is written so that **a new session, model, or coding agent can pick up the project with no other context.** Read this first, then [`game-design.md`](game-design.md), [`architecture.md`](architecture.md), and [`implementation-plan.md`](implementation-plan.md).
 
 - Live build: <https://mdogy.github.io/tmux-trek/>
-- Latest gameplay baseline commit on `main`: `c0e1299` (merged PR #15)
-- Open PRs: **#16** `fix/code-review-cr1-cr12` (CR-1 through CR-12 fixes + tests); **#17** `feat/phase6-demo-reel` (Phase 6 demo reel + world design critique + map data model toolchain)
-- Active branch at last verification: `feat/phase6-demo-reel`
+- Latest gameplay baseline commit on `main`: `e6ecdf0` (mobile implementation handoff plan)
+- Open PRs: none
+- Active branch at last verification: `main`
 - Documentation index: [`README.md`](README.md)
 
 ---
