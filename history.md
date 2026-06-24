@@ -1,5 +1,13 @@
 # Project History
 
+## 2026-06-24 — Mobile implementation handoff plan
+
+Added a checkpointed mobile-web implementation plan for lower-capability agents.
+
+- Created `docs/design/mobile-implementation-plan.md` with six implementation checkpoints: capability service, app/debug wiring, touch-only title routing, review hardening, responsive shell smoke tests, and documentation sync.
+- Included strict non-goals, context packets, target files, unit/e2e test requirements, commit messages, subagent prompts, and bug-loop safeties.
+- Linked the new plan from `docs/implementation-plan.md` and `docs/session-handoff.md` so future agents find it before implementing mobile support.
+
 ## 2026-06-24 — Phase 6.5 bridge-art consolidation
 
 Consolidated the v2 bridge art and zone-semantics checkpoint before moving on to the next biome art pass.

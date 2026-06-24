@@ -297,7 +297,7 @@ Only begin after Act 2 is complete.
 
 ## Mobile-Web Support (cross-cutting decision)
 
-Evaluated June 20, 2026 — see [`design/mobile-web-strategy.md`](design/mobile-web-strategy.md). Optional mobile-web is worth supporting, but the game's core skill (tmux keyboard chords like `Ctrl+b d`) cannot be produced on a touch soft keyboard, so support is **tiered on input capability, not device class**:
+Evaluated June 20, 2026 — see [`design/mobile-web-strategy.md`](design/mobile-web-strategy.md). The step-by-step execution plan for lower-capability agents is [`design/mobile-implementation-plan.md`](design/mobile-implementation-plan.md). Optional mobile-web is worth supporting, but the game's core skill (tmux keyboard chords like `Ctrl+b d`) cannot be produced on a touch soft keyboard, so support is **tiered on input capability, not device class**:
 
 - **Tier 1 — keyboard-equipped devices play the full game.** Make the UI responsive; this is mostly CSS + Phaser `Scale` config + a `visualViewport` pass.
 - **Tier 2 — touch-only devices get a "Review Mode"** built from the Phase 5 assessment systems (flash cards, multiple-choice, codex, progress). Honest framing: review, not execution. Largely free-rides on Phase 5.
