@@ -4,7 +4,11 @@ import surfaceLegacyZone from "../../data/zones/zone-village.json";
 import armoryV2Zone from "../../data/zones/v2/armory.json";
 import bridgeV2Zone from "../../data/zones/v2/bridge.json";
 import surfaceV2Zone from "../../data/zones/v2/surface.json";
-import { buildBlockedTiles } from "./zoneSemantics.js";
+import {
+  buildBlockedTiles,
+  getObjectFootprint,
+  toFootprintTiles,
+} from "./zoneSemantics.js";
 
 const LEGACY_ZONES = {
   bridge: bridgeLegacyZone,
@@ -24,16 +28,6 @@ function hasQueryFlag(name) {
 
 function toPoint([column, row]) {
   return { column, row };
-}
-
-function toFootprintTiles([column, row], [width, height]) {
-  const tiles = [];
-  for (let rowOffset = 0; rowOffset < height; rowOffset += 1) {
-    for (let columnOffset = 0; columnOffset < width; columnOffset += 1) {
-      tiles.push([column + columnOffset, row + rowOffset]);
-    }
-  }
-  return tiles;
 }
 
 function getZoneMap(zone) {
@@ -77,7 +71,7 @@ export function normalizeV2Zone(zone) {
         column,
         row,
         clearedByObjective: object.clearedByObjective ?? "clear-overflow",
-        tiles: toFootprintTiles(object.at, [1, 1]),
+        tiles: toFootprintTiles(object.at, getObjectFootprint(object.type)),
       });
       continue;
     }
@@ -88,7 +82,7 @@ export function normalizeV2Zone(zone) {
       name: object.type,
       at: object.at,
       blocks: true,
-      footprint: [1, 1],
+      footprint: getObjectFootprint(object.type),
     });
   }
 

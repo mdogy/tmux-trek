@@ -9,7 +9,7 @@ function toTileKey(zone, column, row) {
   return zone.legend[tileId] ?? null;
 }
 
-function toFootprintTiles([column, row], [width, height]) {
+export function toFootprintTiles([column, row], [width, height]) {
   const tiles = [];
   for (let rowOffset = 0; rowOffset < height; rowOffset += 1) {
     for (let columnOffset = 0; columnOffset < width; columnOffset += 1) {
@@ -19,6 +19,10 @@ function toFootprintTiles([column, row], [width, height]) {
   return tiles;
 }
 
+export function getObjectFootprint(type) {
+  return objectRegistry.objects[type]?.footprint ?? [1, 1];
+}
+
 function isInRect([column, row], [left, top, right, bottom]) {
   return column >= left && column <= right && row >= top && row <= bottom;
 }
@@ -26,7 +30,7 @@ function isInRect([column, row], [left, top, right, bottom]) {
 function getObjectAt(zone, column, row) {
   for (const object of zone.objects ?? []) {
     const spec = objectRegistry.objects[object.type];
-    const footprint = spec?.footprint ?? [1, 1];
+    const footprint = getObjectFootprint(object.type);
     const tiles = toFootprintTiles(object.at, footprint);
     if (tiles.some(([tileColumn, tileRow]) => tileColumn === column && tileRow === row)) {
       return { ...object, spec, footprint };
@@ -42,7 +46,7 @@ function getTerminalAt(zone, column, row) {
         ...terminal,
         type: "rift_terminal",
         spec: objectRegistry.objects.rift_terminal,
-        footprint: objectRegistry.objects.rift_terminal?.footprint ?? [1, 1],
+        footprint: getObjectFootprint("rift_terminal"),
       };
     }
   }
@@ -56,7 +60,7 @@ function getBlockerAt(zone, column, row) {
         ...blocker,
         type: "overflow_blocker",
         spec: objectRegistry.objects.overflow_blocker,
-        footprint: objectRegistry.objects.overflow_blocker?.footprint ?? [1, 1],
+        footprint: getObjectFootprint("overflow_blocker"),
       };
     }
   }
@@ -102,15 +106,14 @@ function getV2BlockedTiles(zone) {
       continue;
     }
 
-    const footprint = spec.footprint ?? [1, 1];
+    const footprint = getObjectFootprint(object.type);
     for (const [column, row] of toFootprintTiles(object.at, footprint)) {
       blocked.add(`${column},${row}`);
     }
   }
 
   for (const terminal of zone.terminals ?? []) {
-    const spec = objectRegistry.objects.rift_terminal;
-    const footprint = spec?.footprint ?? [1, 1];
+    const footprint = getObjectFootprint("rift_terminal");
     for (const [column, row] of toFootprintTiles([terminal.column, terminal.row], footprint)) {
       blocked.add(`${column},${row}`);
     }
@@ -157,8 +160,8 @@ export function getCellSemantics(zone, column, row) {
     verbs,
     description:
       interactive?.spec?.description ??
-      tileSpec?.description ??
       location?.description ??
+      tileSpec?.description ??
       "",
   };
 }

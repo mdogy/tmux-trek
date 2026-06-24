@@ -141,9 +141,19 @@ export class GridScene extends Phaser.Scene {
     return true;
   }
 
+  shouldDrawV2TileMap() {
+    return true;
+  }
+
+  shouldDrawV2WorldObjects() {
+    return true;
+  }
+
   #drawTileMap() {
     if (this.zone.renderMode === "v2") {
-      this.#drawV2TileMap();
+      if (this.shouldDrawV2TileMap()) {
+        this.#drawV2TileMap();
+      }
       return;
     }
 
@@ -262,7 +272,11 @@ export class GridScene extends Phaser.Scene {
   }
 
   #createWorldObjects() {
-    if (this.zone.renderMode !== "v2" || !this.zone.objects?.length) {
+    if (
+      this.zone.renderMode !== "v2" ||
+      !this.zone.objects?.length ||
+      !this.shouldDrawV2WorldObjects()
+    ) {
       return;
     }
 

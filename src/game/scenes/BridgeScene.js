@@ -26,6 +26,14 @@ export class BridgeScene extends GridScene {
     return [12, 13, 15][(column + row) % 3];
   }
 
+  shouldDrawV2TileMap() {
+    return false;
+  }
+
+  shouldDrawV2WorldObjects() {
+    return false;
+  }
+
   createZoneDecorations() {
     if (this.zone.renderMode === "v2") {
       this.zoneArtId = "bridge-background";

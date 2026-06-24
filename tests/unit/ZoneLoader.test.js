@@ -1,7 +1,12 @@
 import { describe, expect, it } from "vitest";
 import { getZone, getZones, normalizeV2Zone } from "../../src/game/data/zoneLoader.js";
 import surfaceV2Zone from "../../src/data/zones/v2/surface.json";
-import { buildBlockedTiles, getCellSemantics } from "../../src/game/data/zoneSemantics.js";
+import {
+  buildBlockedTiles,
+  getCellSemantics,
+  getObjectFootprint,
+  toFootprintTiles,
+} from "../../src/game/data/zoneSemantics.js";
 
 describe("zoneLoader", () => {
   it("returns legacy zones by default", () => {
@@ -39,6 +44,27 @@ describe("zoneLoader", () => {
     expect(surface.items[0].item).toBe("RIFT_CODE");
   });
 
+  it("normalizes object and blocker footprints through the shared registry helper", () => {
+    const surface = normalizeV2Zone(surfaceV2Zone);
+    const marketStall = surface.objects.find(
+      (object) => object.type === "market_stall",
+    );
+    const overflow = surface.blockers.find((blocker) => blocker.id === "ovr-1");
+    expect(marketStall?.footprint).toEqual(getObjectFootprint("market_stall"));
+    expect(overflow?.tiles).toEqual(
+      toFootprintTiles([36, 15], getObjectFootprint("overflow_blocker")),
+    );
+  });
+
+  it("expands footprint rectangles deterministically", () => {
+    expect(toFootprintTiles([2, 3], [2, 2])).toEqual([
+      [2, 3],
+      [3, 3],
+      [2, 4],
+      [3, 4],
+    ]);
+  });
+
   it("builds blocked tiles from v2 tile and object semantics", () => {
     const bridge = getZone("bridge", { useV2Zones: true });
     const blocked = buildBlockedTiles(bridge);
@@ -52,5 +78,12 @@ describe("zoneLoader", () => {
     expect(semantics?.objectType).toBe("rift_terminal");
     expect(semantics?.verbs).toContain("use");
     expect(semantics?.description).toContain("Rift terminal");
+  });
+
+  it("prefers named location descriptions over generic floor descriptions", () => {
+    const surface = getZone("surface", { useV2Zones: true });
+    const semantics = getCellSemantics(surface, 16, 12);
+    expect(semantics?.locationId).toBe("square");
+    expect(semantics?.description).toContain("town square");
   });
 });

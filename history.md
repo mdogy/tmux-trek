@@ -1,5 +1,15 @@
 # Project History
 
+## 2026-06-24 — Phase 6.5 bridge-art consolidation
+
+Consolidated the v2 bridge art and zone-semantics checkpoint before moving on to the next biome art pass.
+
+- Shared object footprint expansion between `zoneLoader` and `zoneSemantics` so future larger props do not need duplicate collision logic.
+- Made location descriptions outrank generic floor descriptions when no interactive object is present.
+- Added v2 render hooks so the generated bridge backdrop can suppress opaque placeholder floor/object layers and remain visible.
+- Added unit coverage for footprint expansion, registry-backed normalization, and location-description precedence.
+- Verification after this cleanup: `npm run lint`, `npm run test` (92 tests), `npm run build`, and `npm run test:e2e` pass.
+
 ## 2026-06-23 — Phase 6.5 low-capability agent execution plan
 
 Added a constrained execution plan for Phase 6.5 aimed at weak or failure-prone coding agents.
