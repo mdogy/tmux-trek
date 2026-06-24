@@ -39,3 +39,13 @@ export class InputCapability {
     };
   }
 }
+
+export function detectInputCapability({
+  navigator = globalThis.navigator,
+  matchMedia = globalThis.matchMedia?.bind(globalThis),
+} = {}) {
+  return new InputCapability({
+    hasTouch: (navigator?.maxTouchPoints ?? 0) > 0,
+    hasFinePointer: matchMedia?.("(pointer: fine)")?.matches ?? false,
+  });
+}

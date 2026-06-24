@@ -1,5 +1,15 @@
 # Project History
 
+## 2026-06-24 — Mobile capability detection refactor
+
+Refactored the first mobile checkpoint to improve testability and coverage.
+
+- Moved browser capability detection into `InputCapability.detectInputCapability()` with injectable `navigator` and `matchMedia` dependencies.
+- Kept `TmuxTrekApp` responsible only for constructing the capability service and recording real keyboard input.
+- Added unit coverage for injected capability detection and raised the mobile unit test count to 6 assertions in the focused spec.
+- Updated `docs/session-handoff.md` to say the capability service now includes injectable detection, while Review Mode routing is still pending.
+- Verification after this refactor: `npm run lint`, `npm run test` (98 tests), and `npm run build` pass.
+
 ## 2026-06-24 — Mobile capability service
 
 Started the first mobile implementation checkpoint.

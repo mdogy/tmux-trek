@@ -1,5 +1,8 @@
 import { describe, expect, it } from "vitest";
-import { InputCapability } from "../../src/game/systems/InputCapability.js";
+import {
+  detectInputCapability,
+  InputCapability,
+} from "../../src/game/systems/InputCapability.js";
 
 describe("InputCapability", () => {
   it("starts touch-only sessions without prefix capability", () => {
@@ -42,5 +45,19 @@ describe("InputCapability", () => {
     const capability = new InputCapability();
     expect(() => capability.recordKeyboardInput(null)).not.toThrow();
     expect(() => capability.recordKeyboardInput(undefined)).not.toThrow();
+  });
+
+  it("detects touch and fine pointer capability from injected environment", () => {
+    const capability = detectInputCapability({
+      navigator: { maxTouchPoints: 2 },
+      matchMedia: () => ({ matches: true }),
+    });
+    expect(capability.getSnapshot()).toEqual({
+      hasTouch: true,
+      hasFinePointer: true,
+      hasSeenKeyboardInput: false,
+      keyboardOverride: false,
+      canSendPrefix: false,
+    });
   });
 });

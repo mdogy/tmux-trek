@@ -18,9 +18,9 @@ import { SurfaceScene } from "./scenes/SurfaceScene.js";
 import { TitleScene } from "./scenes/TitleScene.js";
 import { GameState } from "./systems/GameState.js";
 import { INVENTORY_ITEMS, InventorySystem } from "./systems/InventorySystem.js";
+import { detectInputCapability } from "./systems/InputCapability.js";
 import { MissionSystem } from "./systems/MissionSystem.js";
 import { ProgressSystem } from "./systems/ProgressSystem.js";
-import { InputCapability } from "./systems/InputCapability.js";
 import { ReviewSystem } from "./systems/ReviewSystem.js";
 import {
   hasSave,
@@ -49,13 +49,6 @@ const DIALOGUE_BY_ID = {
 
 function isTestMode() {
   return new URLSearchParams(window.location.search).get("testMode") === "1";
-}
-
-function detectInputCapability() {
-  return new InputCapability({
-    hasTouch: navigator.maxTouchPoints > 0,
-    hasFinePointer: window.matchMedia?.("(pointer: fine)")?.matches ?? false,
-  });
 }
 
 export class TmuxTrekApp {

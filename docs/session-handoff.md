@@ -150,7 +150,7 @@ Verification after the fix:
 - Zone data model (`v2/`) and toolchain built; runtime integration into `GridScene` (loading v2 zones, layer-derived collision, verb lookup, `NpcSystem`) is **Phase 6.5 Workstream A–E** — the next engineering priority before Act 2 content
 - Acts 2-5 not migrated to new scene architecture (Phases 7-10)
 - The Vitest coverage report is scoped to `src/engine/**/*.js`; there is no single automated coverage percentage for `src/game/` or `src/terminal/` yet
-- Mobile support is viable today only for keyboard-equipped devices. The shared input-capability service is in place, but capability-based routing into a dedicated Review Mode is not implemented yet. Use [`design/mobile-implementation-plan.md`](design/mobile-implementation-plan.md) for the checkpointed implementation plan.
+- Mobile support is viable today only for keyboard-equipped devices. The shared input-capability service is in place, including injectable capability detection for unit coverage, but capability-based routing into a dedicated Review Mode is not implemented yet. Use [`design/mobile-implementation-plan.md`](design/mobile-implementation-plan.md) for the checkpointed implementation plan.
 
 ---
 
