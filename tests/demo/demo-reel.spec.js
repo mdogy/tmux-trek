@@ -31,7 +31,7 @@ import {
 // ── Clip 01: Title screen ─────────────────────────────────────────────────────
 
 test("01 - title screen", async ({ page }) => {
-  await page.goto("/?demo=1");
+  await page.goto("/?demo=1&useV2Zones=1");
   await expect(page.locator("canvas")).toBeVisible({ timeout: 10_000 });
 
   await setCaption(page, "TMUX Trek — learn terminal multiplexing through play");
@@ -41,17 +41,17 @@ test("01 - title screen", async ({ page }) => {
 // ── Clip 02: Bridge — first mission ──────────────────────────────────────────
 
 test("02 - bridge first mission", async ({ page }) => {
-  await page.goto("/?testMode=1&demo=1");
-  await waitForGrid(page, [4, 7], "bridge");
+  await page.goto("/?testMode=1&demo=1&useV2Zones=1");
+  await waitForGrid(page, [7, 9], "bridge");
 
   await setCaption(page, "Act 1: First Descent — the CLULIX Bridge");
   await page.waitForTimeout(2_500);
 
   // Walk toward the Rift terminal so the viewer sees movement and the HUD
   await moveAlong(page, [
-    ["KeyD", [5, 7]],
-    ["KeyD", [6, 7]],
-    ["KeyD", [7, 7]],
+    ["KeyD", [8, 9]],
+    ["KeyD", [9, 9]],
+    ["KeyW", [9, 8]],
   ]);
 
   await setCaption(page, "Mission: Open the Rift terminal and descend to the surface");
@@ -61,15 +61,15 @@ test("02 - bridge first mission", async ({ page }) => {
 // ── Clip 03: Open Rift terminal — type tmux ──────────────────────────────────
 
 test("03 - open rift terminal", async ({ page }) => {
-  await page.goto("/?testMode=1&demo=1");
-  await waitForGrid(page, [4, 7], "bridge");
+  await page.goto("/?testMode=1&demo=1&useV2Zones=1");
+  await waitForGrid(page, [7, 9], "bridge");
 
   // Walk to the tile adjacent to the rift-terminal at [8,7] — [7,7] is the
   // interaction range; [8,7] itself is blocked by the terminal sprite.
   await moveAlong(page, [
-    ["KeyD", [5, 7]],
-    ["KeyD", [6, 7]],
-    ["KeyD", [7, 7]],
+    ["KeyD", [8, 9]],
+    ["KeyD", [9, 9]],
+    ["KeyW", [9, 8]],
   ]);
 
   await setCaption(page, "Press E to activate the Rift terminal...");
@@ -87,7 +87,7 @@ test("03 - open rift terminal", async ({ page }) => {
   await page.waitForTimeout(800);
   await page.keyboard.press("Enter");
 
-  await waitForGrid(page, [3, 15], "surface");
+  await waitForGrid(page, [1, 15], "surface");
   await setCaption(page, "The Rift opens — a new zone unlocked");
   await page.waitForTimeout(4_500);
 });

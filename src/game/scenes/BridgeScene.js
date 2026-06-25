@@ -31,7 +31,7 @@ export class BridgeScene extends GridScene {
   }
 
   shouldDrawV2WorldObjects() {
-    return false;
+    return true;
   }
 
   createZoneDecorations() {

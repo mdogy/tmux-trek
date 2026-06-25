@@ -1,5 +1,7 @@
 import { defineConfig } from "@playwright/test";
 
+const useExistingServer = process.env.PLAYWRIGHT_USE_EXISTING_SERVER === "1";
+
 export default defineConfig({
   testDir: "./tests/demo",
   outputDir: "test-results/demo",
@@ -12,12 +14,14 @@ export default defineConfig({
     // videos land in each test's outputDir as video.webm.
     video: "on",
   },
-  webServer: {
-    command: "npm run dev -- --host 127.0.0.1",
-    url: "http://127.0.0.1:4173",
-    reuseExistingServer: true,
-    timeout: 30_000,
-  },
+  webServer: useExistingServer
+    ? undefined
+    : {
+        command: "npm run dev -- --host 127.0.0.1",
+        url: "http://127.0.0.1:4173",
+        reuseExistingServer: true,
+        timeout: 30_000,
+      },
   // Serial execution ensures clips are written in test-order so Python can
   // sort by mtime to reconstruct the intended sequence.
   workers: 1,
