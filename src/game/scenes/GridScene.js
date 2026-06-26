@@ -3,9 +3,30 @@ import objectRegistry from "../../data/tiles/object-registry.json";
 import tileRegistry from "../../data/tiles/tile-registry.json";
 import { stopAmbient } from "../systems/AudioSystem.js";
 import { buildBlockedTiles } from "../data/zoneSemantics.js";
+import { getFacingFromDelta } from "./actorMotion.js";
 
 const TERRAIN_SHEET_KEY = "z-shell-terrain";
 const TERRAIN_SHEET_PATH = "assets/tiles/z-shell-terrain.png";
+const ACTOR_SPRITES = {
+  captain: {
+    key: "captain-sprites",
+    path: "assets/generated/sprites/captain-sprites.png",
+    frameWidth: 313,
+    frameHeight: 313,
+  },
+  zrix: {
+    key: "zrix-sprites",
+    path: "assets/generated/sprites/zrix-sprites.png",
+    frameWidth: 384,
+    frameHeight: 256,
+  },
+  armorer: {
+    key: "armorer-sprites",
+    path: "assets/generated/sprites/armorer-sprites.png",
+    frameWidth: 384,
+    frameHeight: 256,
+  },
+};
 const TERRAIN_FRAMES = {
   ground: [0, 1, 2],
   border: [3, 4, 5, 6, 7],
@@ -17,10 +38,16 @@ const SPRITE_KEYS = {
   captain: "captain-sprite",
   zrix: "zrix-sprite",
   armorer: "armorer-sprite",
+  npcPlaceholder: "npc-placeholder-sprite",
   terminal: "terminal-sprite",
   riftCode: "rift-code-sprite",
   weapon: "weapon-sprite",
   overflow: "overflow-sprite",
+};
+
+const ANIMATED_NPCS = {
+  zrix: ACTOR_SPRITES.zrix.key,
+  armorer: ACTOR_SPRITES.armorer.key,
 };
 
 export class GridScene extends Phaser.Scene {
@@ -30,6 +57,7 @@ export class GridScene extends Phaser.Scene {
     this.zoneArtId = "";
     this.isMoving = false;
     this.playerGrid = { column: 0, row: 0 };
+    this.playerFacing = "down";
     this.moveQueue = [];
     this.interactRequested = false;
     this.itemObjects = new Map();
@@ -41,6 +69,13 @@ export class GridScene extends Phaser.Scene {
       frameWidth: 48,
       frameHeight: 48,
     });
+
+    for (const actor of Object.values(ACTOR_SPRITES)) {
+      this.load.spritesheet(actor.key, actor.path, {
+        frameWidth: actor.frameWidth,
+        frameHeight: actor.frameHeight,
+      });
+    }
 
     for (const tileKey of Object.keys(tileRegistry.tiles)) {
       this.load.image(
@@ -188,11 +223,10 @@ export class GridScene extends Phaser.Scene {
       this.playerGrid.column,
       this.playerGrid.row,
     );
-    this.player = this.add.image(
-      playerCenter.x,
-      playerCenter.y,
-      SPRITE_KEYS.captain,
-    );
+    this.player = this.add
+      .sprite(playerCenter.x, playerCenter.y, ACTOR_SPRITES.captain.key, 0)
+      .setScale(0.19);
+    this.player.anims.play("captain-idle-down");
     this.playerLabel = this.add.text(
       playerCenter.x - 24,
       playerCenter.y + 28,
@@ -215,10 +249,12 @@ export class GridScene extends Phaser.Scene {
     }
 
     for (const npc of this.zone.npcs ?? []) {
+      const spriteKey = ANIMATED_NPCS[npc.id] ?? SPRITE_KEYS.npcPlaceholder;
       this.#createTarget({
         ...npc,
         kind: "npc",
-        spriteKey: SPRITE_KEYS[npc.id] ?? SPRITE_KEYS.armorer,
+        spriteKey,
+        animPrefix: ANIMATED_NPCS[npc.id] ? npc.id : null,
       });
     }
 
@@ -299,7 +335,15 @@ export class GridScene extends Phaser.Scene {
   #createTarget(target) {
     const center = this.#tileCenter(target.column, target.row);
     const highlight = this.#createHighlight(center.x, center.y);
-    const sprite = this.add.image(center.x, center.y, target.spriteKey);
+    const sprite =
+      target.kind === "npc" && target.animPrefix
+        ? this.add
+            .sprite(center.x, center.y, target.spriteKey, 0)
+            .setScale(0.19)
+        : this.add.image(center.x, center.y, target.spriteKey);
+    if (target.kind === "npc" && target.animPrefix) {
+      sprite.anims.play(`${target.id}-idle-down`);
+    }
     const label = this.add.text(center.x - 48, center.y + 28, target.name, {
       color: "#f2e8be",
       fontFamily: '"Share Tech Mono"',
@@ -428,6 +472,10 @@ export class GridScene extends Phaser.Scene {
     };
     this.isMoving = true;
 
+    this.playerFacing = getFacingFromDelta(deltaColumn, deltaRow);
+
+    this.player.anims.play(`captain-${this.playerFacing}`, true);
+
     const center = this.#tileCenter(nextColumn, nextRow);
     this.tweens.add({
       targets: this.player,
@@ -438,6 +486,7 @@ export class GridScene extends Phaser.Scene {
       onComplete: () => {
         this.playerLabel.setPosition(center.x - 24, center.y + 28);
         this.isMoving = false;
+        this.player.anims.play(`captain-idle-${this.playerFacing}`, true);
         this.#handleTileArrival();
         this.#syncDebugState({ lastMoveResult: "moved" });
       },
@@ -545,44 +594,6 @@ export class GridScene extends Phaser.Scene {
   }
 
   #createSpriteTextures() {
-    this.#generateTexture(SPRITE_KEYS.captain, (g) => {
-      g.fillStyle(0xf2e8be);
-      g.fillRoundedRect(13, 4, 22, 18, 8);
-      g.fillStyle(0x0a1628);
-      g.fillRoundedRect(17, 8, 14, 8, 4);
-      g.fillStyle(0x46d9c4);
-      g.fillRoundedRect(14, 22, 20, 17, 5);
-      g.fillStyle(0xf2e8be);
-      g.fillRect(12, 25, 5, 10);
-      g.fillRect(31, 25, 5, 10);
-      g.fillRect(17, 38, 5, 6);
-      g.fillRect(26, 38, 5, 6);
-    });
-
-    this.#generateTexture(SPRITE_KEYS.zrix, (g) => {
-      g.fillStyle(0x7b2d8b);
-      g.fillEllipse(24, 23, 26, 30);
-      g.fillEllipse(14, 30, 10, 10);
-      g.fillEllipse(34, 30, 10, 10);
-      g.fillStyle(0x46d9c4);
-      g.fillEllipse(24, 18, 13, 8);
-      g.fillRect(21, 6, 3, 12);
-      g.fillRect(26, 6, 3, 12);
-      g.fillStyle(0xffb300);
-      g.fillCircle(19, 22, 3);
-      g.fillCircle(29, 22, 3);
-    });
-
-    this.#generateTexture(SPRITE_KEYS.armorer, (g) => {
-      g.fillStyle(0x8f6d2a);
-      g.fillRoundedRect(10, 10, 28, 28, 5);
-      g.fillStyle(0x46d9c4);
-      g.fillEllipse(24, 15, 12, 10);
-      g.fillStyle(0xffb300);
-      g.fillRect(16, 24, 16, 3);
-      g.fillRect(14, 30, 20, 4);
-    });
-
     this.#generateTexture(SPRITE_KEYS.terminal, (g) => {
       g.fillStyle(0x0b1d2c);
       g.fillRoundedRect(10, 8, 28, 28, 4);
@@ -609,6 +620,17 @@ export class GridScene extends Phaser.Scene {
       g.fillRect(12, 18, 8, 4);
     });
 
+    this.#generateTexture(SPRITE_KEYS.npcPlaceholder, (g) => {
+      g.fillStyle(0x2f5d34);
+      g.fillRoundedRect(14, 8, 20, 24, 8);
+      g.fillStyle(0xf2e8be);
+      g.fillCircle(24, 16, 6);
+      g.fillStyle(0x46d9c4);
+      g.fillRect(14, 24, 20, 6);
+      g.fillStyle(0xffb300);
+      g.fillRect(18, 30, 12, 5);
+    });
+
     this.#generateTexture(SPRITE_KEYS.overflow, (g) => {
       g.fillStyle(0x7b2d8b);
       g.fillRect(8, 8, 32, 32);
@@ -618,6 +640,53 @@ export class GridScene extends Phaser.Scene {
       g.fillRect(12, 24, 20, 6);
       g.fillRect(18, 32, 18, 4);
     });
+
+    this.#defineActorAnimations("captain", ACTOR_SPRITES.captain.key);
+    this.#defineActorAnimations("zrix", ACTOR_SPRITES.zrix.key);
+    this.#defineActorAnimations("armorer", ACTOR_SPRITES.armorer.key);
+  }
+
+  #defineActorAnimations(prefix, textureKey) {
+    const directions = {
+      down: 0,
+      left: 1,
+      right: 2,
+      up: 3,
+    };
+
+    for (const [name, row] of Object.entries(directions)) {
+      const key = `${prefix}-${name}`;
+      if (this.anims.exists(key)) {
+        continue;
+      }
+      this.anims.create({
+        key,
+        frames: this.anims.generateFrameNumbers(textureKey, {
+          start: row * 4,
+          end: row * 4 + 3,
+        }),
+        frameRate: 8,
+        repeat: -1,
+      });
+    }
+
+    const idleMap = {
+      down: `${prefix}-down`,
+      left: `${prefix}-left`,
+      right: `${prefix}-right`,
+      up: `${prefix}-up`,
+    };
+    for (const [name] of Object.entries(idleMap)) {
+      const key = `${prefix}-idle-${name}`;
+      if (this.anims.exists(key)) {
+        continue;
+      }
+      this.anims.create({
+        key,
+        frames: [{ key: textureKey, frame: directions[name] * 4 }],
+        frameRate: 1,
+      });
+    }
   }
 
   #syncDebugState({

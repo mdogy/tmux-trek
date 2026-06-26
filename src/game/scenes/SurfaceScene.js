@@ -1,11 +1,39 @@
 import { GridScene } from "./GridScene.js";
+import { shouldUseV2Zones } from "../data/zoneLoader.js";
 
 export class SurfaceScene extends GridScene {
   constructor() {
     super("surface", "surface");
   }
 
+  preload() {
+    super.preload();
+
+    if (shouldUseV2Zones()) {
+      this.load.image(
+        "surface-art-background",
+        "assets/generated/tiles/village-scene-background.png",
+      );
+    }
+  }
+
+  shouldDrawV2TileMap() {
+    return false;
+  }
+
+  shouldDrawV2WorldObjects() {
+    return false;
+  }
+
   createZoneDecorations() {
+    if (this.zone.renderMode === "v2") {
+      this.zoneArtId = "surface-background";
+      this.add
+        .image(960, 720, "surface-art-background")
+        .setDisplaySize(1920, 1440)
+        .setDepth(-10);
+    }
+
     this.add
       .text(264, 116, "STARFALL VILLAGE", {
         color: "#f2e8be",

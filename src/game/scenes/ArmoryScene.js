@@ -1,8 +1,28 @@
 import { GridScene } from "./GridScene.js";
+import { shouldUseV2Zones } from "../data/zoneLoader.js";
 
 export class ArmoryScene extends GridScene {
   constructor() {
     super("armory", "armory");
+  }
+
+  preload() {
+    super.preload();
+
+    if (shouldUseV2Zones()) {
+      this.load.image(
+        "armory-art-background",
+        "assets/generated/tiles/armory-scene-background.png",
+      );
+    }
+  }
+
+  shouldDrawV2TileMap() {
+    return false;
+  }
+
+  shouldDrawV2WorldObjects() {
+    return false;
   }
 
   getGroundFrame(column, row) {
@@ -10,6 +30,14 @@ export class ArmoryScene extends GridScene {
   }
 
   createZoneDecorations() {
+    if (this.zone.renderMode === "v2") {
+      this.zoneArtId = "armory-background";
+      this.add
+        .image(480, 360, "armory-art-background")
+        .setDisplaySize(960, 720)
+        .setDepth(-10);
+    }
+
     this.add.text(388, 82, "KESH ARMORY", {
       color: "#ffb300",
       fontFamily: '"Press Start 2P"',

@@ -1,0 +1,18 @@
+import { describe, expect, it } from "vitest";
+import { getFacingFromDelta } from "../../src/game/scenes/actorMotion.js";
+
+describe("GridScene movement facing", () => {
+  it("maps vertical deltas to up and down", () => {
+    expect(getFacingFromDelta(0, -1)).toBe("up");
+    expect(getFacingFromDelta(0, 1)).toBe("down");
+  });
+
+  it("maps horizontal deltas to left and right", () => {
+    expect(getFacingFromDelta(-1, 0)).toBe("left");
+    expect(getFacingFromDelta(1, 0)).toBe("right");
+  });
+
+  it("defaults to down when no movement delta is present", () => {
+    expect(getFacingFromDelta(0, 0)).toBe("down");
+  });
+});
