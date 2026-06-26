@@ -10,19 +10,19 @@ const TERRAIN_SHEET_PATH = "assets/tiles/z-shell-terrain.png";
 const ACTOR_SPRITES = {
   captain: {
     key: "captain-sprites",
-    path: "assets/generated/sprites/captain-sprites.png",
+    path: "assets/generated/sprites/captain-sprites-opaque.png",
     frameWidth: 313,
     frameHeight: 313,
   },
   zrix: {
     key: "zrix-sprites",
-    path: "assets/generated/sprites/zrix-sprites.png",
+    path: "assets/generated/sprites/zrix-sprites-opaque.png",
     frameWidth: 384,
     frameHeight: 256,
   },
   armorer: {
     key: "armorer-sprites",
-    path: "assets/generated/sprites/armorer-sprites.png",
+    path: "assets/generated/sprites/armorer-sprites-opaque.png",
     frameWidth: 384,
     frameHeight: 256,
   },
