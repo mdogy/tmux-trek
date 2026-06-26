@@ -18,8 +18,8 @@ const ACTOR_SPRITES = {
   captain: {
     key: "captain-sprites",
     path: "assets/generated/sprites/captain-sprites-opaque.png",
-    frameWidth: 313,
-    frameHeight: 313,
+    frameWidth: 128,
+    frameHeight: 128,
   },
   zrix: {
     key: "zrix-sprites",

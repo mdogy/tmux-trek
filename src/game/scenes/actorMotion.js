@@ -8,7 +8,7 @@ export function getFacingFromDelta(deltaColumn, deltaRow) {
 
 export function getActorScale(actorId) {
   if (actorId === "captain") {
-    return 0.14;
+    return 0.34;
   }
 
   return 0.12;
