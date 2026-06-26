@@ -4,6 +4,7 @@ import tileRegistry from "../../data/tiles/tile-registry.json";
 import { stopAmbient } from "../systems/AudioSystem.js";
 import { buildBlockedTiles } from "../data/zoneSemantics.js";
 import { getFacingFromDelta } from "./actorMotion.js";
+import { getActorAnchor, getActorScale, getActorYOffset } from "./actorMotion.js";
 
 const TERRAIN_SHEET_KEY = "z-shell-terrain";
 const TERRAIN_SHEET_PATH = "assets/tiles/z-shell-terrain.png";
@@ -224,8 +225,14 @@ export class GridScene extends Phaser.Scene {
       this.playerGrid.row,
     );
     this.player = this.add
-      .sprite(playerCenter.x, playerCenter.y, ACTOR_SPRITES.captain.key, 0)
-      .setScale(0.19);
+      .sprite(
+        playerCenter.x,
+        playerCenter.y + getActorYOffset(),
+        ACTOR_SPRITES.captain.key,
+        0,
+      )
+      .setScale(getActorScale("captain"))
+      .setOrigin(getActorAnchor("captain").x, getActorAnchor("captain").y);
     this.player.anims.play("captain-idle-down");
     this.playerLabel = this.add.text(
       playerCenter.x - 24,
@@ -338,8 +345,14 @@ export class GridScene extends Phaser.Scene {
     const sprite =
       target.kind === "npc" && target.animPrefix
         ? this.add
-            .sprite(center.x, center.y, target.spriteKey, 0)
-            .setScale(0.19)
+            .sprite(
+              center.x,
+              center.y + getActorYOffset(),
+              target.spriteKey,
+              0,
+            )
+            .setScale(getActorScale(target.id))
+            .setOrigin(getActorAnchor(target.id).x, getActorAnchor(target.id).y)
         : this.add.image(center.x, center.y, target.spriteKey);
     if (target.kind === "npc" && target.animPrefix) {
       sprite.anims.play(`${target.id}-idle-down`);
@@ -479,10 +492,10 @@ export class GridScene extends Phaser.Scene {
     const center = this.#tileCenter(nextColumn, nextRow);
     this.tweens.add({
       targets: this.player,
-      duration: 110,
+      duration: 180,
       ease: "Quad.Out",
       x: center.x,
-      y: center.y,
+      y: center.y + getActorYOffset(),
       onComplete: () => {
         this.playerLabel.setPosition(center.x - 24, center.y + 28);
         this.isMoving = false;
@@ -494,7 +507,7 @@ export class GridScene extends Phaser.Scene {
 
     this.tweens.add({
       targets: this.playerLabel,
-      duration: 110,
+      duration: 180,
       ease: "Quad.Out",
       x: center.x - 24,
       y: center.y + 28,

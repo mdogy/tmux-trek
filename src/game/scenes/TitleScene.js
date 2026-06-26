@@ -136,6 +136,10 @@ export class TitleScene extends Phaser.Scene {
               label: `MANAGE SAVES  (${slots.length})`,
               action: () => this._showSaves(),
             },
+            {
+              label: "DELETE ALL SAVES",
+              action: () => this._confirmDeleteAllSaves(),
+            },
           ]
         : []),
     ];
@@ -277,6 +281,19 @@ export class TitleScene extends Phaser.Scene {
     });
   }
 
+  _confirmDeleteAllSaves() {
+    this._domInput("Type DELETE to clear all saves:", (value) => {
+      if (value.trim().toUpperCase() === "DELETE") {
+        const slots = listSlots();
+        slots.forEach((slot) => deleteSlot(slot.id));
+        this._showMenu();
+        return;
+      }
+
+      this._showMenu();
+    });
+  }
+
   _continue() {
     this.app.restoreActiveSave();
     this.scene.start("boot");
@@ -388,6 +405,10 @@ export class TitleScene extends Phaser.Scene {
       },
       { passive: true },
     );
+    overlay.addEventListener("click", () => {
+      input.focus({ preventScroll: true });
+      input.click?.();
+    });
     input.addEventListener("keydown", (e) => {
       e.stopPropagation();
       e.preventDefault();
@@ -402,8 +423,14 @@ export class TitleScene extends Phaser.Scene {
         this._removeDomInput();
       }
     });
-    requestAnimationFrame(() => input.focus({ preventScroll: true }));
-    setTimeout(() => input.focus({ preventScroll: true }), 50);
+    requestAnimationFrame(() => {
+      input.focus({ preventScroll: true });
+      input.setSelectionRange?.(input.value.length, input.value.length);
+    });
+    setTimeout(() => {
+      input.focus({ preventScroll: true });
+      input.setSelectionRange?.(input.value.length, input.value.length);
+    }, 50);
   }
 
   _removeDomInput() {
