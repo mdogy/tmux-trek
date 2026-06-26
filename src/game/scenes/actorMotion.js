@@ -16,10 +16,22 @@ export function getActorScale(actorId) {
 
 export function getActorAnchor(actorId) {
   return actorId === "captain"
-    ? { x: 0.5, y: 0.9 }
-    : { x: 0.5, y: 0.9 };
+    ? { x: 0.5, y: 1 }
+    : { x: 0.5, y: 1 };
 }
 
-export function getActorYOffset() {
-  return -2;
+export function getActorOffset(actorId) {
+  if (actorId === "captain") {
+    return { x: 0, y: 2 };
+  }
+
+  return { x: 0, y: 0 };
+}
+
+export function getActorMoveDuration() {
+  return 720;
+}
+
+export function getActorWalkFrameRate() {
+  return 2;
 }

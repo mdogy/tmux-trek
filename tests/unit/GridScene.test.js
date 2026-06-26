@@ -1,8 +1,10 @@
 import { describe, expect, it } from "vitest";
 import {
   getActorAnchor,
+  getActorMoveDuration,
+  getActorOffset,
   getActorScale,
-  getActorYOffset,
+  getActorWalkFrameRate,
   getFacingFromDelta,
 } from "../../src/game/scenes/actorMotion.js";
 
@@ -24,7 +26,9 @@ describe("GridScene movement facing", () => {
   it("uses a stable top-down anchor and offset", () => {
     expect(getActorScale("captain")).toBeLessThan(0.2);
     expect(getActorScale("zrix")).toBeLessThan(0.2);
-    expect(getActorAnchor("captain")).toEqual({ x: 0.5, y: 0.9 });
-    expect(getActorYOffset()).toBe(-2);
+    expect(getActorAnchor("captain")).toEqual({ x: 0.5, y: 1 });
+    expect(getActorOffset("captain")).toEqual({ x: 0, y: 2 });
+    expect(getActorMoveDuration()).toBe(720);
+    expect(getActorWalkFrameRate()).toBe(2);
   });
 });

@@ -4,7 +4,13 @@ import tileRegistry from "../../data/tiles/tile-registry.json";
 import { stopAmbient } from "../systems/AudioSystem.js";
 import { buildBlockedTiles } from "../data/zoneSemantics.js";
 import { getFacingFromDelta } from "./actorMotion.js";
-import { getActorAnchor, getActorScale, getActorYOffset } from "./actorMotion.js";
+import {
+  getActorAnchor,
+  getActorMoveDuration,
+  getActorOffset,
+  getActorScale,
+  getActorWalkFrameRate,
+} from "./actorMotion.js";
 
 const TERRAIN_SHEET_KEY = "z-shell-terrain";
 const TERRAIN_SHEET_PATH = "assets/tiles/z-shell-terrain.png";
@@ -226,8 +232,8 @@ export class GridScene extends Phaser.Scene {
     );
     this.player = this.add
       .sprite(
-        playerCenter.x,
-        playerCenter.y + getActorYOffset(),
+        playerCenter.x + getActorOffset("captain").x,
+        playerCenter.y + getActorOffset("captain").y,
         ACTOR_SPRITES.captain.key,
         0,
       )
@@ -346,8 +352,8 @@ export class GridScene extends Phaser.Scene {
       target.kind === "npc" && target.animPrefix
         ? this.add
             .sprite(
-              center.x,
-              center.y + getActorYOffset(),
+              center.x + getActorOffset(target.id).x,
+              center.y + getActorOffset(target.id).y,
               target.spriteKey,
               0,
             )
@@ -492,10 +498,10 @@ export class GridScene extends Phaser.Scene {
     const center = this.#tileCenter(nextColumn, nextRow);
     this.tweens.add({
       targets: this.player,
-      duration: 180,
+      duration: getActorMoveDuration(),
       ease: "Quad.Out",
-      x: center.x,
-      y: center.y + getActorYOffset(),
+      x: center.x + getActorOffset("captain").x,
+      y: center.y + getActorOffset("captain").y,
       onComplete: () => {
         this.playerLabel.setPosition(center.x - 24, center.y + 28);
         this.isMoving = false;
@@ -507,7 +513,7 @@ export class GridScene extends Phaser.Scene {
 
     this.tweens.add({
       targets: this.playerLabel,
-      duration: 180,
+      duration: getActorMoveDuration(),
       ease: "Quad.Out",
       x: center.x - 24,
       y: center.y + 28,
@@ -678,7 +684,7 @@ export class GridScene extends Phaser.Scene {
           start: row * 4,
           end: row * 4 + 3,
         }),
-        frameRate: 8,
+        frameRate: getActorWalkFrameRate(),
         repeat: -1,
       });
     }
