@@ -3,6 +3,8 @@ import "./styles.css";
 import { initDemoCaption } from "./game/DemoCaption.js";
 
 function createLoadingOverlay() {
+  document.querySelectorAll("#boot-loading").forEach((node) => node.remove());
+
   const loading = document.createElement("div");
   loading.id = "boot-loading";
   loading.textContent = "Loading...";
@@ -22,11 +24,23 @@ function createLoadingOverlay() {
     remove() {
       window.clearInterval(spinner);
       window.setTimeout(() => {
-        loading.remove();
+        document
+          .querySelectorAll("#boot-loading")
+          .forEach((node) => node.remove());
       }, 500);
     },
   };
   window.__tmuxTrekLoadingOverlay = overlay;
+
+  window.setTimeout(() => {
+    if (!document.body.contains(loading)) {
+      return;
+    }
+
+    console.warn("[TmuxTrek] Loading overlay timed out; showing current scene.");
+    overlay.remove();
+  }, 12_000);
+
   return overlay;
 }
 

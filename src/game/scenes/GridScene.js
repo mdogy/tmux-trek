@@ -132,6 +132,7 @@ export class GridScene extends Phaser.Scene {
     this.#handleTileArrival();
     this.#syncDebugState();
     window.__tmuxTrekLoadingOverlay?.remove?.();
+    document.querySelectorAll("#boot-loading").forEach((node) => node.remove());
     this.cameras.main.fadeIn(450, 70, 217, 196);
     if (!this.app.isOverlayOpen()) {
       this.app.focusGame();
