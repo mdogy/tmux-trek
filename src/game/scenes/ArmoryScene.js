@@ -25,6 +25,14 @@ export class ArmoryScene extends GridScene {
     return false;
   }
 
+  getTileVisualWidth() {
+    return 60;
+  }
+
+  getTileVisualHeight() {
+    return 60;
+  }
+
   getGroundFrame(column, row) {
     return [12, 13, 15][(column * 2 + row) % 3];
   }

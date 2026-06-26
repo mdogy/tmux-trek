@@ -205,8 +205,11 @@ Status: **complete.**
 
 ## Phase 6.5 — World Structure, Tiles & NPC Behavior _(foundational overhaul)_
 
-**Status:** proposed June 21, 2026. Full critique, per-zone redesigns, tile taxonomy, NPC
-schema, and acceptance criteria live in
+**Status:** in progress. The v2 zone loader, registry-derived collision/semantics, and painted
+bridge/surface/armory runtime backdrops are active in the playable slice. Bridge semantic
+stations, the armory weapon stand, the surface overflow blocker, demo routes, and the current
+NPC sprite-sheet rendering have been aligned to the painted maps. Full critique, per-zone
+redesigns, tile taxonomy, NPC schema, and acceptance criteria live in
 [`design/world-design-critique-and-plan.md`](design/world-design-critique-and-plan.md).
 
 **Why before the content acts:** today's zones are large open rectangles with a single marked
@@ -232,6 +235,14 @@ planner for NPC routines.
 - **E — Gameplay/objective redesign:** find-the-place/find-the-person objectives, guide-NPC
   hints referencing landmarks, denial-gated exits; migrate E2E from hard-coded tile paths to
   goal-based assertions.
+
+Completed checkpoint notes:
+
+- v2 data now drives the active bridge, surface, and armory scenes by default.
+- Painted map backdrops are wired for all active scenes; placeholder tile layers are suppressed
+  where the painted backdrop is authoritative.
+- Current semantic coordinates are aligned to the painted maps and covered by unit/E2E checks.
+- Existing sprite-sheet actors now cover current NPCs, replacing placeholder icons for this slice.
 
 **Acceptance for Phase 6.5:**
 

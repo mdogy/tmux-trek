@@ -51,7 +51,7 @@ test("02 - bridge first mission", async ({ page }) => {
   await moveAlong(page, [
     ["KeyD", [8, 9]],
     ["KeyD", [9, 9]],
-    ["KeyW", [9, 8]],
+    ["KeyD", [10, 9]],
   ]);
 
   await setCaption(page, "Mission: Open the Rift terminal and descend to the surface");
@@ -64,12 +64,12 @@ test("03 - open rift terminal", async ({ page }) => {
   await page.goto("/?testMode=1&demo=1&useV2Zones=1");
   await waitForGrid(page, [7, 9], "bridge");
 
-  // Walk to the tile adjacent to the rift-terminal at [8,7] — [7,7] is the
-  // interaction range; [8,7] itself is blocked by the terminal sprite.
+  // Walk into interaction range of the right-side Rift terminal.
   await moveAlong(page, [
     ["KeyD", [8, 9]],
     ["KeyD", [9, 9]],
-    ["KeyW", [9, 8]],
+    ["KeyD", [10, 9]],
+    ["KeyD", [11, 9]],
   ]);
 
   await setCaption(page, "Press E to activate the Rift terminal...");
@@ -97,16 +97,16 @@ test("03 - open rift terminal", async ({ page }) => {
 test("04 - surface zone", async ({ page }) => {
   await injectSave(page, SAVE_AT_SURFACE);
   await page.goto("/?testMode=1&demo=1");
-  await waitForGrid(page, [3, 15], "surface");
+  await waitForGrid(page, [1, 15], "surface");
 
   await setCaption(page, "The surface zone — explore to find the Rift Code");
   await page.waitForTimeout(2_000);
 
   // Walk a few steps toward Zrix to show the zone
   await moveAlong(page, [
+    ["KeyD", [2, 15]],
+    ["KeyD", [3, 15]],
     ["KeyD", [4, 15]],
-    ["KeyD", [5, 15]],
-    ["KeyD", [6, 15]],
   ]);
 
   await setCaption(page, "Each zone is only reachable via the right tmux command");
@@ -118,20 +118,49 @@ test("04 - surface zone", async ({ page }) => {
 test("05 - named session armory", async ({ page }) => {
   await injectSave(page, SAVE_AT_OPEN_ARMORY);
   await page.goto("/?testMode=1&demo=1");
-  await waitForGrid(page, [3, 15], "surface");
+  await waitForGrid(page, [1, 15], "surface");
 
   await setCaption(page, "Rift Code in hand — return to Zrix to open the armory");
   await page.waitForTimeout(1_500);
 
-  // Navigate to Zrix dialogue trigger at [8,15]
+  // Navigate to Zrix's relay-shed work area.
   await moveAlong(page, [
+    ["KeyD", [2, 15]],
+    ["KeyD", [3, 15]],
     ["KeyD", [4, 15]],
     ["KeyD", [5, 15]],
     ["KeyD", [6, 15]],
-    ["KeyW", [6, 14]],
-    ["KeyD", [7, 14]],
-    ["KeyD", [8, 14]],
-    ["KeyS", [8, 15]],
+    ["KeyD", [7, 15]],
+    ["KeyD", [8, 15]],
+    ["KeyD", [9, 15]],
+    ["KeyD", [10, 15]],
+    ["KeyD", [11, 15]],
+    ["KeyD", [12, 15]],
+    ["KeyD", [13, 15]],
+    ["KeyD", [14, 15]],
+    ["KeyD", [15, 15]],
+    ["KeyD", [16, 15]],
+    ["KeyD", [17, 15]],
+    ["KeyS", [17, 16]],
+    ["KeyS", [17, 17]],
+    ["KeyD", [18, 17]],
+    ["KeyD", [19, 17]],
+    ["KeyD", [20, 17]],
+    ["KeyD", [21, 17]],
+    ["KeyS", [21, 18]],
+    ["KeyD", [22, 18]],
+    ["KeyD", [23, 18]],
+    ["KeyD", [24, 18]],
+    ["KeyD", [25, 18]],
+    ["KeyD", [26, 18]],
+    ["KeyD", [27, 18]],
+    ["KeyD", [28, 18]],
+    ["KeyD", [29, 18]],
+    ["KeyD", [30, 18]],
+    ["KeyD", [31, 18]],
+    ["KeyD", [32, 18]],
+    ["KeyS", [32, 19]],
+    ["KeyS", [32, 20]],
   ]);
 
   await openDialogue(page);
@@ -148,7 +177,7 @@ test("05 - named session armory", async ({ page }) => {
   await page.waitForTimeout(600);
   await page.keyboard.press("Enter");
 
-  await waitForGrid(page, [3, 7], "armory");
+  await waitForGrid(page, [7, 10], "armory");
   await setCaption(page, "A new zone — only reachable via this exact session name");
   await page.waitForTimeout(4_500);
 });
@@ -158,23 +187,21 @@ test("05 - named session armory", async ({ page }) => {
 test("06 - detach keybinding", async ({ page }) => {
   await injectSave(page, SAVE_AT_RETURN_TO_BRIDGE);
   await page.goto("/?testMode=1&demo=1");
-  await waitForGrid(page, [3, 7], "armory");
+  await waitForGrid(page, [7, 10], "armory");
 
   await setCaption(page, "Weapon retrieved — time to detach and return to the bridge");
   await page.waitForTimeout(1_500);
 
-  // Walk to armorer at [14,7]
+  // Walk to Armorer Kesh's forge station.
   await moveAlong(page, [
-    ["KeyD", [4, 7]],
-    ["KeyD", [5, 7]],
-    ["KeyD", [6, 7]],
-    ["KeyD", [7, 7]],
-    ["KeyD", [8, 7]],
-    ["KeyD", [9, 7]],
-    ["KeyD", [10, 7]],
-    ["KeyD", [11, 7]],
-    ["KeyD", [12, 7]],
-    ["KeyD", [13, 7]],
+    ["KeyD", [8, 10]],
+    ["KeyW", [8, 9]],
+    ["KeyW", [8, 8]],
+    ["KeyW", [8, 7]],
+    ["KeyW", [8, 6]],
+    ["KeyA", [7, 6]],
+    ["KeyA", [6, 6]],
+    ["KeyA", [5, 6]],
   ]);
 
   await openDialogue(page);
@@ -189,7 +216,7 @@ test("06 - detach keybinding", async ({ page }) => {
   await page.waitForTimeout(1_500);
   await pressTmuxKeybinding(page, "d");
 
-  await waitForGrid(page, [4, 7], "bridge");
+  await waitForGrid(page, [7, 9], "bridge");
   await setCaption(page, "Detached — back on the bridge. Session `armory` still lives.");
   await page.waitForTimeout(4_500);
 });
@@ -199,42 +226,47 @@ test("06 - detach keybinding", async ({ page }) => {
 test("07 - act complete", async ({ page }) => {
   await injectSave(page, SAVE_AT_CLEAR_OVERFLOW);
   await page.goto("/?testMode=1&demo=1");
-  await waitForGrid(page, [3, 15], "surface");
+  await waitForGrid(page, [1, 15], "surface");
 
   await setCaption(page, "Final objective: clear the overflow buffer blocking Starfall Village");
   await page.waitForTimeout(1_500);
 
-  // Navigate to overflow at [23,15] — same path as the E2E gameplay test
+  // Navigate to the overflow front.
   await moveAlong(page, [
+    ["KeyD", [2, 15]],
+    ["KeyD", [3, 15]],
     ["KeyD", [4, 15]],
     ["KeyD", [5, 15]],
     ["KeyD", [6, 15]],
-    ["KeyW", [6, 14]],
-    ["KeyW", [6, 13]],
-    ["KeyW", [6, 12]],
-    ["KeyD", [7, 12]],
-    ["KeyD", [8, 12]],
-    ["KeyD", [9, 12]],
-    ["KeyD", [10, 12]],
-    ["KeyD", [11, 12]],
-    ["KeyD", [12, 12]],
-    ["KeyD", [13, 12]],
-    ["KeyD", [14, 12]],
-    ["KeyD", [15, 12]],
-    ["KeyD", [16, 12]],
-    ["KeyD", [17, 12]],
-    ["KeyW", [17, 11]],
-    ["KeyD", [18, 11]],
-    ["KeyD", [19, 11]],
-    ["KeyD", [20, 11]],
-    ["KeyD", [21, 11]],
-    ["KeyD", [22, 11]],
-    ["KeyD", [23, 11]],
-    ["KeyS", [23, 12]],
-    ["KeyS", [23, 13]],
-    ["KeyS", [23, 14]],
-    ["KeyA", [22, 14]],
-    ["KeyS", [22, 15]],
+    ["KeyD", [7, 15]],
+    ["KeyD", [8, 15]],
+    ["KeyD", [9, 15]],
+    ["KeyD", [10, 15]],
+    ["KeyD", [11, 15]],
+    ["KeyD", [12, 15]],
+    ["KeyD", [13, 15]],
+    ["KeyD", [14, 15]],
+    ["KeyD", [15, 15]],
+    ["KeyD", [16, 15]],
+    ["KeyD", [17, 15]],
+    ["KeyD", [18, 15]],
+    ["KeyW", [18, 14]],
+    ["KeyD", [19, 14]],
+    ["KeyD", [20, 14]],
+    ["KeyD", [21, 14]],
+    ["KeyD", [22, 14]],
+    ["KeyD", [23, 14]],
+    ["KeyD", [24, 14]],
+    ["KeyD", [25, 14]],
+    ["KeyD", [26, 14]],
+    ["KeyD", [27, 14]],
+    ["KeyD", [28, 14]],
+    ["KeyD", [29, 14]],
+    ["KeyD", [30, 14]],
+    ["KeyD", [31, 14]],
+    ["KeyD", [32, 14]],
+    ["KeyD", [33, 14]],
+    ["KeyD", [34, 14]],
   ]);
 
   await expect(page.locator("#game-root")).toHaveAttribute(

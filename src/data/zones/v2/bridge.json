@@ -60,48 +60,48 @@
       "id": "helm",
       "type": "console",
       "at": [
-        3,
-        2
+        4,
+        3
       ]
     },
     {
       "id": "nav",
       "type": "console",
       "at": [
-        11,
-        2
+        10,
+        3
       ]
     },
     {
       "id": "ops",
       "type": "console",
       "at": [
-        2,
-        4
+        5,
+        6
       ]
     },
     {
       "id": "science",
       "type": "console",
       "at": [
-        12,
-        4
+        10,
+        6
       ]
     },
     {
       "id": "comms",
       "type": "console",
       "at": [
-        4,
-        7
+        5,
+        9
       ]
     },
     {
       "id": "rift-terminal",
       "type": "rift_terminal",
       "at": [
-        10,
-        7
+        13,
+        9
       ]
     }
   ],
@@ -113,8 +113,8 @@
       "role": "ambient",
       "behavior": "idle",
       "home": [
-        3,
-        3
+        4,
+        4
       ],
       "pauseRadius": 2
     },
@@ -125,7 +125,7 @@
       "behavior": "idle",
       "home": [
         5,
-        7
+        8
       ],
       "pauseRadius": 2
     },
@@ -135,25 +135,25 @@
       "role": "guide",
       "behavior": "patrol",
       "home": [
-        6,
-        4
+        7,
+        6
       ],
       "waypoints": [
         [
           6,
-          4
-        ],
-        [
-          8,
-          4
+          6
         ],
         [
           8,
           6
+        ],
+        [
+          8,
+          7
         ],
         [
           6,
-          6
+          7
         ]
       ],
       "pauseRadius": 2,

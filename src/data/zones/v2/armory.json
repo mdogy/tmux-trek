@@ -112,7 +112,18 @@
       ]
     }
   ],
-  "items": [],
+  "items": [
+    {
+      "id": "weapon-stand",
+      "type": "item",
+      "item": "ARMORY_WEAPON",
+      "at": [
+        8,
+        6
+      ],
+      "note": "Bracket cannon staged at the central weapon stand."
+    }
+  ],
   "npcs": [
     {
       "id": "armorer",

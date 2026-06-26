@@ -53,11 +53,15 @@ async function pressTmuxKeybinding(page, key) {
 test("TMUX Trek completes the Phase 1 vertical slice and restores on reload", async ({
   page,
 }) => {
-  test.setTimeout(120_000);
+  test.setTimeout(180_000);
+  await page.addInitScript(() => {
+    if (!window.sessionStorage.getItem("tmux-trek:test-storage-cleared")) {
+      window.localStorage.clear();
+      window.sessionStorage.setItem("tmux-trek:test-storage-cleared", "1");
+    }
+  });
   await page.goto("/?testMode=1");
-  await page.evaluate(() => window.localStorage.clear());
-  await page.reload();
-  await waitForGrid(page, [4, 7], "bridge");
+  await waitForGrid(page, [7, 9], "bridge");
   await expect(page.locator("#mission-text")).toContainText(
     "Open the Rift terminal",
   );
@@ -67,9 +71,10 @@ test("TMUX Trek completes the Phase 1 vertical slice and restores on reload", as
   );
 
   await moveAlong(page, [
-    ["KeyD", [5, 7]],
-    ["KeyD", [6, 7]],
-    ["KeyD", [7, 7]],
+    ["KeyD", [8, 9]],
+    ["KeyD", [9, 9]],
+    ["KeyD", [10, 9]],
+    ["KeyD", [11, 9]],
   ]);
 
   await openDialogue(page);
@@ -81,30 +86,52 @@ test("TMUX Trek completes the Phase 1 vertical slice and restores on reload", as
   await page.keyboard.type("tmux");
   await page.keyboard.press("Enter");
   await expect(page.locator("#terminal-root")).toHaveClass(/hidden/);
-  await waitForGrid(page, [3, 15], "surface");
+  await waitForGrid(page, [1, 15], "surface");
   await expect(page.locator("#mission-text")).toContainText(
     "Find the Rift Code",
   );
   await expect(page.locator("#score-total")).toContainText("Score: 100");
 
   await moveAlong(page, [
+    ["KeyD", [2, 15]],
+    ["KeyD", [3, 15]],
     ["KeyD", [4, 15]],
     ["KeyD", [5, 15]],
     ["KeyD", [6, 15]],
-    ["KeyW", [6, 14]],
-    ["KeyW", [6, 13]],
-    ["KeyW", [6, 12]],
-    ["KeyD", [7, 12]],
-    ["KeyD", [8, 12]],
-    ["KeyD", [9, 12]],
-    ["KeyD", [10, 12]],
-    ["KeyD", [11, 12]],
-    ["KeyD", [12, 12]],
-    ["KeyD", [13, 12]],
-    ["KeyD", [14, 12]],
-    ["KeyS", [14, 13]],
-    ["KeyS", [14, 14]],
-    ["KeyS", [14, 15]],
+    ["KeyD", [7, 15]],
+    ["KeyD", [8, 15]],
+    ["KeyD", [9, 15]],
+    ["KeyD", [10, 15]],
+    ["KeyD", [11, 15]],
+    ["KeyD", [12, 15]],
+    ["KeyD", [13, 15]],
+    ["KeyD", [14, 15]],
+    ["KeyD", [15, 15]],
+    ["KeyD", [16, 15]],
+    ["KeyD", [17, 15]],
+    ["KeyS", [17, 16]],
+    ["KeyS", [17, 17]],
+    ["KeyD", [18, 17]],
+    ["KeyD", [19, 17]],
+    ["KeyD", [20, 17]],
+    ["KeyD", [21, 17]],
+    ["KeyS", [21, 18]],
+    ["KeyD", [22, 18]],
+    ["KeyD", [23, 18]],
+    ["KeyD", [24, 18]],
+    ["KeyD", [25, 18]],
+    ["KeyD", [26, 18]],
+    ["KeyD", [27, 18]],
+    ["KeyD", [28, 18]],
+    ["KeyD", [29, 18]],
+    ["KeyD", [30, 18]],
+    ["KeyD", [31, 18]],
+    ["KeyD", [32, 18]],
+    ["KeyS", [32, 19]],
+    ["KeyS", [32, 20]],
+    ["KeyS", [32, 21]],
+    ["KeyD", [33, 21]],
+    ["KeyS", [33, 22]],
   ]);
 
   await expect(page.locator("#instruction-text")).toContainText(
@@ -130,19 +157,48 @@ test("TMUX Trek completes the Phase 1 vertical slice and restores on reload", as
   await expect(page.locator("#review-root")).toHaveClass(/hidden/);
 
   await page.reload();
-  await waitForGrid(page, [3, 15], "surface");
+  await waitForGrid(page, [1, 15], "surface");
   await expect(page.locator("#instruction-text")).toContainText(
     "Return to Zrix",
   );
 
   await moveAlong(page, [
+    ["KeyD", [2, 15]],
+    ["KeyD", [3, 15]],
     ["KeyD", [4, 15]],
     ["KeyD", [5, 15]],
     ["KeyD", [6, 15]],
-    ["KeyW", [6, 14]],
-    ["KeyD", [7, 14]],
-    ["KeyD", [8, 14]],
-    ["KeyS", [8, 15]],
+    ["KeyD", [7, 15]],
+    ["KeyD", [8, 15]],
+    ["KeyD", [9, 15]],
+    ["KeyD", [10, 15]],
+    ["KeyD", [11, 15]],
+    ["KeyD", [12, 15]],
+    ["KeyD", [13, 15]],
+    ["KeyD", [14, 15]],
+    ["KeyD", [15, 15]],
+    ["KeyD", [16, 15]],
+    ["KeyD", [17, 15]],
+    ["KeyS", [17, 16]],
+    ["KeyS", [17, 17]],
+    ["KeyD", [18, 17]],
+    ["KeyD", [19, 17]],
+    ["KeyD", [20, 17]],
+    ["KeyD", [21, 17]],
+    ["KeyS", [21, 18]],
+    ["KeyD", [22, 18]],
+    ["KeyD", [23, 18]],
+    ["KeyD", [24, 18]],
+    ["KeyD", [25, 18]],
+    ["KeyD", [26, 18]],
+    ["KeyD", [27, 18]],
+    ["KeyD", [28, 18]],
+    ["KeyD", [29, 18]],
+    ["KeyD", [30, 18]],
+    ["KeyD", [31, 18]],
+    ["KeyD", [32, 18]],
+    ["KeyS", [32, 19]],
+    ["KeyS", [32, 20]],
   ]);
 
   await openDialogue(page);
@@ -154,19 +210,19 @@ test("TMUX Trek completes the Phase 1 vertical slice and restores on reload", as
   await page.keyboard.type("tmux new -s armory");
   await page.keyboard.press("Enter");
   await expect(page.locator("#terminal-root")).toHaveClass(/hidden/);
-  await waitForGrid(page, [3, 7], "armory");
+  await waitForGrid(page, [7, 10], "armory");
 
   await moveAlong(page, [
-    ["KeyD", [4, 7]],
-    ["KeyD", [5, 7]],
-    ["KeyD", [6, 7]],
-    ["KeyD", [7, 7]],
-    ["KeyD", [8, 7]],
-    ["KeyD", [9, 7]],
-    ["KeyD", [10, 7]],
-    ["KeyD", [11, 7]],
-    ["KeyD", [12, 7]],
-    ["KeyD", [13, 7]],
+    ["KeyW", [7, 9]],
+    ["KeyW", [7, 8]],
+    ["KeyW", [7, 7]],
+    ["KeyW", [7, 6]],
+    ["KeyD", [8, 6]],
+    ["KeyA", [7, 6]],
+    ["KeyA", [6, 6]],
+    ["KeyA", [5, 6]],
+    ["KeyW", [5, 5]],
+    ["KeyW", [5, 4]],
   ]);
 
   await expect(page.locator("#instruction-text")).toContainText(
@@ -180,12 +236,13 @@ test("TMUX Trek completes the Phase 1 vertical slice and restores on reload", as
   );
   await pressTmuxKeybinding(page, "d");
   await expect(page.locator("#terminal-root")).toHaveClass(/hidden/);
-  await waitForGrid(page, [4, 7], "bridge");
+  await waitForGrid(page, [7, 9], "bridge");
 
   await moveAlong(page, [
-    ["KeyD", [5, 7]],
-    ["KeyD", [6, 7]],
-    ["KeyD", [7, 7]],
+    ["KeyD", [8, 9]],
+    ["KeyD", [9, 9]],
+    ["KeyD", [10, 9]],
+    ["KeyD", [11, 9]],
   ]);
   await openDialogue(page);
   await clearDialogue(page);
@@ -198,38 +255,43 @@ test("TMUX Trek completes the Phase 1 vertical slice and restores on reload", as
   await page.keyboard.type("tmux attach -t 0");
   await page.keyboard.press("Enter");
   await expect(page.locator("#terminal-root")).toHaveClass(/hidden/);
-  await waitForGrid(page, [3, 15], "surface");
+  await waitForGrid(page, [1, 15], "surface");
 
   await moveAlong(page, [
+    ["KeyD", [2, 15]],
+    ["KeyD", [3, 15]],
     ["KeyD", [4, 15]],
     ["KeyD", [5, 15]],
     ["KeyD", [6, 15]],
-    ["KeyW", [6, 14]],
-    ["KeyW", [6, 13]],
-    ["KeyW", [6, 12]],
-    ["KeyD", [7, 12]],
-    ["KeyD", [8, 12]],
-    ["KeyD", [9, 12]],
-    ["KeyD", [10, 12]],
-    ["KeyD", [11, 12]],
-    ["KeyD", [12, 12]],
-    ["KeyD", [13, 12]],
-    ["KeyD", [14, 12]],
-    ["KeyD", [15, 12]],
-    ["KeyD", [16, 12]],
-    ["KeyD", [17, 12]],
-    ["KeyW", [17, 11]],
-    ["KeyD", [18, 11]],
-    ["KeyD", [19, 11]],
-    ["KeyD", [20, 11]],
-    ["KeyD", [21, 11]],
-    ["KeyD", [22, 11]],
-    ["KeyD", [23, 11]],
-    ["KeyS", [23, 12]],
-    ["KeyS", [23, 13]],
-    ["KeyS", [23, 14]],
-    ["KeyA", [22, 14]],
-    ["KeyS", [22, 15]],
+    ["KeyD", [7, 15]],
+    ["KeyD", [8, 15]],
+    ["KeyD", [9, 15]],
+    ["KeyD", [10, 15]],
+    ["KeyD", [11, 15]],
+    ["KeyD", [12, 15]],
+    ["KeyD", [13, 15]],
+    ["KeyD", [14, 15]],
+    ["KeyD", [15, 15]],
+    ["KeyD", [16, 15]],
+    ["KeyD", [17, 15]],
+    ["KeyD", [18, 15]],
+    ["KeyW", [18, 14]],
+    ["KeyD", [19, 14]],
+    ["KeyD", [20, 14]],
+    ["KeyD", [21, 14]],
+    ["KeyD", [22, 14]],
+    ["KeyD", [23, 14]],
+    ["KeyD", [24, 14]],
+    ["KeyD", [25, 14]],
+    ["KeyD", [26, 14]],
+    ["KeyD", [27, 14]],
+    ["KeyD", [28, 14]],
+    ["KeyD", [29, 14]],
+    ["KeyD", [30, 14]],
+    ["KeyD", [31, 14]],
+    ["KeyD", [32, 14]],
+    ["KeyD", [33, 14]],
+    ["KeyD", [34, 14]],
   ]);
 
   await expect(page.locator("#game-root")).toHaveAttribute(
@@ -257,7 +319,7 @@ test("TMUX Trek completes the Phase 1 vertical slice and restores on reload", as
   ).toBeVisible();
 
   await page.reload();
-  await waitForGrid(page, [3, 15], "surface");
+  await waitForGrid(page, [1, 15], "surface");
   await expect(page.locator("#completion-root")).toHaveAttribute(
     "data-act-complete",
     "true",
@@ -294,6 +356,6 @@ test("TMUX Trek completes the Phase 1 vertical slice and restores on reload", as
   await expect(page.locator("#review-root")).toHaveClass(/hidden/);
 
   await page.reload();
-  await waitForGrid(page, [3, 15], "surface");
+  await waitForGrid(page, [1, 15], "surface");
   await expect(page.locator("#completion-root")).toHaveClass(/hidden/);
 });

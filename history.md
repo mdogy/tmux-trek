@@ -1,5 +1,16 @@
 # Project History
 
+## 2026-06-26 — V2 painted-map semantic alignment
+
+Aligned the active v2 scene semantics with the generated map art.
+
+- Repositioned bridge consoles, Rift terminal, and bridge crew so semantic/debug overlays sit on the painted stations while preserving the captain chair alignment.
+- Added armory visual projection so the 16×12 semantic grid fills the 960×720 painted room, and restored the reachable `ARMORY_WEAPON` pickup at the central weapon stand.
+- Standardized the surface overflow blocker ID to `overflow` so v2 data matches gameplay interaction logic.
+- Replaced fallback NPC icon rendering for current bridge crew, villagers, Zrix, Armorer Kesh, and the apprentice with existing sprite-sheet character actors.
+- Updated gameplay, visual-alignment, demo-frame, and demo-reel tests to use current v2 coordinates and map starts.
+- Verification: `npm run lint`, `npm run test` (103 tests), `npm run test:e2e` (9 tests), demo frame smoke, demo reel spec, and `npm run build` pass.
+
 ## 2026-06-24 — Mobile capability detection refactor
 
 Refactored the first mobile checkpoint to improve testability and coverage.

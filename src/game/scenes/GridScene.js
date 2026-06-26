@@ -53,8 +53,29 @@ const SPRITE_KEYS = {
 };
 
 const ANIMATED_NPCS = {
+  "helm-officer": ACTOR_SPRITES.captain.key,
+  "comms-officer": ACTOR_SPRITES.captain.key,
+  "first-officer": ACTOR_SPRITES.captain.key,
   zrix: ACTOR_SPRITES.zrix.key,
+  sazo: ACTOR_SPRITES.zrix.key,
+  "villager-1": ACTOR_SPRITES.zrix.key,
+  "villager-2": ACTOR_SPRITES.zrix.key,
+  barkeep: ACTOR_SPRITES.zrix.key,
   armorer: ACTOR_SPRITES.armorer.key,
+  apprentice: ACTOR_SPRITES.armorer.key,
+};
+
+const NPC_ANIMATION_PREFIX = {
+  "helm-officer": "captain",
+  "comms-officer": "captain",
+  "first-officer": "captain",
+  zrix: "zrix",
+  sazo: "zrix",
+  "villager-1": "zrix",
+  "villager-2": "zrix",
+  barkeep: "zrix",
+  armorer: "armorer",
+  apprentice: "armorer",
 };
 
 export class GridScene extends Phaser.Scene {
@@ -205,6 +226,16 @@ export class GridScene extends Phaser.Scene {
     return { x: 0, y: 0 };
   }
 
+  getVisualMapWidth() {
+    const offset = this.getTileVisualOffset();
+    return offset.x + this.columns * this.getTileVisualWidth();
+  }
+
+  getVisualMapHeight() {
+    const offset = this.getTileVisualOffset();
+    return offset.y + this.rows * this.getTileVisualHeight();
+  }
+
   #drawTileMap() {
     if (this.zone.renderMode === "v2") {
       if (this.shouldDrawV2TileMap()) {
@@ -276,12 +307,13 @@ export class GridScene extends Phaser.Scene {
     }
 
     for (const npc of this.zone.npcs ?? []) {
+      const animPrefix = NPC_ANIMATION_PREFIX[npc.id] ?? null;
       const spriteKey = ANIMATED_NPCS[npc.id] ?? SPRITE_KEYS.npcPlaceholder;
       this.#createTarget({
         ...npc,
         kind: "npc",
         spriteKey,
-        animPrefix: ANIMATED_NPCS[npc.id] ? npc.id : null,
+        animPrefix,
       });
     }
 
@@ -366,16 +398,19 @@ export class GridScene extends Phaser.Scene {
       target.kind === "npc" && target.animPrefix
         ? this.add
             .sprite(
-              center.x + getActorOffset(target.id).x,
-              center.y + getActorOffset(target.id).y,
+              center.x + getActorOffset(target.animPrefix).x,
+              center.y + getActorOffset(target.animPrefix).y,
               target.spriteKey,
               0,
             )
-            .setScale(getActorScale(target.id))
-            .setOrigin(getActorAnchor(target.id).x, getActorAnchor(target.id).y)
+            .setScale(getActorScale(target.animPrefix))
+            .setOrigin(
+              getActorAnchor(target.animPrefix).x,
+              getActorAnchor(target.animPrefix).y,
+            )
         : this.add.image(center.x, center.y, target.spriteKey);
     if (target.kind === "npc" && target.animPrefix) {
-      sprite.anims.play(`${target.id}-idle-down`);
+      sprite.anims.play(`${target.animPrefix}-idle-down`);
     }
     const label = this.add.text(center.x - 48, center.y + 28, target.name, {
       color: "#f2e8be",
@@ -398,13 +433,13 @@ export class GridScene extends Phaser.Scene {
     this.cameras.main.setBounds(
       0,
       0,
-      this.zone.map.width,
-      this.zone.map.height,
+      this.getVisualMapWidth(),
+      this.getVisualMapHeight(),
     );
 
     if (
-      this.zone.map.width > viewportWidth ||
-      this.zone.map.height > viewportHeight
+      this.getVisualMapWidth() > viewportWidth ||
+      this.getVisualMapHeight() > viewportHeight
     ) {
       this.cameras.main.startFollow(this.player, true, 0.12, 0.12);
     }

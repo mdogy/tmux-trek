@@ -82,20 +82,36 @@ A comprehensive analysis of the existing zones against reference games (Zelda, C
 - **`scripts/render_map.py`** — composes zone PNG (tiles + locations + objects + NPC routes + items) and runs a BFS flood-fill reachability check. The flood-fill caught that the village east gate was not sealed (fixed with a walled choke corridor; now provably `3 UNREACHABLE` = corridor + gate behind the overflow blocker).
 - **`make maps`** / **`make test-maps`** — full pipeline and 75-test Python suite covering the Grid class, tile/object registries, all three zone builders, and reachability invariants.
 
+### Phase 6.5 runtime/art checkpoint now live
+
+- The active runtime uses v2 bridge, surface, and armory data by default.
+- Generated painted backdrops are wired for all three active maps; placeholder tile layers are suppressed on the painted scenes.
+- Bridge semantic stations are aligned to the generated bridge art: captain chair, consoles, Rift terminal, and crew positions now sit on the painted stations.
+- Armory semantics are projected onto the full 960×720 painted room, with the bracket cannon pickup reachable at the central weapon stand.
+- Surface village starts at the west gate and uses the generated village art with v2 landmarks, NPCs, Rift Code, and overflow blocker semantics.
+- Current NPCs render from sprite-sheet character actors rather than the old generated placeholder icon; remaining future work is distinct per-NPC art and behavior, not placeholder removal.
+
 ---
 
 ## Verification Baseline
 
-**As of June 22, 2026 the local baseline is clean:**
+**As of June 26, 2026 the local baseline is clean:**
 
 ```bash
 npm run lint                 # PASS — clean
-npm run test                 # PASS — 83 unit tests pass
+npm run test                 # PASS — 103 unit tests pass
 npm run test -- --coverage   # PASS — coverage report emits for src/engine only
 npm run bdd                  # PASS — 2 scenarios / 17 steps
-npm run test:e2e             # PASS — 3 Playwright tests
+npm run test:e2e             # PASS — 9 Playwright tests
 npm run build                # PASS
 make test-maps               # PASS — 75 Python unit tests (map toolchain)
+```
+
+Additional visual/demo checks run for the current art checkpoint:
+
+```bash
+npm run test:e2e -- tests/demo/demo-frame-smoke.spec.js --config=playwright.demo.config.js  # PASS
+npm run test:e2e -- tests/demo/demo-reel.spec.js --config=playwright.demo.config.js         # PASS
 ```
 
 Stress check run after the E2E flake fix:
@@ -147,7 +163,7 @@ Verification after the fix:
 - No in-game "Save & Quit to Menu" path yet
 - The readiness check is wired into the Act 1 completion boundary, but there is still no downstream Act 2 content on this branch for it to unlock
 - Demo reel pipeline complete (Phase 6); full-run watchdog video and `ActorNavigation` service remain for Phase 6 follow-on
-- Zone data model (`v2/`) and toolchain built; runtime integration into `GridScene` (loading v2 zones, layer-derived collision, verb lookup, `NpcSystem`) is **Phase 6.5 Workstream A–E** — the next engineering priority before Act 2 content
+- Zone data model (`v2/`) and painted-map runtime integration are active for the current bridge/surface/armory slice. Remaining Phase 6.5 work is primarily richer NPC behavior (`NpcSystem`), cleaner goal-based E2E navigation, distinct per-NPC art, and continued objective redesign before Act 2 content.
 - Acts 2-5 not migrated to new scene architecture (Phases 7-10)
 - The Vitest coverage report is scoped to `src/engine/**/*.js`; there is no single automated coverage percentage for `src/game/` or `src/terminal/` yet
 - Mobile support is viable today only for keyboard-equipped devices. The shared input-capability service is in place, including injectable capability detection for unit coverage, but capability-based routing into a dedicated Review Mode is not implemented yet. Use [`design/mobile-implementation-plan.md`](design/mobile-implementation-plan.md) for the checkpointed implementation plan.

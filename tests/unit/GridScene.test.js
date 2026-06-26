@@ -25,7 +25,8 @@ describe("GridScene movement facing", () => {
 
   it("uses a stable top-down anchor and offset", () => {
     expect(getActorScale("captain")).toBe(0.34);
-    expect(getActorScale("zrix")).toBeLessThan(0.2);
+    expect(getActorScale("zrix")).toBe(0.24);
+    expect(getActorScale("armorer")).toBe(0.24);
     expect(getActorAnchor("captain")).toEqual({ x: 0.5, y: 1 });
     expect(getActorOffset("captain")).toEqual({ x: 0, y: 2 });
     expect(getActorMoveDuration()).toBe(720);

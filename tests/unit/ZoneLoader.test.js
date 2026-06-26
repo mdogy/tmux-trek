@@ -27,6 +27,23 @@ describe("zoneLoader", () => {
     expect(bridge.obstacles.tiles.length).toBeGreaterThan(0);
   });
 
+  it("keeps bridge semantic stations aligned to the generated bridge art", () => {
+    const bridge = getZone("bridge", { useV2Zones: true });
+    const objectAt = (id) => bridge.objects.find((object) => object.id === id);
+
+    expect(objectAt("chair")?.at).toEqual([7, 5]);
+    expect(objectAt("helm")?.at).toEqual([4, 3]);
+    expect(objectAt("nav")?.at).toEqual([10, 3]);
+    expect(objectAt("ops")?.at).toEqual([5, 6]);
+    expect(objectAt("science")?.at).toEqual([10, 6]);
+    expect(objectAt("comms")?.at).toEqual([5, 9]);
+    expect(bridge.terminals[0]).toMatchObject({
+      id: "rift-terminal",
+      column: 13,
+      row: 9,
+    });
+  });
+
   it("preserves the normalized structure for all v2 zones", () => {
     const zones = getZones({ useV2Zones: true });
     expect(zones.bridge.renderMode).toBe("v2");
@@ -49,7 +66,9 @@ describe("zoneLoader", () => {
     const marketStall = surface.objects.find(
       (object) => object.type === "market_stall",
     );
-    const overflow = surface.blockers.find((blocker) => blocker.id === "ovr-1");
+    const overflow = surface.blockers.find(
+      (blocker) => blocker.id === "overflow",
+    );
     expect(marketStall?.footprint).toEqual(getObjectFootprint("market_stall"));
     expect(overflow?.tiles).toEqual(
       toFootprintTiles([36, 15], getObjectFootprint("overflow_blocker")),
@@ -74,7 +93,7 @@ describe("zoneLoader", () => {
 
   it("resolves cell semantics from v2 tile, object, and location data", () => {
     const bridge = getZone("bridge", { useV2Zones: true });
-    const semantics = getCellSemantics(bridge, 10, 7);
+    const semantics = getCellSemantics(bridge, 13, 9);
     expect(semantics?.objectType).toBe("rift_terminal");
     expect(semantics?.verbs).toContain("use");
     expect(semantics?.description).toContain("Rift terminal");

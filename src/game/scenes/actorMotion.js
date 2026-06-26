@@ -11,7 +11,7 @@ export function getActorScale(actorId) {
     return 0.34;
   }
 
-  return 0.12;
+  return 0.24;
 }
 
 export function getActorAnchor(actorId) {
