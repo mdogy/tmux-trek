@@ -54,6 +54,7 @@ test("02 - bridge first mission", async ({ page }) => {
     ["KeyD", [10, 9]],
   ]);
 
+  await page.waitForTimeout(1_000);
   await setCaption(page, "Mission: Open the Rift terminal and descend to the surface");
   await page.waitForTimeout(4_000);
 });
@@ -72,6 +73,7 @@ test("03 - open rift terminal", async ({ page }) => {
     ["KeyD", [11, 9]],
   ]);
 
+  await page.waitForTimeout(1_000);
   await setCaption(page, "Press E to activate the Rift terminal...");
   await openDialogue(page);
   await clearDialogue(page);
@@ -109,6 +111,7 @@ test("04 - surface zone", async ({ page }) => {
     ["KeyD", [4, 15]],
   ]);
 
+  await page.waitForTimeout(1_000);
   await setCaption(page, "Each zone is only reachable via the right tmux command");
   await page.waitForTimeout(4_500);
 });
@@ -163,6 +166,7 @@ test("05 - named session armory", async ({ page }) => {
     ["KeyS", [32, 20]],
   ]);
 
+  await page.waitForTimeout(1_000);
   await openDialogue(page);
   await clearDialogue(page);
 
@@ -204,6 +208,7 @@ test("06 - detach keybinding", async ({ page }) => {
     ["KeyA", [5, 6]],
   ]);
 
+  await page.waitForTimeout(1_000);
   await openDialogue(page);
   await clearDialogue(page);
 
@@ -269,6 +274,7 @@ test("07 - act complete", async ({ page }) => {
     ["KeyD", [34, 14]],
   ]);
 
+  await page.waitForTimeout(1_000);
   await expect(page.locator("#game-root")).toHaveAttribute(
     "data-highlighted-target",
     "overflow",
