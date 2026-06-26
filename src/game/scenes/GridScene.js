@@ -193,6 +193,18 @@ export class GridScene extends Phaser.Scene {
     return true;
   }
 
+  getTileVisualWidth() {
+    return this.tileSize;
+  }
+
+  getTileVisualHeight() {
+    return this.tileSize;
+  }
+
+  getTileVisualOffset() {
+    return { x: 0, y: 0 };
+  }
+
   #drawTileMap() {
     if (this.zone.renderMode === "v2") {
       if (this.shouldDrawV2TileMap()) {
@@ -589,15 +601,24 @@ export class GridScene extends Phaser.Scene {
   }
 
   #tileCenter(column, row) {
+    const offset = this.getTileVisualOffset();
+    const tileWidth = this.getTileVisualWidth();
+    const tileHeight = this.getTileVisualHeight();
+
     return {
-      x: column * this.tileSize + this.tileSize / 2,
-      y: row * this.tileSize + this.tileSize / 2,
+      x: offset.x + column * tileWidth + tileWidth / 2,
+      y: offset.y + row * tileHeight + tileHeight / 2,
     };
   }
 
   #createHighlight(x, y) {
     return this.add
-      .rectangle(x, y, this.tileSize - 4, this.tileSize - 4)
+      .rectangle(
+        x,
+        y,
+        this.getTileVisualWidth() - 4,
+        this.getTileVisualHeight() - 4,
+      )
       .setStrokeStyle(4, 0xfff17a, 1)
       .setFillStyle(0xffb300, 0.08)
       .setVisible(false);

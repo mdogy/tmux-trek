@@ -34,6 +34,10 @@ export class BridgeScene extends GridScene {
     return true;
   }
 
+  getTileVisualWidth() {
+    return 64;
+  }
+
   createZoneDecorations() {
     if (this.zone.renderMode === "v2") {
       this.zoneArtId = "bridge-background";
