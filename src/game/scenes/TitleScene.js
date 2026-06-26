@@ -274,6 +274,7 @@ export class TitleScene extends Phaser.Scene {
 
   _newGame() {
     this._domInput("Save name (blank = 'New Game'):", (name) => {
+      window.__tmuxTrekCreateLoadingOverlay?.();
       newSlot(name.trim() || "New Game");
       this.app.resetToNewGame();
       this.app.saveProgress();
@@ -295,11 +296,13 @@ export class TitleScene extends Phaser.Scene {
   }
 
   _continue() {
+    window.__tmuxTrekCreateLoadingOverlay?.();
     this.app.restoreActiveSave();
     this.scene.start("boot");
   }
 
   _reviewCommands() {
+    window.__tmuxTrekCreateLoadingOverlay?.();
     this.app.restoreActiveSave();
     this.app.openFlashCards();
     this.scene.start("boot");
@@ -407,18 +410,19 @@ export class TitleScene extends Phaser.Scene {
     );
     overlay.addEventListener("click", () => {
       input.focus({ preventScroll: true });
-      input.click?.();
     });
     input.addEventListener("keydown", (e) => {
       e.stopPropagation();
-      e.preventDefault();
       if (e.key === "Enter") {
+        e.preventDefault();
         this._suppressKeysUntil = performance.now() + 1000;
         const captured = input.value;
         this._removeDomInput();
         onSubmit(captured);
+        return;
       }
       if (e.key === "Escape") {
+        e.preventDefault();
         this._suppressKeysUntil = performance.now() + 1000;
         this._removeDomInput();
       }

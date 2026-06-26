@@ -2,7 +2,7 @@ import "@xterm/xterm/css/xterm.css";
 import "./styles.css";
 import { initDemoCaption } from "./game/DemoCaption.js";
 
-async function bootstrap() {
+function createLoadingOverlay() {
   const loading = document.createElement("div");
   loading.id = "boot-loading";
   loading.textContent = "Loading...";
@@ -18,15 +18,27 @@ async function bootstrap() {
     loading.textContent = `Loading${".".repeat(dots)}`;
   }, 350);
 
+  const overlay = {
+    remove() {
+      window.clearInterval(spinner);
+      window.setTimeout(() => {
+        loading.remove();
+      }, 500);
+    },
+  };
+  window.__tmuxTrekLoadingOverlay = overlay;
+  return overlay;
+}
+
+async function bootstrap() {
+  window.__tmuxTrekCreateLoadingOverlay = createLoadingOverlay;
+  const loading = createLoadingOverlay();
   initDemoCaption();
   const { TmuxTrekApp } = await import("./game/TmuxTrekApp.js");
   const app = new TmuxTrekApp();
   app.start();
 
-  window.clearInterval(spinner);
-  window.setTimeout(() => {
-    loading.remove();
-  }, 500);
+  loading.remove();
 }
 
 bootstrap();

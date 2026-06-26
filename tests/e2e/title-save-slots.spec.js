@@ -1,6 +1,7 @@
 import { expect, test } from "@playwright/test";
 
 const GRID_READY_TIMEOUT = 15_000;
+const BRIDGE_START_GRID = [7, 9];
 const TITLE_READY_TIMEOUT = 15_000;
 
 async function waitForGrid(page, grid, zoneId) {
@@ -44,7 +45,6 @@ async function pressTitleKey(page, key) {
 async function openNewGameDialog(page) {
   await pressTitleKey(page, "Enter");
   await expect(page.locator("#title-input-overlay input")).toBeVisible();
-  await page.locator("#title-input-overlay input").click();
 }
 
 test("TitleScene creates, continues, renames, and deletes save slots", async ({
@@ -61,9 +61,12 @@ test("TitleScene creates, continues, renames, and deletes save slots", async ({
   await waitForTitleScreen(page, "menu", "NEW GAME");
 
   await openNewGameDialog(page);
-  await page.locator("#title-input-overlay input").fill("Review Run");
+  await page.locator("#title-input-overlay input").type("Review Run");
+  await expect(page.locator("#title-input-overlay input")).toHaveValue(
+    "Review Run",
+  );
   await page.keyboard.press("Enter");
-  await waitForGrid(page, [4, 7], "bridge");
+  await waitForGrid(page, BRIDGE_START_GRID, "bridge");
 
   let index = await getSaveIndex(page);
   expect(index.slots).toHaveLength(1);
@@ -77,7 +80,7 @@ test("TitleScene creates, continues, renames, and deletes save slots", async ({
   await waitForTitleScreen(page, "menu", /DELETE ALL SAVES/);
   await pressTitleKey(page, "Enter");
   await expect(page.locator("#title-input-overlay input")).toBeVisible();
-  await page.locator("#title-input-overlay input").fill("DELETE");
+  await page.locator("#title-input-overlay input").type("DELETE");
   await page.keyboard.press("Enter");
   await waitForTitleScreen(page, "menu", "NEW GAME");
   index = await getSaveIndex(page);
@@ -101,13 +104,14 @@ test("TitleScene can save and quit back to the title screen", async ({
   await page.reload();
   await waitForTitleScreen(page, "menu", "NEW GAME");
   await openNewGameDialog(page);
-  await page.locator("#title-input-overlay input").fill("Quitting Run");
+  await page.locator("#title-input-overlay input").type("Quitting Run");
   await page.keyboard.press("Enter");
-  await waitForGrid(page, [4, 7], "bridge");
+  await waitForGrid(page, BRIDGE_START_GRID, "bridge");
 
   await page.reload();
-  await waitForGrid(page, [4, 7], "bridge");
-  await page.getByRole("button", { name: "Home" }).first().click().catch(() => {});
+  await waitForTitleScreen(page, "menu", "CONTINUE");
+  await pressTitleKey(page, "Enter");
+  await waitForGrid(page, BRIDGE_START_GRID, "bridge");
 });
 
 test("TitleScene can open flash-card review from an existing save", async ({
@@ -124,9 +128,9 @@ test("TitleScene can open flash-card review from an existing save", async ({
   await waitForTitleScreen(page, "menu", "NEW GAME");
   await pressTitleKey(page, "Enter");
   await expect(page.locator("#title-input-overlay input")).toBeVisible();
-  await page.locator("#title-input-overlay input").fill("Review Run");
+  await page.locator("#title-input-overlay input").type("Review Run");
   await page.keyboard.press("Enter");
-  await waitForGrid(page, [4, 7], "bridge");
+  await waitForGrid(page, BRIDGE_START_GRID, "bridge");
   await page.evaluate(() => {
     const app = window.__tmuxTrekApp;
     app.state.restoreUnlockedCommands(["tmux"]);
@@ -137,7 +141,7 @@ test("TitleScene can open flash-card review from an existing save", async ({
   await pressTitleKey(page, "ArrowDown");
   await waitForTitleScreen(page, "menu", "REVIEW COMMANDS");
   await pressTitleKey(page, "Enter");
-  await waitForGrid(page, [4, 7], "bridge");
+  await waitForGrid(page, BRIDGE_START_GRID, "bridge");
   await expect(page.locator("#review-root")).toHaveAttribute(
     "data-review-mode",
     "flashcards",
