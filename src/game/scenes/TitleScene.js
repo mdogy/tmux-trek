@@ -365,6 +365,9 @@ export class TitleScene extends Phaser.Scene {
     const input = document.createElement("input");
     input.type = "text";
     input.maxLength = 32;
+    input.autocomplete = "off";
+    input.autocapitalize = "off";
+    input.spellcheck = false;
     input.style.cssText =
       "background:#0a1628;color:#46d9c4;border:1px solid #46d9c4;" +
       'font-family:"Share Tech Mono",monospace;font-size:16px;' +
@@ -378,6 +381,13 @@ export class TitleScene extends Phaser.Scene {
     overlay.appendChild(hint);
 
     document.body.appendChild(overlay);
+    overlay.addEventListener(
+      "pointerdown",
+      () => {
+        input.focus({ preventScroll: true });
+      },
+      { passive: true },
+    );
     input.addEventListener("keydown", (e) => {
       e.stopPropagation();
       e.preventDefault();
@@ -392,7 +402,8 @@ export class TitleScene extends Phaser.Scene {
         this._removeDomInput();
       }
     });
-    requestAnimationFrame(() => input.focus());
+    requestAnimationFrame(() => input.focus({ preventScroll: true }));
+    setTimeout(() => input.focus({ preventScroll: true }), 50);
   }
 
   _removeDomInput() {

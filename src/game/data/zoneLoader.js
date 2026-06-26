@@ -124,7 +124,11 @@ export function normalizeV2Zone(zone) {
 }
 
 export function shouldUseV2Zones() {
-  return hasQueryFlag("useV2Zones") || hasQueryFlag("v2Zones");
+  if (hasQueryFlag("useLegacyZones") || hasQueryFlag("legacyZones")) {
+    return false;
+  }
+
+  return true;
 }
 
 export function getZone(zoneId, { useV2Zones = shouldUseV2Zones() } = {}) {
