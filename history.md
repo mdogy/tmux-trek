@@ -1,5 +1,13 @@
 # Project History
 
+## 2026-06-27 — Session handoff refresh
+
+Prepared the project docs for a clean model-to-model handoff.
+
+- Updated `docs/session-handoff.md` with the current deployed baseline, a concise handoff snapshot, and a tighter next-step boundary for the remaining Phase 6.5 cleanup.
+- Updated `docs/implementation-plan.md` so the roadmap reflects the current v2 runtime baseline, current verification counts, and a handoff note that the loader spike is already done.
+- Kept `history.md` as the chronological record of the current project state so the next session starts from the aligned v2 map baseline rather than the earlier placeholder assumptions.
+
 ## 2026-06-26 — V2 painted-map semantic alignment
 
 Aligned the active v2 scene semantics with the generated map art.

@@ -1,6 +1,6 @@
 # TMUX Trek — Implementation Plan & Roadmap
 
-_Authoritative build order. Last consolidated June 19, 2026._
+_Authoritative build order. Last consolidated June 27, 2026._
 
 This is the canonical sequencing of work. It replaces the former root `TODO.md`. For the design these phases realize, read [`game-design.md`](game-design.md); for the technical shape, read [`architecture.md`](architecture.md); for the current build state and immediate next task, read [`session-handoff.md`](session-handoff.md).
 
@@ -15,7 +15,7 @@ GitHub Issues remain the canonical _per-task_ surface; this document is the cano
 - Phase 0 foundation: `TmuxEvents`, `MissionSystem`, `InventorySystem`, `TransitionSystem`, and `SaveManager` are implemented, tested, and wired into the live app.
 - Phase 1 vertical slice: the full bridge → `tmux` → surface → Rift Code → `tmux new -s armory` → armory → `Ctrl+b d` → bridge → `tmux ls` → `tmux attach -t 0` → clear overflow loop is playable end-to-end.
 - Phase 4 additions: `TitleScene` (keyboard-nav menu, auth gate, DOM overlays), multi-slot `SaveManager` (SAVE_VERSION=3, 17 focused SaveManager unit tests), `BootScene` init-data update, `TmuxTrekApp` public restore/reset methods.
-- Current baseline on `main`: `npm run lint` ✓, `npm run test` (75 unit tests) ✓, `npm run test -- --coverage` ✓, `npm run bdd` (2 scenarios / 17 steps) ✓, `npm run test:e2e` (3 Playwright tests) ✓, `npm run build` ✓. Stress check: `npm run test:e2e -- --repeat-each=5 --workers=1` passed 5/5 before the TitleScene e2e spec was added.
+- Current baseline on `main`: `npm run lint` ✓, `npm run test` (103 unit tests) ✓, `npm run test -- --coverage` ✓, `npm run bdd` (2 scenarios / 17 steps) ✓, `npm run test:e2e` (9 Playwright tests) ✓, `npm run build` ✓. Stress check: `npm run test:e2e -- --repeat-each=5 --workers=1` passed 5/5.
 - Phase 4's E2E reload flake is resolved. The cause was a too-short default Playwright attribute assertion timeout during slow headless Phaser startup after reload; `waitForGrid()` now uses an explicit 15s scene-readiness timeout.
 - Phase 2 player experience complete: vim `h/j/k/l` movement, 2-tile interaction radius, specific HELIX error feedback, Restart Challenge button, HUD hierarchy, 4-card NPC dialogues. (see `history.md`)
 - Coverage reporting currently measures `src/engine/**/*.js` only. Shared game and terminal behavior are covered by focused unit tests plus Playwright / Cucumber flows, but there is not yet a whole-app coverage metric.
@@ -211,6 +211,9 @@ stations, the armory weapon stand, the surface overflow blocker, demo routes, an
 NPC sprite-sheet rendering have been aligned to the painted maps. Full critique, per-zone
 redesigns, tile taxonomy, NPC schema, and acceptance criteria live in
 [`design/world-design-critique-and-plan.md`](design/world-design-critique-and-plan.md).
+
+**Handoff note:** continue from the current v2 runtime baseline; do not re-run the loader spike.
+The remaining work is higher-level cleanup and content refinement.
 
 **Why before the content acts:** today's zones are large open rectangles with a single marked
 target, floors paved with whole-object tiles, and static signpost NPCs — none of which matches

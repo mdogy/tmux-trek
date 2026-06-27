@@ -1,11 +1,11 @@
 # TMUX Trek — Session Handoff
 
-_The start-here document for resuming or restarting work. Last updated June 24, 2026._
+_The start-here document for resuming or restarting work. Last updated June 27, 2026._
 
 This is the operational resume doc: what is built today, how to verify it, what is wrong with it, and the immediate next task. It is written so that **a new session, model, or coding agent can pick up the project with no other context.** Read this first, then [`game-design.md`](game-design.md), [`architecture.md`](architecture.md), and [`implementation-plan.md`](implementation-plan.md).
 
 - Live build: <https://mdogy.github.io/tmux-trek/>
-- Latest gameplay baseline commit on `main`: `e6ecdf0` (mobile implementation handoff plan)
+- Latest gameplay baseline commit on `main`: `1873531` (demo reel motion beats)
 - Open PRs: none
 - Active branch at last verification: `main`
 - Documentation index: [`README.md`](README.md)
@@ -16,6 +16,14 @@ This is the operational resume doc: what is built today, how to verify it, what 
 
 Build TMUX Trek as an educational game where the story makes real tmux actions necessary, so the player builds muscle memory by performing each command. The single design rule is in [`game-design.md`](game-design.md): every tmux command must be the only sensible answer to a story problem.
 
+## Handoff Snapshot
+
+- `main` is deployed and green on GitHub Pages.
+- The current playable baseline is the v2 painted bridge/surface/armory slice.
+- Bridge, surface, and armory map semantics are aligned to the painted art.
+- Demo reel motion now pauses on settled frames so sprite-to-art alignment is visible in the reel.
+- The next meaningful work is the remaining Phase 6.5 cleanup: tighter village location regions, per-NPC art/behavior, and goal-based navigation updates before Act 2 content.
+
 ---
 
 ## Resume Checklist
@@ -25,6 +33,7 @@ Build TMUX Trek as an educational game where the story makes real tmux actions n
 3. Review open issues with `gh issue list`.
 4. Run the verification baseline below before changing behavior.
 5. Create a feature branch — never develop ordinary work directly on `main` (see [`delivery-workflow.md`](delivery-workflow.md)).
+6. If resuming from a handoff, reread the "Handoff Snapshot" and the Phase 6.5 section before changing gameplay or art.
 
 ---
 
@@ -276,7 +285,7 @@ _Fix:_ Add a single-line comment documenting the monotonic-integer-ID assumption
 
 ## Immediate Next Task
 
-**Phase 6.5 — World Structure, Tiles & NPC Behavior.** The data model and toolchain exist; the game engine has not been updated to load the v2 zone format. Workstreams in order:
+**Phase 6.5 — World Structure, Tiles & NPC Behavior.** The v2 scene runtime is now active for the bridge/surface/armory slice, and the next handoff should continue the remaining cleanup work rather than restart the loader integration. Workstreams in order:
 
 - **WS-A** — Tilemap engine upgrade: layered map loader, collision derived from `walls` layer + object footprints, dual-grid autotiling. Retires the `obstacles.tiles` hash in `GridScene`.
 - **WS-B** — Modular tile + prop art: three environment sets (ship/village/armory) as modular parts; source CC0 kits per `research/asset-research.md` where possible.
