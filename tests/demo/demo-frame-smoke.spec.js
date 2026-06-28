@@ -25,7 +25,7 @@ test("bridge frames are captured after the scene has settled", async ({
   ensureFramesDir();
 
   await page.goto("/?testMode=1&demo=1&useV2Zones=1");
-  await waitForGrid(page, [7, 9], "bridge");
+  await waitForGrid(page, [7, 8], "bridge");
 
   await captureTimedFrame(page, "bridge", 10);
   await captureTimedFrame(page, "bridge", 20);

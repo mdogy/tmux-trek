@@ -45,16 +45,15 @@ test("01 - title screen", async ({ page }) => {
 
 test("02 - bridge first mission", async ({ page }) => {
   await page.goto("/?testMode=1&demo=1&useV2Zones=1");
-  await waitForGrid(page, [7, 9], "bridge");
+  await waitForGrid(page, [7, 8], "bridge");
 
   await setCaption(page, "Act 1: First Descent — the CLULIX Bridge");
   await page.waitForTimeout(2_500);
 
   // Walk toward the Rift terminal so the viewer sees movement and the HUD
   await moveAlong(page, [
-    ["KeyD", [8, 9]],
-    ["KeyD", [9, 9]],
-    ["KeyD", [10, 9]],
+    ["KeyD", [8, 8]],
+    ["KeyD", [9, 8]],
   ]);
 
   await page.waitForTimeout(1_000);
@@ -69,13 +68,10 @@ test("02 - bridge first mission", async ({ page }) => {
 
 test("03 - open rift terminal", async ({ page }) => {
   await page.goto("/?testMode=1&demo=1&useV2Zones=1");
-  await waitForGrid(page, [7, 9], "bridge");
+  await waitForGrid(page, [7, 8], "bridge");
 
   // Walk into interaction range of the starboard-center Rift console.
-  await moveAlong(page, [
-    ["KeyD", [8, 9]],
-    ["KeyW", [8, 8]],
-  ]);
+  await moveAlong(page, [["KeyD", [8, 8]]]);
 
   await page.waitForTimeout(1_000);
   await setCaption(page, "Press E to activate the Rift terminal...");
@@ -240,7 +236,7 @@ test("06 - detach keybinding", async ({ page }) => {
   await page.waitForTimeout(1_500);
   await pressTmuxKeybinding(page, "d");
 
-  await waitForGrid(page, [7, 9], "bridge");
+  await waitForGrid(page, [7, 8], "bridge");
   await setCaption(
     page,
     "Detached — back on the bridge. Session `armory` still lives.",

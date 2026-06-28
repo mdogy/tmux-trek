@@ -5,7 +5,8 @@
 Corrected the CLULIX bridge composition so the scene reads like a functional command deck.
 
 - Replaced the bridge captain-chair art with the corrected viewscreen-facing chair asset, updated the bridge tile sheet, and regenerated the flattened bridge backdrop.
-- Aligned v2 bridge semantics to the artwork: captain chair at the command-deck center, captain starting in front of it facing the viewscreen, crew aft of their consoles facing the viewscreen, and the Rift terminal on the starboard-center console rather than the far-right wall.
+- Aligned v2 bridge semantics to the artwork: half-scale captain chair at the command-deck center, captain starting directly in front of it facing the viewscreen, Comms shifted back-left to its console, First Officer moved to the forward console area, and the Rift terminal left free on the starboard-center console rather than the far-right wall.
+- Moved the CLULIX bridge title above the viewscreen so it no longer sits across the center of the display.
 - Updated bridge gameplay/demo routes to use the new central terminal interaction point.
 - Added/updated unit and Playwright assertions for chair coordinates, terminal semantics, crew positions, and bridge-facing actor animations.
 - Verification: `npm run test -- tests/unit/ZoneLoader.test.js`, `python3 -m unittest tests/python/test_zones.py`, `npm run test:e2e -- tests/e2e/v2-bridge-art.spec.js`, and `npm run test:e2e -- tests/e2e/gameplay.spec.js` pass.

@@ -209,9 +209,10 @@ Status: **complete.**
 bridge/surface/armory runtime backdrops are active in the playable slice. Bridge semantic
 stations, the armory weapon stand, the surface overflow blocker, demo routes, and the current
 NPC sprite-sheet rendering have been aligned to the painted maps. The bridge chair was corrected
-to face the viewscreen, the captain starts in front of it facing up, bridge crew stand aft of
-their consoles facing the viewscreen, and the Rift terminal now lives on the starboard-center
-bridge console rather than the far-right wall. Full critique, per-zone
+to face the viewscreen at half scale, the captain starts directly in front of it facing up,
+Comms is aligned back-left to its console, the First Officer stands at the forward console area,
+the bridge title sits above the viewscreen, and the Rift terminal now lives on the free
+starboard-center bridge console rather than the far-right wall. Full critique, per-zone
 redesigns, tile taxonomy, NPC schema, and acceptance criteria live in
 [`design/world-design-critique-and-plan.md`](design/world-design-critique-and-plan.md).
 
@@ -248,9 +249,9 @@ Completed checkpoint notes:
 - Painted map backdrops are wired for all active scenes; placeholder tile layers are suppressed
   where the painted backdrop is authoritative.
 - Current semantic coordinates are aligned to the painted maps and covered by unit/E2E checks.
-- The bridge layout now matches the corrected artwork: chair/captain orientation, crew station
-  placement, and central Rift terminal interaction are covered by `ZoneLoader` and Playwright
-  bridge-art tests.
+- The bridge layout now matches the corrected artwork: half-scale chair/captain orientation,
+  crew station placement, viewscreen title placement, and central Rift terminal interaction are
+  covered by `ZoneLoader` and Playwright bridge-art tests.
 - Existing sprite-sheet actors now cover current NPCs, replacing placeholder icons for this slice.
 
 **Acceptance for Phase 6.5:**

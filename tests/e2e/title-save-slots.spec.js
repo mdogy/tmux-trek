@@ -1,7 +1,7 @@
 import { expect, test } from "@playwright/test";
 
 const GRID_READY_TIMEOUT = 15_000;
-const BRIDGE_START_GRID = [7, 9];
+const BRIDGE_START_GRID = [7, 8];
 const TITLE_READY_TIMEOUT = 15_000;
 
 async function waitForGrid(page, grid, zoneId) {

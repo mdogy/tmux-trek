@@ -116,7 +116,7 @@ def build_bridge():
         "size": {"cols": cols, "rows": rows},
         "legend": legend,
         "grid": g.to_strings(),
-        "playerStart": [7, 9],
+        "playerStart": [7, 8],
         "playerStartFacing": "up",
         "locations": [
             {
@@ -134,7 +134,7 @@ def build_bridge():
             {"id": "nav", "type": "console", "at": [10, 3]},
             {"id": "ops", "type": "console", "at": [5, 6]},
             {"id": "science", "type": "console", "at": [10, 6]},
-            {"id": "comms", "type": "console", "at": [5, 8]},
+            {"id": "comms", "type": "console", "at": [4, 8]},
             {"id": "rift-terminal", "type": "rift_terminal", "at": [10, 6]},
         ],
         "items": [],
@@ -145,12 +145,12 @@ def build_bridge():
             },
             {
                 "id": "comms-officer", "name": "Comms Officer", "role": "ambient",
-                "behavior": "idle", "facing": "up", "home": [5, 9], "pauseRadius": 2,
+                "behavior": "idle", "facing": "up", "home": [4, 9], "pauseRadius": 2,
             },
             {
                 "id": "first-officer", "name": "First Officer", "role": "guide",
-                "behavior": "patrol", "facing": "up", "home": [10, 7],
-                "waypoints": [[9, 7], [10, 7], [11, 7], [10, 7]], "pauseRadius": 2,
+                "behavior": "patrol", "facing": "up", "home": [9, 3],
+                "waypoints": [[8, 3], [9, 3], [10, 4], [9, 3]], "pauseRadius": 2,
                 "hint": "The Rift console is the starboard-center bridge station.",
             },
         ],

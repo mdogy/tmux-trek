@@ -24,7 +24,7 @@ describe("zoneLoader", () => {
     expect(bridge.renderMode).toBe("v2");
     expect(bridge.map.columns).toBe(15);
     expect(bridge.map.rows).toBe(11);
-    expect(bridge.playerStart).toEqual({ column: 7, row: 9 });
+    expect(bridge.playerStart).toEqual({ column: 7, row: 8 });
     expect(bridge.terminals).toHaveLength(1);
     expect(bridge.objects.map((object) => object.type)).toContain("console");
     expect(bridge.npcs[0]).toHaveProperty("column");
@@ -40,7 +40,7 @@ describe("zoneLoader", () => {
     expect(objectAt("nav")?.at).toEqual([10, 3]);
     expect(objectAt("ops")?.at).toEqual([5, 6]);
     expect(objectAt("science")?.at).toEqual([10, 6]);
-    expect(objectAt("comms")?.at).toEqual([5, 8]);
+    expect(objectAt("comms")?.at).toEqual([4, 8]);
     expect(bridge.terminals[0]).toMatchObject({
       id: "rift-terminal",
       column: 10,
@@ -112,13 +112,13 @@ describe("zoneLoader", () => {
       facing: "up",
     });
     expect(npcById["comms-officer"]).toMatchObject({
-      column: 5,
+      column: 4,
       row: 9,
       facing: "up",
     });
     expect(npcById["first-officer"]).toMatchObject({
-      column: 10,
-      row: 7,
+      column: 9,
+      row: 3,
       facing: "up",
     });
   });
