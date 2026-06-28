@@ -58,11 +58,20 @@ test("v2 bridge projects semantic objects and crew sprites onto the painted back
         {
           x: Math.round(object.sprite.x),
           y: Math.round(object.sprite.y),
+          width: Math.round(object.sprite.displayWidth),
+          height: Math.round(object.sprite.displayHeight),
         },
       ]),
     );
+    const bridgeTitle = scene.children.list.find(
+      (child) => child.text === "CLULIX BRIDGE",
+    );
 
     return {
+      bridgeTitle: {
+        x: Math.round(bridgeTitle.x),
+        y: Math.round(bridgeTitle.y),
+      },
       terminal: targetSummary["rift-terminal"],
       helmOfficer: targetSummary["helm-officer"],
       commsOfficer: targetSummary["comms-officer"],
@@ -76,20 +85,26 @@ test("v2 bridge projects semantic objects and crew sprites onto the painted back
     };
   });
 
-  expect(bridgeState.chair).toEqual({ x: 480, y: 360 });
-  expect(bridgeState.helm).toEqual({ x: 288, y: 168 });
-  expect(bridgeState.nav).toEqual({ x: 672, y: 168 });
-  expect(bridgeState.ops).toEqual({ x: 352, y: 312 });
-  expect(bridgeState.science).toEqual({ x: 672, y: 312 });
-  expect(bridgeState.comms).toEqual({ x: 352, y: 408 });
+  expect(bridgeState.bridgeTitle).toEqual({ x: 480, y: 18 });
+  expect(bridgeState.chair).toEqual({
+    x: 480,
+    y: 360,
+    width: 56,
+    height: 88,
+  });
+  expect(bridgeState.helm).toMatchObject({ x: 288, y: 168 });
+  expect(bridgeState.nav).toMatchObject({ x: 672, y: 168 });
+  expect(bridgeState.ops).toMatchObject({ x: 352, y: 312 });
+  expect(bridgeState.science).toMatchObject({ x: 672, y: 312 });
+  expect(bridgeState.comms).toMatchObject({ x: 288, y: 408 });
   expect(bridgeState.terminal).toEqual({
     x: 672,
     y: 312,
     texture: "terminal-sprite",
   });
   expect(bridgeState.helmOfficer).toMatchObject({ x: 288, y: 218 });
-  expect(bridgeState.commsOfficer).toMatchObject({ x: 352, y: 458 });
-  expect(bridgeState.firstOfficer).toMatchObject({ x: 672, y: 362 });
+  expect(bridgeState.commsOfficer).toMatchObject({ x: 288, y: 458 });
+  expect(bridgeState.firstOfficer).toMatchObject({ x: 608, y: 170 });
   expect(bridgeState.helmOfficer.texture).toBe("captain-sprites");
   expect(bridgeState.commsOfficer.texture).toBe("captain-sprites");
   expect(bridgeState.firstOfficer.texture).toBe("captain-sprites");
@@ -127,7 +142,7 @@ test("captain and crew enter the bridge facing the viewscreen", async ({
     };
   });
 
-  expect(facingState.playerGrid).toEqual({ column: 7, row: 9 });
+  expect(facingState.playerGrid).toEqual({ column: 7, row: 8 });
   expect(facingState.playerFacing).toBe("up");
   expect(facingState.playerAnim).toBe("captain-idle-up");
   expect(facingState.helmOfficer).toBe("captain-idle-up");

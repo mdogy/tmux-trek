@@ -177,7 +177,8 @@ facing a forward viewscreen. Smaller than the village. Stations are _objects_ on
   landmark); the Rift Terminal station. The player must thread _between_ stations — a short but
   real path, not a straight line.
 - **NPCs:** a **Helm Officer** and **Comms Officer** at stations (ambient, idle fidget); the
-  **First Officer** patrols a short beat near the starboard-center station and is the **guide**
+  **First Officer** patrols a short beat near the forward console area while the
+  starboard-center Rift terminal stays free for the captain and is the **guide**
   ("The Rift console is the starboard-center bridge station"); optional distractor crewman.
   Bridge feels _crewed_.
 - **Beat:** arrive at turbolift → orient using the chair landmark → optionally ask the First

@@ -47,11 +47,13 @@ export class BridgeScene extends GridScene {
         .setDepth(-10);
     }
 
-    this.add.text(378, 82, "CLULIX BRIDGE", {
-      color: "#ffb300",
-      fontFamily: '"Press Start 2P"',
-      fontSize: "16px",
-    });
+    this.add
+      .text(480, 18, "CLULIX BRIDGE", {
+        color: "#ffb300",
+        fontFamily: '"Press Start 2P"',
+        fontSize: "16px",
+      })
+      .setOrigin(0.5, 0);
     startAmbient("bridge");
   }
 

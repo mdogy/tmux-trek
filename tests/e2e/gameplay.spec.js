@@ -62,7 +62,7 @@ test("TMUX Trek completes the Phase 1 vertical slice and restores on reload", as
     }
   });
   await page.goto("/?testMode=1");
-  await waitForGrid(page, [7, 9], "bridge");
+  await waitForGrid(page, [7, 8], "bridge");
   await expect(page.locator("#mission-text")).toContainText(
     "Open the Rift terminal",
   );
@@ -71,10 +71,7 @@ test("TMUX Trek completes the Phase 1 vertical slice and restores on reload", as
     "First Descent: 0/8 objectives",
   );
 
-  await moveAlong(page, [
-    ["KeyD", [8, 9]],
-    ["KeyW", [8, 8]],
-  ]);
+  await moveAlong(page, [["KeyD", [8, 8]]]);
 
   await openDialogue(page);
   await clearDialogue(page);
@@ -235,12 +232,9 @@ test("TMUX Trek completes the Phase 1 vertical slice and restores on reload", as
   );
   await pressTmuxKeybinding(page, "d");
   await expect(page.locator("#terminal-root")).toHaveClass(/hidden/);
-  await waitForGrid(page, [7, 9], "bridge");
+  await waitForGrid(page, [7, 8], "bridge");
 
-  await moveAlong(page, [
-    ["KeyD", [8, 9]],
-    ["KeyW", [8, 8]],
-  ]);
+  await moveAlong(page, [["KeyD", [8, 8]]]);
   await openDialogue(page);
   await clearDialogue(page);
   await expect(page.locator("#terminal-root")).toHaveAttribute(

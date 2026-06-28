@@ -28,7 +28,7 @@
   ],
   "playerStart": [
     7,
-    9
+    8
   ],
   "playerStartFacing": "up",
   "locations": [
@@ -93,7 +93,7 @@
       "id": "comms",
       "type": "console",
       "at": [
-        5,
+        4,
         8
       ]
     },
@@ -127,7 +127,7 @@
       "behavior": "idle",
       "facing": "up",
       "home": [
-        5,
+        4,
         9
       ],
       "pauseRadius": 2
@@ -139,25 +139,25 @@
       "behavior": "patrol",
       "facing": "up",
       "home": [
-        10,
-        7
+        9,
+        3
       ],
       "waypoints": [
         [
+          8,
+          3
+        ],
+        [
           9,
-          7
+          3
         ],
         [
           10,
-          7
+          4
         ],
         [
-          11,
-          7
-        ],
-        [
-          10,
-          7
+          9,
+          3
         ]
       ],
       "pauseRadius": 2,

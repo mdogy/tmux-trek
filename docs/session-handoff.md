@@ -20,7 +20,7 @@ Build TMUX Trek as an educational game where the story makes real tmux actions n
 
 - `main` is deployed and green on GitHub Pages.
 - The current playable baseline is the v2 painted bridge/surface/armory slice.
-- Bridge, surface, and armory map semantics are aligned to the painted art; the bridge captain chair, captain spawn, crew stations, and Rift terminal now match the corrected bridge composition.
+- Bridge, surface, and armory map semantics are aligned to the painted art; the bridge captain chair, captain spawn, crew stations, bridge title, and Rift terminal now match the corrected bridge composition.
 - Demo reel motion now pauses on settled frames so sprite-to-art alignment is visible in the reel.
 - The next meaningful work is the remaining Phase 6.5 cleanup: tighter village location regions, per-NPC art/behavior, and goal-based navigation updates before Act 2 content.
 
@@ -95,7 +95,7 @@ A comprehensive analysis of the existing zones against reference games (Zelda, C
 
 - The active runtime uses v2 bridge, surface, and armory data by default.
 - Generated painted backdrops are wired for all three active maps; placeholder tile layers are suppressed on the painted scenes.
-- Bridge semantic stations are aligned to the generated bridge art: the corrected captain chair faces the viewscreen, the captain starts in front of it facing up, crew stand aft of their consoles facing the viewscreen, and the Rift terminal is now the starboard-center bridge console rather than the far-right wall station.
+- Bridge semantic stations are aligned to the generated bridge art: the corrected captain chair faces the viewscreen at half scale, the captain starts directly in front of it facing up, Comms is aligned back-left to its console, the First Officer stands at the forward console area, the bridge title sits above the viewscreen, and the Rift terminal is now the free starboard-center bridge console rather than the far-right wall station.
 - Armory semantics are projected onto the full 960×720 painted room, with the bracket cannon pickup reachable at the central weapon stand.
 - Surface village starts at the west gate and uses the generated village art with v2 landmarks, NPCs, Rift Code, and overflow blocker semantics.
 - Current NPCs render from sprite-sheet character actors rather than the old generated placeholder icon; remaining future work is distinct per-NPC art and behavior, not placeholder removal.
@@ -110,7 +110,6 @@ A comprehensive analysis of the existing zones against reference games (Zelda, C
 npm run test -- tests/unit/ZoneLoader.test.js                         # PASS — 13 tests
 python3 -m unittest tests/python/test_zones.py                        # PASS — 75 tests
 npm run test:e2e -- tests/e2e/v2-bridge-art.spec.js                   # PASS — 5 tests
-npm run test:e2e -- tests/e2e/gameplay.spec.js                        # PASS — vertical slice
 ```
 
 **Broader baseline from June 26, 2026:**
