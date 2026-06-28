@@ -34,7 +34,10 @@ test("01 - title screen", async ({ page }) => {
   await page.goto("/?demo=1&useV2Zones=1");
   await expect(page.locator("canvas")).toBeVisible({ timeout: 10_000 });
 
-  await setCaption(page, "TMUX Trek — learn terminal multiplexing through play");
+  await setCaption(
+    page,
+    "TMUX Trek — learn terminal multiplexing through play",
+  );
   await page.waitForTimeout(6_000);
 });
 
@@ -55,7 +58,10 @@ test("02 - bridge first mission", async ({ page }) => {
   ]);
 
   await page.waitForTimeout(1_000);
-  await setCaption(page, "Mission: Open the Rift terminal and descend to the surface");
+  await setCaption(
+    page,
+    "Mission: Open the Rift terminal and descend to the surface",
+  );
   await page.waitForTimeout(4_000);
 });
 
@@ -65,12 +71,10 @@ test("03 - open rift terminal", async ({ page }) => {
   await page.goto("/?testMode=1&demo=1&useV2Zones=1");
   await waitForGrid(page, [7, 9], "bridge");
 
-  // Walk into interaction range of the right-side Rift terminal.
+  // Walk into interaction range of the starboard-center Rift console.
   await moveAlong(page, [
     ["KeyD", [8, 9]],
-    ["KeyD", [9, 9]],
-    ["KeyD", [10, 9]],
-    ["KeyD", [11, 9]],
+    ["KeyW", [8, 8]],
   ]);
 
   await page.waitForTimeout(1_000);
@@ -112,7 +116,10 @@ test("04 - surface zone", async ({ page }) => {
   ]);
 
   await page.waitForTimeout(1_000);
-  await setCaption(page, "Each zone is only reachable via the right tmux command");
+  await setCaption(
+    page,
+    "Each zone is only reachable via the right tmux command",
+  );
   await page.waitForTimeout(4_500);
 });
 
@@ -123,7 +130,10 @@ test("05 - named session armory", async ({ page }) => {
   await page.goto("/?testMode=1&demo=1");
   await waitForGrid(page, [1, 15], "surface");
 
-  await setCaption(page, "Rift Code in hand — return to Zrix to open the armory");
+  await setCaption(
+    page,
+    "Rift Code in hand — return to Zrix to open the armory",
+  );
   await page.waitForTimeout(1_500);
 
   // Navigate to Zrix's relay-shed work area.
@@ -182,7 +192,10 @@ test("05 - named session armory", async ({ page }) => {
   await page.keyboard.press("Enter");
 
   await waitForGrid(page, [7, 10], "armory");
-  await setCaption(page, "A new zone — only reachable via this exact session name");
+  await setCaption(
+    page,
+    "A new zone — only reachable via this exact session name",
+  );
   await page.waitForTimeout(4_500);
 });
 
@@ -193,7 +206,10 @@ test("06 - detach keybinding", async ({ page }) => {
   await page.goto("/?testMode=1&demo=1");
   await waitForGrid(page, [7, 10], "armory");
 
-  await setCaption(page, "Weapon retrieved — time to detach and return to the bridge");
+  await setCaption(
+    page,
+    "Weapon retrieved — time to detach and return to the bridge",
+  );
   await page.waitForTimeout(1_500);
 
   // Walk to Armorer Kesh's forge station.
@@ -217,12 +233,18 @@ test("06 - detach keybinding", async ({ page }) => {
     "armory-detach",
   );
 
-  await setCaption(page, "Ctrl+b d — detach and leave sessions running in the background");
+  await setCaption(
+    page,
+    "Ctrl+b d — detach and leave sessions running in the background",
+  );
   await page.waitForTimeout(1_500);
   await pressTmuxKeybinding(page, "d");
 
   await waitForGrid(page, [7, 9], "bridge");
-  await setCaption(page, "Detached — back on the bridge. Session `armory` still lives.");
+  await setCaption(
+    page,
+    "Detached — back on the bridge. Session `armory` still lives.",
+  );
   await page.waitForTimeout(4_500);
 });
 
@@ -233,7 +255,10 @@ test("07 - act complete", async ({ page }) => {
   await page.goto("/?testMode=1&demo=1");
   await waitForGrid(page, [1, 15], "surface");
 
-  await setCaption(page, "Final objective: clear the overflow buffer blocking Starfall Village");
+  await setCaption(
+    page,
+    "Final objective: clear the overflow buffer blocking Starfall Village",
+  );
   await page.waitForTimeout(1_500);
 
   // Navigate to the overflow front.
@@ -280,7 +305,10 @@ test("07 - act complete", async ({ page }) => {
     "overflow",
   );
 
-  await setCaption(page, "Fire the bracket cannon — press E to clear the overflow");
+  await setCaption(
+    page,
+    "Fire the bracket cannon — press E to clear the overflow",
+  );
   await page.waitForTimeout(800);
   await page.keyboard.press("KeyE");
 
@@ -290,6 +318,9 @@ test("07 - act complete", async ({ page }) => {
   );
   await expect(page.locator("#score-total")).toContainText("Score: 1050");
 
-  await setCaption(page, "First Descent complete — 1050 points earned  ·  HELIX readiness check unlocked");
+  await setCaption(
+    page,
+    "First Descent complete — 1050 points earned  ·  HELIX readiness check unlocked",
+  );
   await page.waitForTimeout(6_000);
 });

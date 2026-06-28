@@ -69,7 +69,9 @@ paved the floor with pictures of whole objects).
 #.............#
 #.............#       Consoles, the captain's chair, and the Rift terminal are
 #.............#       OBJECTS placed on the deck (objects layer), not tiles.
-#.............#
+#.............#       The current bridge places the captain aft of the chair,
+#.............#       facing the viewscreen; the Rift terminal is a main-deck
+#.............#       starboard-center console, not a side-wall station.
  ######T######
 ```
 

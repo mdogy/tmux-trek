@@ -5,7 +5,9 @@ import {
   SAVE_AT_SURFACE,
 } from "../demo/helpers.js";
 
-test("v2 bridge debug path exposes the generated backdrop", async ({ page }) => {
+test("v2 bridge debug path exposes the generated backdrop", async ({
+  page,
+}) => {
   test.setTimeout(30_000);
 
   await page.addInitScript(() => {
@@ -74,20 +76,63 @@ test("v2 bridge projects semantic objects and crew sprites onto the painted back
     };
   });
 
-  expect(bridgeState.chair).toEqual({ x: 480, y: 264 });
+  expect(bridgeState.chair).toEqual({ x: 480, y: 360 });
   expect(bridgeState.helm).toEqual({ x: 288, y: 168 });
   expect(bridgeState.nav).toEqual({ x: 672, y: 168 });
   expect(bridgeState.ops).toEqual({ x: 352, y: 312 });
   expect(bridgeState.science).toEqual({ x: 672, y: 312 });
-  expect(bridgeState.comms).toEqual({ x: 352, y: 456 });
+  expect(bridgeState.comms).toEqual({ x: 352, y: 408 });
   expect(bridgeState.terminal).toEqual({
-    x: 864,
-    y: 456,
+    x: 672,
+    y: 312,
     texture: "terminal-sprite",
   });
+  expect(bridgeState.helmOfficer).toMatchObject({ x: 288, y: 218 });
+  expect(bridgeState.commsOfficer).toMatchObject({ x: 352, y: 458 });
+  expect(bridgeState.firstOfficer).toMatchObject({ x: 672, y: 362 });
   expect(bridgeState.helmOfficer.texture).toBe("captain-sprites");
   expect(bridgeState.commsOfficer.texture).toBe("captain-sprites");
   expect(bridgeState.firstOfficer.texture).toBe("captain-sprites");
+});
+
+test("captain and crew enter the bridge facing the viewscreen", async ({
+  page,
+}) => {
+  test.setTimeout(30_000);
+
+  await page.addInitScript(() => {
+    window.localStorage.clear();
+  });
+  await page.goto("/?testMode=1&useV2Zones=1");
+  await expect(page.locator("#game-root")).toHaveAttribute(
+    "data-zone-id",
+    "bridge",
+    { timeout: 15_000 },
+  );
+
+  const facingState = await page.evaluate(() => {
+    const scene = window.__tmuxTrekApp.game.scene.getScene("bridge");
+    const npcById = Object.fromEntries(
+      scene.interactiveTargets
+        .filter((t) => t.kind === "npc")
+        .map((t) => [t.id, t.sprite.anims.currentAnim?.key ?? null]),
+    );
+    return {
+      playerGrid: scene.playerGrid,
+      playerFacing: scene.playerFacing,
+      playerAnim: scene.player.anims.currentAnim?.key ?? null,
+      helmOfficer: npcById["helm-officer"],
+      commsOfficer: npcById["comms-officer"],
+      firstOfficer: npcById["first-officer"],
+    };
+  });
+
+  expect(facingState.playerGrid).toEqual({ column: 7, row: 9 });
+  expect(facingState.playerFacing).toBe("up");
+  expect(facingState.playerAnim).toBe("captain-idle-up");
+  expect(facingState.helmOfficer).toBe("captain-idle-up");
+  expect(facingState.commsOfficer).toBe("captain-idle-up");
+  expect(facingState.firstOfficer).toBe("captain-idle-up");
 });
 
 test("v2 surface and armory project semantics onto their painted maps", async ({
@@ -105,7 +150,9 @@ test("v2 surface and armory project semantics onto their painted maps", async ({
 
   const surfaceState = await page.evaluate(() => {
     const scene = window.__tmuxTrekApp.game.scene.getScene("surface");
-    const zrix = scene.interactiveTargets.find((target) => target.id === "zrix");
+    const zrix = scene.interactiveTargets.find(
+      (target) => target.id === "zrix",
+    );
     return {
       visualWidth: scene.getVisualMapWidth(),
       visualHeight: scene.getVisualMapHeight(),
