@@ -1,5 +1,9 @@
 import { describe, expect, it } from "vitest";
-import { getZone, getZones, normalizeV2Zone } from "../../src/game/data/zoneLoader.js";
+import {
+  getZone,
+  getZones,
+  normalizeV2Zone,
+} from "../../src/game/data/zoneLoader.js";
 import surfaceV2Zone from "../../src/data/zones/v2/surface.json";
 import {
   buildBlockedTiles,
@@ -31,16 +35,16 @@ describe("zoneLoader", () => {
     const bridge = getZone("bridge", { useV2Zones: true });
     const objectAt = (id) => bridge.objects.find((object) => object.id === id);
 
-    expect(objectAt("chair")?.at).toEqual([7, 5]);
+    expect(objectAt("chair")?.at).toEqual([7, 7]);
     expect(objectAt("helm")?.at).toEqual([4, 3]);
     expect(objectAt("nav")?.at).toEqual([10, 3]);
     expect(objectAt("ops")?.at).toEqual([5, 6]);
     expect(objectAt("science")?.at).toEqual([10, 6]);
-    expect(objectAt("comms")?.at).toEqual([5, 9]);
+    expect(objectAt("comms")?.at).toEqual([5, 8]);
     expect(bridge.terminals[0]).toMatchObject({
       id: "rift-terminal",
-      column: 13,
-      row: 9,
+      column: 10,
+      row: 6,
     });
   });
 
@@ -88,15 +92,35 @@ describe("zoneLoader", () => {
     const bridge = getZone("bridge", { useV2Zones: true });
     const blocked = buildBlockedTiles(bridge);
     expect(blocked.has("0,0")).toBe(true);
-    expect(blocked.has("7,5")).toBe(true);
+    expect(blocked.has("7,7")).toBe(true);
   });
 
   it("resolves cell semantics from v2 tile, object, and location data", () => {
     const bridge = getZone("bridge", { useV2Zones: true });
-    const semantics = getCellSemantics(bridge, 13, 9);
+    const semantics = getCellSemantics(bridge, 10, 6);
     expect(semantics?.objectType).toBe("rift_terminal");
     expect(semantics?.verbs).toContain("use");
     expect(semantics?.description).toContain("Rift terminal");
+  });
+
+  it("places bridge crew aft of their consoles facing the viewscreen", () => {
+    const bridge = getZone("bridge", { useV2Zones: true });
+    const npcById = Object.fromEntries(bridge.npcs.map((n) => [n.id, n]));
+    expect(npcById["helm-officer"]).toMatchObject({
+      column: 4,
+      row: 4,
+      facing: "up",
+    });
+    expect(npcById["comms-officer"]).toMatchObject({
+      column: 5,
+      row: 9,
+      facing: "up",
+    });
+    expect(npcById["first-officer"]).toMatchObject({
+      column: 10,
+      row: 7,
+      facing: "up",
+    });
   });
 
   it("prefers named location descriptions over generic floor descriptions", () => {
@@ -104,5 +128,18 @@ describe("zoneLoader", () => {
     const semantics = getCellSemantics(surface, 16, 12);
     expect(semantics?.locationId).toBe("square");
     expect(semantics?.description).toContain("town square");
+  });
+
+  it("bridge zone declares playerStartFacing up so the captain faces the viewscreen", () => {
+    const bridge = getZone("bridge", { useV2Zones: true });
+    expect(bridge.playerStartFacing).toBe("up");
+  });
+
+  it("bridge NPCs carry a facing field that survives normalizeV2Zone", () => {
+    const bridge = getZone("bridge", { useV2Zones: true });
+    const npcById = Object.fromEntries(bridge.npcs.map((n) => [n.id, n]));
+    expect(npcById["helm-officer"].facing).toBe("up");
+    expect(npcById["comms-officer"].facing).toBe("up");
+    expect(npcById["first-officer"].facing).toBe("up");
   });
 });

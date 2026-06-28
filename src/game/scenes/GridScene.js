@@ -52,6 +52,10 @@ const SPRITE_KEYS = {
   overflow: "overflow-sprite",
 };
 
+const OBJECT_ASSET_OVERRIDES = {
+  captain_chair: "assets/generated/tiles/bridge-captain-chair-up.png",
+};
+
 const ANIMATED_NPCS = {
   "helm-officer": ACTOR_SPRITES.captain.key,
   "comms-officer": ACTOR_SPRITES.captain.key,
@@ -115,7 +119,8 @@ export class GridScene extends Phaser.Scene {
     for (const objectKey of Object.keys(objectRegistry.objects)) {
       this.load.image(
         `object-${objectKey}`,
-        `assets/tiles/placeholder/obj_${objectKey}.png`,
+        OBJECT_ASSET_OVERRIDES[objectKey] ??
+          `assets/tiles/placeholder/obj_${objectKey}.png`,
       );
     }
   }
@@ -127,6 +132,7 @@ export class GridScene extends Phaser.Scene {
     this.columns = this.zone.map.columns;
     this.rows = this.zone.map.rows;
     this.playerGrid = { ...this.zone.playerStart };
+    this.playerFacing = this.zone.playerStartFacing ?? "down";
     this.itemObjects = new Map();
     this.interactiveTargets = [];
     this.blockedTiles = buildBlockedTiles(this.zone);
@@ -284,7 +290,7 @@ export class GridScene extends Phaser.Scene {
       )
       .setScale(getActorScale("captain"))
       .setOrigin(getActorAnchor("captain").x, getActorAnchor("captain").y);
-    this.player.anims.play("captain-idle-down");
+    this.player.anims.play(`captain-idle-${this.playerFacing}`);
     this.playerLabel = this.add.text(
       playerCenter.x - 24,
       playerCenter.y + 28,
@@ -382,7 +388,11 @@ export class GridScene extends Phaser.Scene {
       }
 
       const center = this.#tileCenter(object.at[0], object.at[1]);
-      const sprite = this.add.image(center.x, center.y, `object-${object.type}`);
+      const sprite = this.add.image(
+        center.x,
+        center.y,
+        `object-${object.type}`,
+      );
       this.worldObjects ??= [];
       this.worldObjects.push({
         ...object,
@@ -410,7 +420,7 @@ export class GridScene extends Phaser.Scene {
             )
         : this.add.image(center.x, center.y, target.spriteKey);
     if (target.kind === "npc" && target.animPrefix) {
-      sprite.anims.play(`${target.animPrefix}-idle-down`);
+      sprite.anims.play(`${target.animPrefix}-idle-${target.facing ?? "down"}`);
     }
     const label = this.add.text(center.x - 48, center.y + 28, target.name, {
       color: "#f2e8be",

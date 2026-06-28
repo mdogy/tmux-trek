@@ -117,6 +117,7 @@ def build_bridge():
         "legend": legend,
         "grid": g.to_strings(),
         "playerStart": [7, 9],
+        "playerStartFacing": "up",
         "locations": [
             {
                 "id": "command_deck",
@@ -128,29 +129,29 @@ def build_bridge():
             }
         ],
         "objects": [
-            {"id": "chair", "type": "captain_chair", "at": [7, 5]},
-            {"id": "helm", "type": "console", "at": [3, 2]},
-            {"id": "nav", "type": "console", "at": [11, 2]},
-            {"id": "ops", "type": "console", "at": [2, 4]},
-            {"id": "science", "type": "console", "at": [12, 4]},
-            {"id": "comms", "type": "console", "at": [4, 7]},
-            {"id": "rift-terminal", "type": "rift_terminal", "at": [10, 7]},
+            {"id": "chair", "type": "captain_chair", "at": [7, 7]},
+            {"id": "helm", "type": "console", "at": [4, 3]},
+            {"id": "nav", "type": "console", "at": [10, 3]},
+            {"id": "ops", "type": "console", "at": [5, 6]},
+            {"id": "science", "type": "console", "at": [10, 6]},
+            {"id": "comms", "type": "console", "at": [5, 8]},
+            {"id": "rift-terminal", "type": "rift_terminal", "at": [10, 6]},
         ],
         "items": [],
         "npcs": [
             {
                 "id": "helm-officer", "name": "Helm Officer", "role": "ambient",
-                "behavior": "idle", "home": [3, 3], "pauseRadius": 2,
+                "behavior": "idle", "facing": "up", "home": [4, 4], "pauseRadius": 2,
             },
             {
                 "id": "comms-officer", "name": "Comms Officer", "role": "ambient",
-                "behavior": "idle", "home": [5, 7], "pauseRadius": 2,
+                "behavior": "idle", "facing": "up", "home": [5, 9], "pauseRadius": 2,
             },
             {
                 "id": "first-officer", "name": "First Officer", "role": "guide",
-                "behavior": "patrol", "home": [6, 4],
-                "waypoints": [[6, 4], [8, 4], [8, 6], [6, 6]], "pauseRadius": 2,
-                "hint": "The Rift console is aft-starboard, by Comms.",
+                "behavior": "patrol", "facing": "up", "home": [10, 7],
+                "waypoints": [[9, 7], [10, 7], [11, 7], [10, 7]], "pauseRadius": 2,
+                "hint": "The Rift console is the starboard-center bridge station.",
             },
         ],
         "transitions": [

@@ -1,5 +1,15 @@
 # Project History
 
+## 2026-06-28 — Bridge command-deck alignment
+
+Corrected the CLULIX bridge composition so the scene reads like a functional command deck.
+
+- Replaced the bridge captain-chair art with the corrected viewscreen-facing chair asset, updated the bridge tile sheet, and regenerated the flattened bridge backdrop.
+- Aligned v2 bridge semantics to the artwork: captain chair at the command-deck center, captain starting in front of it facing the viewscreen, crew aft of their consoles facing the viewscreen, and the Rift terminal on the starboard-center console rather than the far-right wall.
+- Updated bridge gameplay/demo routes to use the new central terminal interaction point.
+- Added/updated unit and Playwright assertions for chair coordinates, terminal semantics, crew positions, and bridge-facing actor animations.
+- Verification: `npm run test -- tests/unit/ZoneLoader.test.js`, `python3 -m unittest tests/python/test_zones.py`, `npm run test:e2e -- tests/e2e/v2-bridge-art.spec.js`, and `npm run test:e2e -- tests/e2e/gameplay.spec.js` pass.
+
 ## 2026-06-27 — Session handoff refresh
 
 Prepared the project docs for a clean model-to-model handoff.

@@ -30,6 +30,7 @@
     7,
     9
   ],
+  "playerStartFacing": "up",
   "locations": [
     {
       "id": "command_deck",
@@ -53,7 +54,7 @@
       "type": "captain_chair",
       "at": [
         7,
-        5
+        7
       ]
     },
     {
@@ -93,15 +94,15 @@
       "type": "console",
       "at": [
         5,
-        9
+        8
       ]
     },
     {
       "id": "rift-terminal",
       "type": "rift_terminal",
       "at": [
-        13,
-        9
+        10,
+        6
       ]
     }
   ],
@@ -112,6 +113,7 @@
       "name": "Helm Officer",
       "role": "ambient",
       "behavior": "idle",
+      "facing": "up",
       "home": [
         4,
         4
@@ -123,9 +125,10 @@
       "name": "Comms Officer",
       "role": "ambient",
       "behavior": "idle",
+      "facing": "up",
       "home": [
         5,
-        8
+        9
       ],
       "pauseRadius": 2
     },
@@ -134,30 +137,31 @@
       "name": "First Officer",
       "role": "guide",
       "behavior": "patrol",
+      "facing": "up",
       "home": [
-        7,
-        6
+        10,
+        7
       ],
       "waypoints": [
         [
-          6,
-          6
-        ],
-        [
-          8,
-          6
-        ],
-        [
-          8,
+          9,
           7
         ],
         [
-          6,
+          10,
+          7
+        ],
+        [
+          11,
+          7
+        ],
+        [
+          10,
           7
         ]
       ],
       "pauseRadius": 2,
-      "hint": "The Rift console is aft-starboard, by Comms."
+      "hint": "The Rift console is the starboard-center bridge station."
     }
   ],
   "transitions": [

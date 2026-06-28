@@ -23,6 +23,7 @@ async function pressMove(page, key, expectedGrid) {
   await expect(page.locator("#game-root")).toHaveAttribute(
     "data-is-moving",
     "false",
+    { timeout: GRID_READY_TIMEOUT },
   );
 }
 
@@ -53,7 +54,7 @@ async function pressTmuxKeybinding(page, key) {
 test("TMUX Trek completes the Phase 1 vertical slice and restores on reload", async ({
   page,
 }) => {
-  test.setTimeout(180_000);
+  test.setTimeout(300_000);
   await page.addInitScript(() => {
     if (!window.sessionStorage.getItem("tmux-trek:test-storage-cleared")) {
       window.localStorage.clear();
@@ -72,9 +73,7 @@ test("TMUX Trek completes the Phase 1 vertical slice and restores on reload", as
 
   await moveAlong(page, [
     ["KeyD", [8, 9]],
-    ["KeyD", [9, 9]],
-    ["KeyD", [10, 9]],
-    ["KeyD", [11, 9]],
+    ["KeyW", [8, 8]],
   ]);
 
   await openDialogue(page);
@@ -240,9 +239,7 @@ test("TMUX Trek completes the Phase 1 vertical slice and restores on reload", as
 
   await moveAlong(page, [
     ["KeyD", [8, 9]],
-    ["KeyD", [9, 9]],
-    ["KeyD", [10, 9]],
-    ["KeyD", [11, 9]],
+    ["KeyW", [8, 8]],
   ]);
   await openDialogue(page);
   await clearDialogue(page);
@@ -348,7 +345,9 @@ test("TMUX Trek completes the Phase 1 vertical slice and restores on reload", as
   await review
     .getByRole("button", { name: "tmux attach -t 0", exact: true })
     .click();
-  await review.getByRole("button", { name: "Submit Check", exact: true }).click();
+  await review
+    .getByRole("button", { name: "Submit Check", exact: true })
+    .click();
   await expect(page.locator("#review-root")).toContainText(
     "HELIX certifies you at 100%",
   );

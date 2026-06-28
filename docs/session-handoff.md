@@ -1,6 +1,6 @@
 # TMUX Trek — Session Handoff
 
-_The start-here document for resuming or restarting work. Last updated June 27, 2026._
+_The start-here document for resuming or restarting work. Last updated June 28, 2026._
 
 This is the operational resume doc: what is built today, how to verify it, what is wrong with it, and the immediate next task. It is written so that **a new session, model, or coding agent can pick up the project with no other context.** Read this first, then [`game-design.md`](game-design.md), [`architecture.md`](architecture.md), and [`implementation-plan.md`](implementation-plan.md).
 
@@ -20,7 +20,7 @@ Build TMUX Trek as an educational game where the story makes real tmux actions n
 
 - `main` is deployed and green on GitHub Pages.
 - The current playable baseline is the v2 painted bridge/surface/armory slice.
-- Bridge, surface, and armory map semantics are aligned to the painted art.
+- Bridge, surface, and armory map semantics are aligned to the painted art; the bridge captain chair, captain spawn, crew stations, and Rift terminal now match the corrected bridge composition.
 - Demo reel motion now pauses on settled frames so sprite-to-art alignment is visible in the reel.
 - The next meaningful work is the remaining Phase 6.5 cleanup: tighter village location regions, per-NPC art/behavior, and goal-based navigation updates before Act 2 content.
 
@@ -95,7 +95,7 @@ A comprehensive analysis of the existing zones against reference games (Zelda, C
 
 - The active runtime uses v2 bridge, surface, and armory data by default.
 - Generated painted backdrops are wired for all three active maps; placeholder tile layers are suppressed on the painted scenes.
-- Bridge semantic stations are aligned to the generated bridge art: captain chair, consoles, Rift terminal, and crew positions now sit on the painted stations.
+- Bridge semantic stations are aligned to the generated bridge art: the corrected captain chair faces the viewscreen, the captain starts in front of it facing up, crew stand aft of their consoles facing the viewscreen, and the Rift terminal is now the starboard-center bridge console rather than the far-right wall station.
 - Armory semantics are projected onto the full 960×720 painted room, with the bracket cannon pickup reachable at the central weapon stand.
 - Surface village starts at the west gate and uses the generated village art with v2 landmarks, NPCs, Rift Code, and overflow blocker semantics.
 - Current NPCs render from sprite-sheet character actors rather than the old generated placeholder icon; remaining future work is distinct per-NPC art and behavior, not placeholder removal.
@@ -104,7 +104,16 @@ A comprehensive analysis of the existing zones against reference games (Zelda, C
 
 ## Verification Baseline
 
-**As of June 26, 2026 the local baseline is clean:**
+**As of June 28, 2026 the focused bridge-layout verification is clean:**
+
+```bash
+npm run test -- tests/unit/ZoneLoader.test.js                         # PASS — 13 tests
+python3 -m unittest tests/python/test_zones.py                        # PASS — 75 tests
+npm run test:e2e -- tests/e2e/v2-bridge-art.spec.js                   # PASS — 5 tests
+npm run test:e2e -- tests/e2e/gameplay.spec.js                        # PASS — vertical slice
+```
+
+**Broader baseline from June 26, 2026:**
 
 ```bash
 npm run lint                 # PASS — clean
@@ -351,71 +360,76 @@ Every subagent brief should include:
 #### Checkpoint sequence
 
 1. **Checkpoint A — Runtime loader spike**
-Goal: load one v2 zone in a non-destructive way.
-Scope:
+   Goal: load one v2 zone in a non-destructive way.
+   Scope:
+
 - Add the smallest possible adapter/loader for one v2 zone.
 - Render floor/wall/object separation for a single scene or test fixture.
 - Keep current gameplay behavior intact where possible.
-Verification:
+  Verification:
 - targeted unit tests for loader/semantics
 - `make test-maps`
 - `npm run test`
-Exit gate:
+  Exit gate:
 - commit if loader behavior is understandable and bounded
 - stop if scene wiring starts spreading across unrelated systems
 
 2. **Checkpoint B — Collision and verb semantics**
-Goal: replace `obstacles.tiles` dependency with data-derived collision and object footprints.
-Scope:
+   Goal: replace `obstacles.tiles` dependency with data-derived collision and object footprints.
+   Scope:
+
 - derive collision from tile registry + object registry
 - keep movement and interaction prompts working
 - do not start NPC movement yet
-Verification:
+  Verification:
 - new unit tests for passability/verb lookup
 - `npm run test`
 - one focused Playwright spec or update
-Exit gate:
+  Exit gate:
 - commit only if old and new collision paths are not mixed ambiguously
 
 3. **Checkpoint C — Bridge art integration**
-Goal: prove the modular art direction in the smallest biome.
-Scope:
+   Goal: prove the modular art direction in the smallest biome.
+   Scope:
+
 - bridge floor/walls/props only
 - captain + bridge crew sprite replacement only if needed for visual consistency
 - no village/armory art yet
-Verification:
+  Verification:
 - `npm run build`
 - one browser check or screenshot-based demo artifact
 - `npm run test:e2e` if scene rendering assumptions changed
-Exit gate:
+  Exit gate:
 - commit once the bridge reads as a coherent place without placeholder chips
 
 4. **Checkpoint D — Surface + armory art integration**
-Goal: extend the established style to the remaining active biomes.
-Scope:
+   Goal: extend the established style to the remaining active biomes.
+   Scope:
+
 - village and armory tiles/props
 - Zrix, Kesh, overflow, pickups
 - no future-act assets
-Verification:
+  Verification:
 - `npm run build`
 - `npm run test:e2e`
 - demo reel or targeted screenshots if pathing/readability changed
-Exit gate:
+  Exit gate:
 - commit only if all active zones share one visual language
 
 5. **Checkpoint E — NPC behavior and objective redesign**
-Goal: make the world teach through place rather than highlighted markers.
-Scope:
+   Goal: make the world teach through place rather than highlighted markers.
+   Scope:
+
 - add `NpcSystem`
 - guide/target/ambient behavior
 - migrate current objectives away from direct marker-following
 - update E2E to goal-based assertions
-Verification:
+  Verification:
 - unit tests for NPC behavior / deterministic routing
 - `npm run test`
 - `npm run test:e2e`
 - `npm run bdd`
-Exit gate:
+  Exit gate:
 - commit only after tests assert goals, not hand-authored tile walks
 
 #### Verification and coverage rhythm
