@@ -114,6 +114,41 @@ test("TitleScene can save and quit back to the title screen", async ({
   await waitForGrid(page, BRIDGE_START_GRID, "bridge");
 });
 
+test("loading overlay appears when loading a save from MANAGE SAVES", async ({
+  page,
+}) => {
+  test.setTimeout(60_000);
+
+  await page.goto("/");
+  await page.evaluate(() => {
+    window.localStorage.clear();
+    window.sessionStorage.clear();
+  });
+  await page.reload();
+  await waitForTitleScreen(page, "menu", "NEW GAME");
+
+  await openNewGameDialog(page);
+  await page.locator("#title-input-overlay input").type("Slot Load Run");
+  await page.keyboard.press("Enter");
+  await waitForGrid(page, BRIDGE_START_GRID, "bridge");
+
+  await page.reload();
+  await waitForTitleScreen(page, "menu", "CONTINUE");
+
+  await pressTitleKey(page, "ArrowDown");
+  await waitForTitleScreen(page, "menu", /MANAGE SAVES/);
+  await pressTitleKey(page, "Enter");
+  await expect(page.locator("#game-root")).toHaveAttribute(
+    "data-title-screen",
+    "saves",
+    { timeout: TITLE_READY_TIMEOUT },
+  );
+
+  await pressTitleKey(page, "Enter");
+  await expect(page.locator("#boot-loading")).toBeVisible({ timeout: 5_000 });
+  await waitForGrid(page, BRIDGE_START_GRID, "bridge");
+});
+
 test("TitleScene can open flash-card review from an existing save", async ({
   page,
 }) => {
