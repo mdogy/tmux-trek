@@ -1,6 +1,6 @@
 # TMUX Trek — Implementation Plan & Roadmap
 
-_Authoritative build order. Last consolidated June 27, 2026._
+_Authoritative build order. Last consolidated July 12, 2026._
 
 This is the canonical sequencing of work. It replaces the former root `TODO.md`. For the design these phases realize, read [`game-design.md`](game-design.md); for the technical shape, read [`architecture.md`](architecture.md); for the current build state and immediate next task, read [`session-handoff.md`](session-handoff.md).
 
@@ -15,11 +15,12 @@ GitHub Issues remain the canonical _per-task_ surface; this document is the cano
 - Phase 0 foundation: `TmuxEvents`, `MissionSystem`, `InventorySystem`, `TransitionSystem`, and `SaveManager` are implemented, tested, and wired into the live app.
 - Phase 1 vertical slice: the full bridge → `tmux` → surface → Rift Code → `tmux new -s armory` → armory → `Ctrl+b d` → bridge → `tmux ls` → `tmux attach -t 0` → clear overflow loop is playable end-to-end.
 - Phase 4 additions: `TitleScene` (keyboard-nav menu, auth gate, DOM overlays), multi-slot `SaveManager` (SAVE_VERSION=3, 17 focused SaveManager unit tests), `BootScene` init-data update, `TmuxTrekApp` public restore/reset methods.
-- Current baseline on `main`: `npm run lint` ✓, `npm run test` (103 unit tests) ✓, `npm run test -- --coverage` ✓, `npm run bdd` (2 scenarios / 17 steps) ✓, `npm run test:e2e` (9 Playwright tests) ✓, `npm run build` ✓. Stress check: `npm run test:e2e -- --repeat-each=5 --workers=1` passed 5/5.
+- Current verified local baseline after the responsive shell fix: `npm run lint` ✓, `npm run test` (113 unit tests) ✓, `npm run bdd` (2 scenarios / 17 steps) ✓, `npm run build` ✓, `npm run test:e2e` (14 Playwright tests) ✓. Earlier coverage and stress checks remain documented in [`session-handoff.md`](session-handoff.md).
 - Phase 4's E2E reload flake is resolved. The cause was a too-short default Playwright attribute assertion timeout during slow headless Phaser startup after reload; `waitForGrid()` now uses an explicit 15s scene-readiness timeout.
 - Phase 2 player experience complete: vim `h/j/k/l` movement, 2-tile interaction radius, specific HELIX error feedback, Restart Challenge button, HUD hierarchy, 4-card NPC dialogues. (see `history.md`)
 - Coverage reporting currently measures `src/engine/**/*.js` only. Shared game and terminal behavior are covered by focused unit tests plus Playwright / Cucumber flows, but there is not yet a whole-app coverage metric.
-- Mobile posture is now explicit: the current shell is responsive enough to function on smaller screens, but the full execution curriculum remains viable only with a real keyboard. Touch-only users should be routed toward review-first surfaces once capability detection lands.
+- Mobile posture is now explicit: the shell scales the 960×720 Phaser canvas into a responsive 4:3 panel for smaller screens, but the full execution curriculum remains viable only with a real keyboard. Touch-only users should be routed toward review-first surfaces once capability routing lands.
+- Packaging note: `codex/bridge-layout-tuning` now sits directly on the squashed PR #19 merge (`origin/main` at `12e9777`), so the uncommitted responsive shell fix and audit changes can be committed from this branch as-is.
 
 The redesign's premise: the current build is a working _loop prototype_ but does not yet implement the central metaphor (sessions as travel between places). The phases below rebuild the relationship between world and command, then extend act by act.
 
@@ -324,7 +325,7 @@ Evaluated June 20, 2026 — see [`design/mobile-web-strategy.md`](design/mobile-
 - **Tier 2 — touch-only devices get a "Review Mode"** built from the Phase 5 assessment systems (flash cards, multiple-choice, codex, progress). Honest framing: review, not execution. Largely free-rides on Phase 5.
 - **Tier 3 — on-screen touch control bar** (D-pad + `Ctrl+b` button): optional, **research-gated**, with a hard caveat that it teaches tapping, not muscle memory. Terminal apps (Termius, Blink, a-Shell, Prompt) already solve the missing-`Ctrl` problem with accessory key bars + sticky modifiers; a short research note on their patterns is a prerequisite before any Tier-3 build. Deferred/declined until then.
 
-**Current reality check:** the shell and overlays do collapse to one column under `980px`, which makes the site usable on smaller screens, but the implementation has not yet added capability-based routing into Review Mode. Today the product is mobile-viable only with a real keyboard; touch-only support remains an honest review-first product decision, not a completed feature.
+**Current reality check:** the shell and overlays collapse to one column under `980px`, the Phaser canvas uses `Scale.FIT`, and the viewport panel keeps a responsive 4:3 aspect ratio so representative phone/tablet layouts display without horizontal clipping. The implementation has not yet added capability-based routing into Review Mode. Today the product is mobile-viable only with a real keyboard; touch-only support remains an honest review-first product decision, not a completed feature.
 
 **Anticipate Tier 3 while building Tiers 1–2** (so it stays additive, not a rewrite): route all input through one engine intent path (`execute` / `handleKeybinding`); make capability a shared service; gate `Ctrl+b` content on _can-send-prefix_, not _has-keyboard_; reserve a bottom safe-area band for a future key bar; and drive the codex/flash cards from a single keybinding registry the key bar can reuse. Full detail in [`design/mobile-web-strategy.md`](design/mobile-web-strategy.md) §5. A focused Tier-1 responsive/scale pass can ride alongside Phase 10 polish. **Do not** market touch-phone play as muscle-memory learning.
 

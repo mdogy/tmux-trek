@@ -103,7 +103,7 @@ Build Tiers 1–2 against these five seams and Tier 3 is additive, not invasive.
 
 - **xterm.js on mobile:** focusing its helper textarea to summon the soft keyboard is finicky; set `autocapitalize="off"`, `autocorrect="off"`, `spellcheck="false"`, and an appropriate `inputmode` or command entry will be corrupted.
 - **Soft-keyboard overlay:** use the `visualViewport` API to keep the active line above the keyboard; naive `100vh` layouts break.
-- **Phaser scaling:** set a `Scale.FIT`/`RESIZE` mode and design for a fluid canvas; the current layout assumes a fixed desktop viewport.
+- **Phaser scaling:** the current shell uses `Scale.FIT` with a responsive 4:3 viewport panel. Keep future mobile work on that fluid canvas path; do not reintroduce fixed desktop-only canvas sizing.
 - **Orientation:** the world + terminal want landscape; prompt or lock rather than cramming portrait.
 - **Touch targets:** the Phase 2 interaction radius and tap-to-interact map cleanly to touch; on-screen buttons need ≥44px targets.
 

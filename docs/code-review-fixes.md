@@ -1,5 +1,7 @@
 # TMUX Trek — Code Review Fix Instructions
 
+> **Status (July 12, 2026): RESOLVED.** All production fixes (CR-1 through CR-12) landed in commit `638ee82` and are verified present in the current tree. Test gaps TG-2, TG-5, and the CR-8/CR-10 tests exist in `tests/unit/`; TG-6 landed July 12, 2026 as `tests/unit/GridScene.interaction.test.js` (with the target-lookup logic extracted to `src/game/scenes/gridInteraction.js`). TG-1, TG-3, and TG-4 remain open — they need `TmuxTrekApp`/`TitleScene` instantiation, which pulls in Phaser and xterm.js; their behavior is covered end-to-end by `tests/e2e/gameplay.spec.js` (restore on reload) instead. This document is kept for reference only.
+
 _Written June 21, 2026 against `main` at `c0e1299`. Each section names the exact file, method, and lines to change, shows the minimal code delta, and lists a verification step._
 
 Read `session-handoff.md § Code Review Findings` for the why behind each item. This document is the how.
@@ -8,7 +10,7 @@ Read `session-handoff.md § Code Review Findings` for the why behind each item. 
 
 ## Reading order
 
-Fix CRITICAL items first (CR-1, CR-2, CR-3). Fix HIGH items next (CR-4, CR-5, CR-6). Everything else can go in a follow-up cleanup PR. Add the test-gap items (TG-*) in the same PR as the corresponding fix.
+Fix CRITICAL items first (CR-1, CR-2, CR-3). Fix HIGH items next (CR-4, CR-5, CR-6). Everything else can go in a follow-up cleanup PR. Add the test-gap items (TG-\*) in the same PR as the corresponding fix.
 
 ---
 
@@ -42,19 +44,24 @@ dispose() {
 **Step 2 — Guard against double-registration of the `beforeunload` listener.**
 
 In `start()`, replace line 179:
+
 ```js
 window.addEventListener("beforeunload", this.#persistSnapshot);
 ```
+
 with:
+
 ```js
 window.removeEventListener("beforeunload", this.#persistSnapshot);
 window.addEventListener("beforeunload", this.#persistSnapshot);
 ```
+
 The `removeEventListener` is a no-op on the first call and removes any stale registration on subsequent calls. It works because `this.#persistSnapshot` is a class-field arrow function with a stable identity.
 
 **Step 3 — Wire `dispose()` into Phaser's game-destroy lifecycle.**
 
 In `start()`, after the line `this.game.registry.set("app", this)` (line 178), add:
+
 ```js
 this.game.events.once("destroy", () => this.dispose());
 ```
@@ -122,6 +129,7 @@ delegate(this.completionRoot);
 **Step 2 — Rewrite `#reviewButton` to register the handler instead of attaching a listener.**
 
 Replace the existing `#reviewButton` method (lines 368–375):
+
 ```js
 // OLD
 #reviewButton(text, onClick) {
@@ -133,7 +141,9 @@ Replace the existing `#reviewButton` method (lines 368–375):
   return button;
 }
 ```
+
 with:
+
 ```js
 // NEW
 #reviewButton(text, actionKey, onClick) {
@@ -152,42 +162,69 @@ with:
 All call sites are in `#renderReviewOverlay` and `#renderReviewGateOverlay`. Use these action-key constants (they do not need to be deduplicated because the Map is rebuilt every render):
 
 In `#renderReviewOverlay`:
+
 ```js
-const previous = this.#reviewButton("Previous", "review-prev", () => this.onReviewPrevious?.());
-const flip     = this.#reviewButton(overlay.showAnswer ? "Hide Answer" : "Flip Card", "review-flip", () => this.onReviewFlip?.());
-const next     = this.#reviewButton("Next", "review-next", () => this.onReviewNext?.());
-const gotIt    = this.#reviewButton("Got It", "review-got-it", () => this.onReviewRate?.(currentCard.id, "got-it"));
-const reviewAgain = this.#reviewButton("Review Again", "review-again", () => this.onReviewRate?.(currentCard.id, "review-again"));
-const close    = this.#reviewButton("Close", "review-close", () => this.onReviewClose?.());
+const previous = this.#reviewButton("Previous", "review-prev", () =>
+  this.onReviewPrevious?.(),
+);
+const flip = this.#reviewButton(
+  overlay.showAnswer ? "Hide Answer" : "Flip Card",
+  "review-flip",
+  () => this.onReviewFlip?.(),
+);
+const next = this.#reviewButton("Next", "review-next", () =>
+  this.onReviewNext?.(),
+);
+const gotIt = this.#reviewButton("Got It", "review-got-it", () =>
+  this.onReviewRate?.(currentCard.id, "got-it"),
+);
+const reviewAgain = this.#reviewButton("Review Again", "review-again", () =>
+  this.onReviewRate?.(currentCard.id, "review-again"),
+);
+const close = this.#reviewButton("Close", "review-close", () =>
+  this.onReviewClose?.(),
+);
 ```
 
 In `#renderReviewGateOverlay`, inside the `for` loop over choices:
+
 ```js
 const button = this.#reviewButton(choice.text, `gate-choice-${choice.id}`, () =>
-  this.onReviewSelectChoice?.(question.id, choice.id)
+  this.onReviewSelectChoice?.(question.id, choice.id),
 );
 ```
 
 Navigation and result buttons in `#renderReviewGateOverlay`:
+
 ```js
-const previous = this.#reviewButton("Previous", "gate-prev", () => this.onReviewPrevious?.());
-const next     = this.#reviewButton("Next", "gate-next", () => this.onReviewNext?.());
+const previous = this.#reviewButton("Previous", "gate-prev", () =>
+  this.onReviewPrevious?.(),
+);
+const next = this.#reviewButton("Next", "gate-next", () =>
+  this.onReviewNext?.(),
+);
 // inside overlay.result block:
-const primary  = this.#reviewButton(
+const primary = this.#reviewButton(
   overlay.result.passed ? "Close" : "Retry",
   "gate-primary",
-  () => overlay.result.passed ? this.onReviewClose?.() : this.onReviewRetryGate?.(),
+  () =>
+    overlay.result.passed ? this.onReviewClose?.() : this.onReviewRetryGate?.(),
 );
 // if !passed:
-this.#reviewButton("Review Flash Cards", "gate-review-flash", () => this.onOpenReview?.());
+this.#reviewButton("Review Flash Cards", "gate-review-flash", () =>
+  this.onOpenReview?.(),
+);
 // submit and close:
-this.#reviewButton("Submit Check", "gate-submit", () => this.onReviewSubmitGate?.());
+this.#reviewButton("Submit Check", "gate-submit", () =>
+  this.onReviewSubmitGate?.(),
+);
 this.#reviewButton("Close", "gate-close", () => this.onReviewClose?.());
 ```
 
-**Step 4 — Fix the dialogue "Continue" button.** 
+**Step 4 — Fix the dialogue "Continue" button.**
 
 In `#renderDialogueCard` (line 183):
+
 ```js
 // OLD
 button.addEventListener("click", onAdvance);
@@ -200,13 +237,16 @@ this._overlayHandlers.set("dialogue-advance", onAdvance);
 **Step 5 — Fix the completion overlay button.**
 
 In `#renderCompletionOverlay` (line 217):
+
 ```js
 // OLD
 button.addEventListener("click", () => this.onCompletionAcknowledge?.());
 
 // NEW
 button.dataset.action = "completion-ack";
-this._overlayHandlers.set("completion-ack", () => this.onCompletionAcknowledge?.());
+this._overlayHandlers.set("completion-ack", () =>
+  this.onCompletionAcknowledge?.(),
+);
 ```
 
 ### Verification
@@ -228,12 +268,17 @@ This means every restored objective appears to be "newly completed", and `scoreS
 ### Fix
 
 In `#restoreSnapshot` (line 563), replace the single line:
+
 ```js
 this.lastMissionSnapshot = null;
 ```
+
 with:
+
 ```js
-this.lastMissionSnapshot = saved.mission ? structuredClone(saved.mission) : null;
+this.lastMissionSnapshot = saved.mission
+  ? structuredClone(saved.mission)
+  : null;
 ```
 
 With this change, when `missionSystem.restore(saved.mission)` fires `#handleMissionUpdate`, the diff between `previousCompleted` and `nextCompleted` will be empty (both derived from `saved.mission`), so no `awardObjective` or `markObjectiveComplete` calls are made. The act-complete guard inside `#handleMissionUpdate`:
@@ -274,7 +319,7 @@ it("restoring a save with completed objectives does not call awardObjective", ()
 
   const app = new TmuxTrekApp();
   const award = vi.spyOn(app.scoreSystem, "awardObjective");
-  app.#restoreSnapshot(saved);  // may need to expose via test helper
+  app.#restoreSnapshot(saved); // may need to expose via test helper
   expect(award).not.toHaveBeenCalled();
 });
 ```
@@ -292,7 +337,7 @@ it("restoring a save with completed objectives does not call awardObjective", ()
 ```js
 if (domEvent.ctrlKey && domEvent.key.toLowerCase() === "b") {
   domEvent.preventDefault();
-  this.prefixArmed = true;          // ← no guard
+  this.prefixArmed = true; // ← no guard
   this.renderer.writeln("^B");
   this.renderer.writeln("HELIX: prefix accepted. Awaiting the next key.");
   this.#prompt();
@@ -334,11 +379,11 @@ it("does not re-arm the prefix when Ctrl+b is pressed twice", () => {
   const writeln = vi.spyOn(emulator.renderer, "writeln");
 
   const ctrlB = { ctrlKey: true, key: "b", preventDefault: vi.fn() };
-  emulator.#handleKey({ key: "b", domEvent: ctrlB });  // first press
+  emulator.#handleKey({ key: "b", domEvent: ctrlB }); // first press
   const callCount = writeln.mock.calls.length;
-  emulator.#handleKey({ key: "b", domEvent: ctrlB });  // second press
-  expect(writeln.mock.calls.length).toBe(callCount);   // no new output
-  expect(emulator.prefixArmed).toBe(true);             // still armed
+  emulator.#handleKey({ key: "b", domEvent: ctrlB }); // second press
+  expect(writeln.mock.calls.length).toBe(callCount); // no new output
+  expect(emulator.prefixArmed).toBe(true); // still armed
 });
 ```
 
@@ -362,11 +407,14 @@ The deeper issue: there is no signal when the gate is silently not applied. A de
 ### Fix
 
 Replace lines 43–44:
+
 ```js
 const password = import.meta.env.VITE_AUTH_PASSWORD ?? "";
 if (password && sessionStorage.getItem(AUTH_KEY) !== "1") {
 ```
+
 with:
+
 ```js
 const password = (import.meta.env.VITE_AUTH_PASSWORD ?? "").trim();
 if (password && sessionStorage.getItem(AUTH_KEY) !== "1") {
@@ -391,7 +439,7 @@ it("_promptPassword is not called when env password is whitespace-only", () => {
   // Vitest can fake import.meta.env via vi.stubEnv
   vi.stubEnv("VITE_AUTH_PASSWORD", "   ");
   const scene = new TitleScene();
-  scene.create = vi.fn();  // prevent full Phaser boot
+  scene.create = vi.fn(); // prevent full Phaser boot
   const prompt = vi.spyOn(scene, "_promptPassword");
   const showMenu = vi.spyOn(scene, "_showMenu").mockImplementation(() => {});
   scene.create();
@@ -428,7 +476,10 @@ No change needed. The `#notify()` call IS the trigger for the CR-4 issue above, 
 A v2 save with malformed content (e.g., `mission: null`, `engine: undefined`) is cloned verbatim into a v3 slot:
 
 ```js
-storage.setItem(SLOT_PREFIX + id, JSON.stringify({ ...parsed, v: SAVE_VERSION }));
+storage.setItem(
+  SLOT_PREFIX + id,
+  JSON.stringify({ ...parsed, v: SAVE_VERSION }),
+);
 ```
 
 `normalizeIndex()` runs only on the slot index, not on the per-slot payload. Later `loadGame()` returns the corrupt blob unchanged, and `#restoreSnapshot` passes it to each system's `restore()` method, which may silently produce invalid in-memory state.
@@ -456,7 +507,11 @@ The full migration block after this fix:
 ```js
 if (parsed.v === 2 && index.slots.length === 0) {
   const requiredKeys = ["engine", "mission", "inventory"];
-  if (!requiredKeys.every((key) => parsed[key] !== null && typeof parsed[key] === "object")) {
+  if (
+    !requiredKeys.every(
+      (key) => parsed[key] !== null && typeof parsed[key] === "object",
+    )
+  ) {
     storage?.removeItem("tmux-trek-save");
     return;
   }
@@ -466,7 +521,11 @@ if (parsed.v === 2 && index.slots.length === 0) {
     JSON.stringify({ ...parsed, v: SAVE_VERSION }),
   );
   writeIndex(
-    { version: SAVE_VERSION, activeId: id, slots: [{ id, name: "default", updatedAt: Date.now() }] },
+    {
+      version: SAVE_VERSION,
+      activeId: id,
+      slots: [{ id, name: "default", updatedAt: Date.now() }],
+    },
     storage,
   );
 }
@@ -483,12 +542,17 @@ it("migrate() discards a v2 save missing required keys", () => {
   storage.setItem = (k, v) => storage.set(k, v);
   storage.removeItem = (k) => storage.delete(k);
 
-  storage.setItem("tmux-trek-save", JSON.stringify({ v: 2, mission: null, engine: null, inventory: null }));
+  storage.setItem(
+    "tmux-trek-save",
+    JSON.stringify({ v: 2, mission: null, engine: null, inventory: null }),
+  );
   migrate(storage);
 
   // The legacy key should be removed, but no v3 slot created.
   expect(storage.get("tmux-trek-save")).toBeUndefined();
-  expect([...storage.keys()].filter((k) => k.startsWith("tmux-trek:save:"))).toHaveLength(0);
+  expect(
+    [...storage.keys()].filter((k) => k.startsWith("tmux-trek:save:")),
+  ).toHaveLength(0);
 });
 ```
 
@@ -516,6 +580,7 @@ this._completionRenderKey = null;
 **Step 2 — Compute render keys and skip rebuild if unchanged.**
 
 Replace the review overlay render block (lines 101–113):
+
 ```js
 if (snapshot.reviewOverlay) {
   if (snapshot.reviewOverlay.mode === "gate") {
@@ -530,6 +595,7 @@ if (snapshot.reviewOverlay) {
 ```
 
 with:
+
 ```js
 if (snapshot.reviewOverlay) {
   const key = this.#reviewKey(snapshot.reviewOverlay);
@@ -599,18 +665,22 @@ Play through the flash-card review. Type in a different terminal input (any key 
 ### Fix
 
 Replace the timestamp assignment lines inside the `for...of` loop (lines 110–114):
+
 ```js
 // OLD
 startedAt: Number.isFinite(entry?.startedAt) ? entry.startedAt : null,
 completedAt: Number.isFinite(entry?.completedAt) ? entry.completedAt : null,
 ```
+
 with:
+
 ```js
 // NEW
 const now = Date.now();
-const startedAt = Number.isFinite(entry?.startedAt) && entry.startedAt <= now
-  ? entry.startedAt
-  : null;
+const startedAt =
+  Number.isFinite(entry?.startedAt) && entry.startedAt <= now
+    ? entry.startedAt
+    : null;
 const completedAt =
   startedAt !== null &&
   Number.isFinite(entry?.completedAt) &&
@@ -621,6 +691,7 @@ const completedAt =
 ```
 
 Then use those local variables in the `nextActs[actId]` assignment:
+
 ```js
 nextActs[actId] = {
   startedAt,
@@ -640,14 +711,30 @@ Add to `tests/unit/ProgressSystem.test.js`:
 ```js
 it("clamps future startedAt to null on restore", () => {
   const sys = new ProgressSystem([{ id: "a-1", title: "A", objectives: [] }]);
-  sys.restore({ acts: { "a-1": { startedAt: 9999999999999, completedAt: 9999999999999, completedObjectiveIds: [] } } });
+  sys.restore({
+    acts: {
+      "a-1": {
+        startedAt: 9999999999999,
+        completedAt: 9999999999999,
+        completedObjectiveIds: [],
+      },
+    },
+  });
   expect(sys.getActSummary("a-1").startedAt).toBeNull();
 });
 
 it("clamps completedAt that precedes startedAt to null", () => {
   const start = Date.now() - 10000;
   const sys = new ProgressSystem([{ id: "a-1", title: "A", objectives: [] }]);
-  sys.restore({ acts: { "a-1": { startedAt: start, completedAt: start - 1, completedObjectiveIds: [] } } });
+  sys.restore({
+    acts: {
+      "a-1": {
+        startedAt: start,
+        completedAt: start - 1,
+        completedObjectiveIds: [],
+      },
+    },
+  });
   expect(sys.getActSummary("a-1").completedAt).toBeNull();
 });
 ```
@@ -661,6 +748,7 @@ it("clamps completedAt that precedes startedAt to null", () => {
 ### What is wrong
 
 `BridgeScene.createZoneDecorations()` correctly starts and stops the ambient:
+
 ```js
 startAmbient("bridge");
 this.events.once("shutdown", stopAmbient);
@@ -685,14 +773,16 @@ shutdown() {
 ```
 
 Because GridScene uses ES modules and not CommonJS, the import should be at the top of the file:
+
 ```js
 import { stopAmbient } from "../systems/AudioSystem.js";
 ```
 
 And remove the inline `this.events.once("shutdown", stopAmbient)` from `BridgeScene.createZoneDecorations()` since the base class now handles it:
+
 ```js
 // BridgeScene.createZoneDecorations() — remove this line:
-this.events.once("shutdown", stopAmbient);   // ← delete
+this.events.once("shutdown", stopAmbient); // ← delete
 // Keep:
 startAmbient("bridge");
 ```
@@ -747,12 +837,13 @@ No automated test needed for this level of risk. Verify manually: open devtools 
 
 The following test gaps do not require production code changes; they need tests added to catch regressions:
 
-| ID | Test to add | File |
-|----|-------------|------|
-| TG-2 | `MissionSystem.restore()` fires subscriber immediately with updated snapshot | `tests/unit/MissionSystem.test.js` |
+| ID   | Test to add                                                                   | File                                       |
+| ---- | ----------------------------------------------------------------------------- | ------------------------------------------ |
+| TG-2 | `MissionSystem.restore()` fires subscriber immediately with updated snapshot  | `tests/unit/MissionSystem.test.js`         |
 | TG-6 | `GridScene` interaction: target found at Chebyshev distance 2, not found at 3 | `tests/unit/GridScene.interaction.test.js` |
 
 For TG-2:
+
 ```js
 it("subscribe listener receives updated state after restore()", () => {
   const sys = new MissionSystem([act01Sessions]);
@@ -778,18 +869,18 @@ it("subscribe listener receives updated state after restore()", () => {
 
 ## PR sequence suggestion
 
-| PR | Items | Risk |
-|----|-------|------|
-| 1 | CR-1, CR-2, CR-13 + TG-3 | Low — adds cleanup, no behavior change |
-| 1 | CR-4 + TG-1 | Low — removes unnecessary work on restore |
-| 1 | CR-5 + TG-5 | Low — early return added |
-| 1 | CR-6 + TG-4 | Low — `.trim()` + console.warn |
-| 2 | CR-3 | Medium — refactor; needs careful Playwright re-run |
-| 2 | CR-9 | Medium — render-key guard; verify focus behavior |
-| 3 | CR-8 | Low — new guard in migrate() |
-| 3 | CR-10 + TG-6 ref | Low — add timestamp range check |
-| 3 | CR-11 + TG-7 | Low — move stopAmbient to GridScene base |
-| 3 | CR-12 | Trivial — single line |
-| 3 | TG-2, TG-6 | Test-only |
+| PR  | Items                    | Risk                                               |
+| --- | ------------------------ | -------------------------------------------------- |
+| 1   | CR-1, CR-2, CR-13 + TG-3 | Low — adds cleanup, no behavior change             |
+| 1   | CR-4 + TG-1              | Low — removes unnecessary work on restore          |
+| 1   | CR-5 + TG-5              | Low — early return added                           |
+| 1   | CR-6 + TG-4              | Low — `.trim()` + console.warn                     |
+| 2   | CR-3                     | Medium — refactor; needs careful Playwright re-run |
+| 2   | CR-9                     | Medium — render-key guard; verify focus behavior   |
+| 3   | CR-8                     | Low — new guard in migrate()                       |
+| 3   | CR-10 + TG-6 ref         | Low — add timestamp range check                    |
+| 3   | CR-11 + TG-7             | Low — move stopAmbient to GridScene base           |
+| 3   | CR-12                    | Trivial — single line                              |
+| 3   | TG-2, TG-6               | Test-only                                          |
 
 All PRs follow the standard delivery workflow in `delivery-workflow.md`. Run `npm run lint && npm run test && npm run test:e2e` before opening each PR.
