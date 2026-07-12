@@ -61,7 +61,7 @@ npm run bdd
 npm run build
 ```
 
-Latest local verified baseline after the responsive shell fix and July 12 audit: 113 unit tests, 2 BDD scenarios, 14 Playwright tests, lint, and production build all pass. Coverage reporting remains scoped to `src/engine/**`. `npm run format:check` reports pre-existing formatting drift and is not yet a clean CI gate.
+Latest local verified baseline after the responsive shell fix and July 12 audit: 113 unit tests, 2 BDD scenarios, 15 Playwright tests, lint, and production build all pass. Coverage reporting remains scoped to `src/engine/**`. `npm run format:check` reports pre-existing formatting drift and is not yet a clean CI gate.
 
 ## Repository Layout
 

@@ -128,7 +128,7 @@ npm run lint                 # PASS — clean
 npm run test                 # PASS — 113 unit tests pass
 npm run test -- --coverage   # PASS — coverage report emits for src/engine only
 npm run bdd                  # PASS — 2 scenarios / 17 steps
-npm run test:e2e             # PASS — 14 Playwright tests
+npm run test:e2e             # PASS — 15 Playwright tests
 npm run build                # PASS
 make test-maps               # PASS — 75 Python unit tests (map toolchain)
 ```
