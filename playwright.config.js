@@ -14,9 +14,15 @@ export default defineConfig({
     },
   },
   webServer: {
-    command: "npm run dev -- --host 127.0.0.1",
+    // Serve a production build. The dev server's HMR client can drop its
+    // WebSocket while a cold server finishes dependency bundling, and the
+    // reconnect forces a page reload that resets the game mid-test.
+    // A running `npm run dev` on the same port is still reused for local
+    // iteration via reuseExistingServer.
+    command:
+      "npm run build -- --base=/ && npm run preview -- --host 127.0.0.1 --port 4173 --strictPort",
     url: "http://127.0.0.1:4173",
     reuseExistingServer: true,
-    timeout: 30_000,
+    timeout: 60_000,
   },
 });
