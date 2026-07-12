@@ -32,4 +32,9 @@ describe("GridScene movement facing", () => {
     expect(getActorMoveDuration()).toBe(720);
     expect(getActorWalkFrameRate()).toBe(2);
   });
+
+  it("returns a defined anchor for non-captain actors", () => {
+    expect(getActorAnchor("zrix")).toEqual({ x: 0.5, y: 1 });
+    expect(getActorAnchor("armorer")).toEqual({ x: 0.5, y: 1 });
+  });
 });

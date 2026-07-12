@@ -14,10 +14,8 @@ export function getActorScale(actorId) {
   return 0.24;
 }
 
-export function getActorAnchor(actorId) {
-  return actorId === "captain"
-    ? { x: 0.5, y: 1 }
-    : { x: 0.5, y: 1 };
+export function getActorAnchor() {
+  return { x: 0.5, y: 1 };
 }
 
 export function getActorOffset(actorId) {

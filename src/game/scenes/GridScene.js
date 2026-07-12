@@ -3,14 +3,15 @@ import objectRegistry from "../../data/tiles/object-registry.json";
 import tileRegistry from "../../data/tiles/tile-registry.json";
 import { stopAmbient } from "../systems/AudioSystem.js";
 import { buildBlockedTiles } from "../data/zoneSemantics.js";
-import { getFacingFromDelta } from "./actorMotion.js";
 import {
   getActorAnchor,
   getActorMoveDuration,
   getActorOffset,
   getActorScale,
   getActorWalkFrameRate,
+  getFacingFromDelta,
 } from "./actorMotion.js";
+import { findNearestInteractiveTarget } from "./gridInteraction.js";
 
 const TERRAIN_SHEET_KEY = "z-shell-terrain";
 const TERRAIN_SHEET_PATH = "assets/tiles/z-shell-terrain.png";
@@ -629,20 +630,10 @@ export class GridScene extends Phaser.Scene {
   }
 
   #getAdjacentTarget() {
-    const RADIUS = 2;
-    let nearest = null;
-    let nearestDist = Infinity;
-    for (const target of this.interactiveTargets) {
-      const dist = Math.max(
-        Math.abs(target.column - this.playerGrid.column),
-        Math.abs(target.row - this.playerGrid.row),
-      );
-      if (dist <= RADIUS && dist < nearestDist) {
-        nearest = target;
-        nearestDist = dist;
-      }
-    }
-    return nearest;
+    return findNearestInteractiveTarget(
+      this.interactiveTargets,
+      this.playerGrid,
+    );
   }
 
   #tileCenter(column, row) {
