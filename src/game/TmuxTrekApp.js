@@ -161,9 +161,13 @@ export class TmuxTrekApp {
 
     this.game = new Phaser.Game({
       type: Phaser.AUTO,
-      width: 960,
-      height: 720,
       parent: "game-root",
+      scale: {
+        mode: Phaser.Scale.FIT,
+        autoCenter: Phaser.Scale.CENTER_BOTH,
+        width: 960,
+        height: 720,
+      },
       scene: scenes,
       render: {
         pixelArt: true,

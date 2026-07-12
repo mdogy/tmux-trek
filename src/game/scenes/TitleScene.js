@@ -246,6 +246,7 @@ export class TitleScene extends Phaser.Scene {
       } else if (code === "Enter") {
         setActiveSlotId(slots[sel].id);
         this.app.restoreActiveSave();
+        window.__tmuxTrekCreateLoadingOverlay?.();
         this.scene.start("boot");
       } else if (code === "KeyR") {
         this._domInput("New name:", (name) => {

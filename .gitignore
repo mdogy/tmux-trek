@@ -1,1 +1,20 @@
+# Dependencies
+node_modules/
+
+# Build output
+dist/
+
+# Test artifacts
+coverage/
+test-results/
+playwright-report/
+
+# Local tooling state
+.claude/settings.local.json
+.claude/worktrees/
+
+# Local captures
 user screenshots/
+
+# OS cruft
+.DS_Store

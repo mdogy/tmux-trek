@@ -202,6 +202,12 @@ Commit:
 
 **Goal:** prevent obvious mobile layout failures for the title, review, and keyboard-equipped game path.
 
+**Status:** implemented for the current shell on June 29, 2026. The Phaser canvas now uses
+`Scale.FIT`, the viewport panel keeps a responsive 4:3 aspect ratio, safe-area spacing is
+applied at mobile breakpoints, and `tests/e2e/mobile-layout.spec.js` covers phone portrait,
+phone landscape, and tablet landscape display. Touch-only Review Mode routing remains a
+separate checkpoint.
+
 Need-to-know:
 
 - Tier 1 means keyboard-equipped mobile/tablet can play the real game.

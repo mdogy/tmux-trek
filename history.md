@@ -1,5 +1,32 @@
 # Project History
 
+## 2026-07-12 — Repository audit and cleanup
+
+Audited the working tree, tests, and documentation after the responsive shell work.
+
+- Verified the full suite green: 113 unit tests, 14 Playwright tests, lint, and BDD scenarios all pass.
+- Re-pointed `codex/bridge-layout-tuning` at `origin/main` commit `12e9777` — its old tip `bcbb945` had a tree identical to the squashed PR #19 merge — eliminating the pre-squash divergence the handoff docs warned about.
+- Expanded `.gitignore` (previously only `user screenshots/`) to cover `node_modules/`, `dist/`, `coverage/`, `test-results/`, `playwright-report/`, and local `.claude/` state.
+- Extracted the Chebyshev interaction-target lookup from `GridScene` into `src/game/scenes/gridInteraction.js` and closed test gap TG-6 with `tests/unit/GridScene.interaction.test.js` (6 tests).
+- Marked `docs/code-review-fixes.md` as resolved: CR-1 through CR-12 landed in `638ee82`; only TG-1/TG-3/TG-4 remain open, covered end-to-end by `gameplay.spec.js`.
+
+## 2026-07-12 — Mobile fix handoff refresh
+
+Prepared the repository documentation for model handoff after the responsive shell fix.
+
+- Updated the handoff snapshot to point at deployed `origin/main` commit `12e9777` and to record that the responsive mobile shell fix is local/uncommitted on `codex/bridge-layout-tuning`.
+- Added explicit packaging guidance to avoid mixing the mobile fix with unrelated local edits or the pre-squash bridge branch state.
+- Updated the README, architecture, implementation plan, mobile strategy, and documentation index so the current mobile scaling behavior and test counts are discoverable from the docs.
+
+## 2026-06-29 — Responsive mobile shell display
+
+Fixed the mobile display failure where the 960×720 Phaser canvas stayed full size inside a narrower clipped panel.
+
+- Switched Phaser boot to `Scale.FIT` while keeping the game coordinate space at 960×720.
+- Converted the game viewport panel into a responsive 4:3 container with mobile safe-area spacing and tighter small-screen overlay controls.
+- Added mobile layout Playwright coverage for phone portrait title display, phone landscape playable bridge display, and tablet landscape scaling.
+- Verification: `npm run test:e2e -- tests/e2e/mobile-layout.spec.js` passes.
+
 ## 2026-06-28 — Bridge command-deck alignment
 
 Corrected the CLULIX bridge composition so the scene reads like a functional command deck.

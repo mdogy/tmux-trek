@@ -1,13 +1,14 @@
 # TMUX Trek — Session Handoff
 
-_The start-here document for resuming or restarting work. Last updated June 28, 2026._
+_The start-here document for resuming or restarting work. Last updated July 12, 2026._
 
 This is the operational resume doc: what is built today, how to verify it, what is wrong with it, and the immediate next task. It is written so that **a new session, model, or coding agent can pick up the project with no other context.** Read this first, then [`game-design.md`](game-design.md), [`architecture.md`](architecture.md), and [`implementation-plan.md`](implementation-plan.md).
 
 - Live build: <https://mdogy.github.io/tmux-trek/>
-- Latest gameplay baseline commit on `main`: `1873531` (demo reel motion beats)
+- Latest deployed baseline commit on `origin/main`: `12e9777` (bridge command-deck tuning, PR #19)
+- Latest local verified work: uncommitted responsive mobile shell display fix on `codex/bridge-layout-tuning`
 - Open PRs: none
-- Active branch at last verification: `main`
+- Active branch at last verification: `codex/bridge-layout-tuning`
 - Documentation index: [`README.md`](README.md)
 
 ---
@@ -21,8 +22,10 @@ Build TMUX Trek as an educational game where the story makes real tmux actions n
 - `main` is deployed and green on GitHub Pages.
 - The current playable baseline is the v2 painted bridge/surface/armory slice.
 - Bridge, surface, and armory map semantics are aligned to the painted art; the bridge captain chair, captain spawn, crew stations, bridge title, and Rift terminal now match the corrected bridge composition.
+- The responsive shell now scales the 960×720 Phaser canvas into a 4:3 viewport panel, so phone/tablet layouts display the title and playable bridge without horizontal clipping.
 - Demo reel motion now pauses on settled frames so sprite-to-art alignment is visible in the reel.
-- The next meaningful work is the remaining Phase 6.5 cleanup: tighter village location regions, per-NPC art/behavior, and goal-based navigation updates before Act 2 content.
+- Current local checkout note: `codex/bridge-layout-tuning` was re-pointed at `origin/main` commit `12e9777` on July 12, 2026 (its old tip `bcbb945` had a tree identical to the squashed PR #19 merge), so the uncommitted working tree applies cleanly on `origin/main` and can be committed from this branch directly.
+- The next meaningful work is packaging/deploying the responsive shell fix, then continuing the remaining Phase 6.5 cleanup: tighter village location regions, per-NPC art/behavior, and goal-based navigation updates before Act 2 content.
 
 ---
 
@@ -112,14 +115,20 @@ python3 -m unittest tests/python/test_zones.py                        # PASS —
 npm run test:e2e -- tests/e2e/v2-bridge-art.spec.js                   # PASS — 5 tests
 ```
 
-**Broader baseline from June 26, 2026:**
+**As of June 29, 2026 the focused responsive-shell verification is clean:**
+
+```bash
+npm run test:e2e -- tests/e2e/mobile-layout.spec.js                   # PASS — 3 tests
+```
+
+**Broader baseline from June 29, 2026 after the responsive shell fix:**
 
 ```bash
 npm run lint                 # PASS — clean
-npm run test                 # PASS — 103 unit tests pass
+npm run test                 # PASS — 113 unit tests pass
 npm run test -- --coverage   # PASS — coverage report emits for src/engine only
 npm run bdd                  # PASS — 2 scenarios / 17 steps
-npm run test:e2e             # PASS — 9 Playwright tests
+npm run test:e2e             # PASS — 14 Playwright tests
 npm run build                # PASS
 make test-maps               # PASS — 75 Python unit tests (map toolchain)
 ```
@@ -183,7 +192,7 @@ Verification after the fix:
 - Zone data model (`v2/`) and painted-map runtime integration are active for the current bridge/surface/armory slice. Remaining Phase 6.5 work is primarily richer NPC behavior (`NpcSystem`), cleaner goal-based E2E navigation, distinct per-NPC art, and continued objective redesign before Act 2 content.
 - Acts 2-5 not migrated to new scene architecture (Phases 7-10)
 - The Vitest coverage report is scoped to `src/engine/**/*.js`; there is no single automated coverage percentage for `src/game/` or `src/terminal/` yet
-- Mobile support is viable today only for keyboard-equipped devices. The shared input-capability service is in place, including injectable capability detection for unit coverage, but capability-based routing into a dedicated Review Mode is not implemented yet. Use [`design/mobile-implementation-plan.md`](design/mobile-implementation-plan.md) for the checkpointed implementation plan.
+- Mobile support is viable today only for keyboard-equipped devices. The shared input-capability service is in place, the shell now scales without clipping on representative mobile viewports, but capability-based routing into a dedicated Review Mode is not implemented yet. Use [`design/mobile-implementation-plan.md`](design/mobile-implementation-plan.md) for the checkpointed implementation plan.
 
 ---
 

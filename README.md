@@ -24,6 +24,7 @@ The branch also adds:
 - a level-complete overlay
 - optional flash-card review from both the HUD and title menu
 - an Act 1 readiness check that persists pass state across reloads
+- a responsive shell that scales the 960×720 Phaser game into mobile and tablet viewports without clipping
 
 This implements the central metaphor: **sessions as travel between distinct places**. Current truth, known gaps, and next work live in the docs below.
 
@@ -35,6 +36,8 @@ All design, architecture, and planning lives in [`docs/`](docs/README.md). For a
 - **[docs/game-design.md](docs/game-design.md)** — the design bible: the one rule, design lineage, curriculum, story arc.
 - **[docs/architecture.md](docs/architecture.md)** — stack, file map, engine surface, target architecture.
 - **[docs/implementation-plan.md](docs/implementation-plan.md)** — phased roadmap, asset priorities, risks, open issues.
+- **[docs/design/mobile-web-strategy.md](docs/design/mobile-web-strategy.md)** — mobile stance and constraints.
+- **[docs/design/mobile-implementation-plan.md](docs/design/mobile-implementation-plan.md)** — checkpointed mobile work plan.
 - **[docs/delivery-workflow.md](docs/delivery-workflow.md)** — branch, PR, CI, merge, Pages deployment.
 - **[AGENTS.md](AGENTS.md)** — repository guidelines and contribution rules.
 - **[history.md](history.md)** — chronological implementation log.
@@ -58,7 +61,7 @@ npm run bdd
 npm run build
 ```
 
-Verified baseline (`main`): 75 unit tests, 2 BDD scenarios, 3 Playwright tests (vertical slice, title/save-slot flow, and title review launch), lint, coverage reporting for `src/engine/**`, and production build all pass. `npm run format:check` reports pre-existing formatting drift and is not yet a clean CI gate.
+Latest local verified baseline after the responsive shell fix and July 12 audit: 113 unit tests, 2 BDD scenarios, 14 Playwright tests, lint, and production build all pass. Coverage reporting remains scoped to `src/engine/**`. `npm run format:check` reports pre-existing formatting drift and is not yet a clean CI gate.
 
 ## Repository Layout
 
