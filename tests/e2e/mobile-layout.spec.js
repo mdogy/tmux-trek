@@ -54,6 +54,37 @@ test("phone portrait keeps the title shell within the viewport", async ({
   await expectNoHorizontalOverflow(page);
 });
 
+test("phone portrait can start a new game by tapping the menu", async ({
+  page,
+}) => {
+  await page.setViewportSize({ width: 390, height: 844 });
+  await page.goto("/");
+  await page.evaluate(() => {
+    window.localStorage.clear();
+    window.sessionStorage.clear();
+  });
+  await page.reload();
+
+  await expect(page.locator("#game-root")).toHaveAttribute(
+    "data-title-screen",
+    "menu",
+    { timeout: 15_000 },
+  );
+
+  // Fresh storage shows a single menu item, NEW GAME, at game-space
+  // (480, 330) in the 960×720 coordinate system; map it through the
+  // scaled canvas rect and tap it.
+  const box = await page.locator("canvas").boundingBox();
+  await page.mouse.click(
+    box.x + (box.width * 480) / 960,
+    box.y + (box.height * 330) / 720,
+  );
+
+  await expect(page.locator("#title-input-overlay input")).toBeVisible({
+    timeout: 5_000,
+  });
+});
+
 test("phone landscape displays the playable bridge canvas without clipping", async ({
   page,
 }) => {

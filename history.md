@@ -1,5 +1,13 @@
 # Project History
 
+## 2026-07-12 — Touch support for title screens and e2e cold-start fix
+
+Made the title menu and save slots tappable, and fixed an e2e flake caused by the Vite dev server.
+
+- Added invisible pointer hit zones over title menu items and save slots; tap selects and activates, hover tracks selection. Touch-only devices can now start, continue, and load games (mobile previously required a hardware keyboard just to leave the title screen).
+- Added a Playwright test that taps NEW GAME through the scaled canvas on a phone viewport.
+- Root-caused a gameplay e2e failure: when Playwright spawns a cold Vite dev server, the HMR client's WebSocket can drop while the server finishes dependency bundling (`[vite] server connection lost. Polling for restart...`), and the reconnect force-reloads the page, restarting the game mid-test. Fixed by serving a production build (`vite build --base=/` + `vite preview`) in Playwright's `webServer`; a running `npm run dev` is still reused for local iteration. Also pre-bundled runtime deps via `optimizeDeps.include` to reduce dev-server cold-start churn.
+
 ## 2026-07-12 — Repository audit and cleanup
 
 Audited the working tree, tests, and documentation after the responsive shell work.

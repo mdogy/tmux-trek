@@ -6,8 +6,8 @@ This is the operational resume doc: what is built today, how to verify it, what 
 
 - Live build: <https://mdogy.github.io/tmux-trek/>
 - Latest deployed baseline commit on `origin/main`: `12e9777` (bridge command-deck tuning, PR #19)
-- Latest local verified work: uncommitted responsive mobile shell display fix on `codex/bridge-layout-tuning`
-- Open PRs: none
+- Latest local verified work: committed and pushed on `codex/bridge-layout-tuning` (responsive shell, title touch support, audit cleanups, e2e preview-server fix)
+- Open PRs: [#20](https://github.com/mdogy/tmux-trek/pull/20) — responsive mobile shell, touch support, audit cleanups
 - Active branch at last verification: `codex/bridge-layout-tuning`
 - Documentation index: [`README.md`](README.md)
 
@@ -24,8 +24,10 @@ Build TMUX Trek as an educational game where the story makes real tmux actions n
 - Bridge, surface, and armory map semantics are aligned to the painted art; the bridge captain chair, captain spawn, crew stations, bridge title, and Rift terminal now match the corrected bridge composition.
 - The responsive shell now scales the 960×720 Phaser canvas into a 4:3 viewport panel, so phone/tablet layouts display the title and playable bridge without horizontal clipping.
 - Demo reel motion now pauses on settled frames so sprite-to-art alignment is visible in the reel.
-- Current local checkout note: `codex/bridge-layout-tuning` was re-pointed at `origin/main` commit `12e9777` on July 12, 2026 (its old tip `bcbb945` had a tree identical to the squashed PR #19 merge), so the uncommitted working tree applies cleanly on `origin/main` and can be committed from this branch directly.
-- The next meaningful work is packaging/deploying the responsive shell fix, then continuing the remaining Phase 6.5 cleanup: tighter village location regions, per-NPC art/behavior, and goal-based navigation updates before Act 2 content.
+- Current local checkout note: `codex/bridge-layout-tuning` was re-pointed at `origin/main` commit `12e9777` on July 12, 2026 (its old tip `bcbb945` had a tree identical to the squashed PR #19 merge); all work since is committed on the branch and pushed to PR #20.
+- Title menu and save slots are now tappable, so touch devices can start/continue/load games; the full execution curriculum still needs a hardware keyboard.
+- Playwright now serves a production build (`vite build --base=/` + `vite preview`); the dev server's HMR client could force a page reload mid-test on cold starts.
+- The next meaningful work is merging PR #20, then continuing the remaining Phase 6.5 cleanup: tighter village location regions, per-NPC art/behavior, and goal-based navigation updates before Act 2 content.
 
 ---
 
@@ -128,7 +130,7 @@ npm run lint                 # PASS — clean
 npm run test                 # PASS — 113 unit tests pass
 npm run test -- --coverage   # PASS — coverage report emits for src/engine only
 npm run bdd                  # PASS — 2 scenarios / 17 steps
-npm run test:e2e             # PASS — 14 Playwright tests
+npm run test:e2e             # PASS — 15 Playwright tests
 npm run build                # PASS
 make test-maps               # PASS — 75 Python unit tests (map toolchain)
 ```

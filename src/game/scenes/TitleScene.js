@@ -153,11 +153,16 @@ export class TitleScene extends Phaser.Scene {
       }).setOrigin(0.5),
     );
 
-    this._addScreenText(480, 680, "j/k  ↑↓  navigate    Enter  select", {
-      color: C.dim,
-      fontFamily: '"Share Tech Mono"',
-      fontSize: "12px",
-    }).setOrigin(0.5);
+    this._addScreenText(
+      480,
+      680,
+      "j/k  ↑↓  navigate    Enter  select    tap  select",
+      {
+        color: C.dim,
+        fontFamily: '"Share Tech Mono"',
+        fontSize: "12px",
+      },
+    ).setOrigin(0.5);
 
     const refresh = () => {
       this._syncDebugState("menu", items[sel].label);
@@ -167,6 +172,19 @@ export class TitleScene extends Phaser.Scene {
       });
     };
     refresh();
+
+    items.forEach((item, i) => {
+      const hit = this._addScreenHitZone(480, 330 + i * 58, 540, 50);
+      hit.on("pointerover", () => {
+        sel = i;
+        refresh();
+      });
+      hit.on("pointerup", () => {
+        sel = i;
+        refresh();
+        item.action();
+      });
+    });
 
     this._bindKeys((code) => {
       if (code === "ArrowUp" || code === "KeyK") {
@@ -213,13 +231,20 @@ export class TitleScene extends Phaser.Scene {
     this._addScreenText(
       480,
       668,
-      "↑↓  navigate    Enter  load    R  rename    D  delete    Esc  back",
+      "↑↓  navigate    Enter/tap  load    R  rename    D  delete    Esc  back",
       {
         color: C.dim,
         fontFamily: '"Share Tech Mono"',
         fontSize: "11px",
       },
     ).setOrigin(0.5);
+
+    const loadSlot = (index) => {
+      setActiveSlotId(slots[index].id);
+      this.app.restoreActiveSave();
+      window.__tmuxTrekCreateLoadingOverlay?.();
+      this.scene.start("boot");
+    };
 
     const refresh = () => {
       this._syncDebugState("saves", slots[sel]?.id ?? "");
@@ -236,6 +261,19 @@ export class TitleScene extends Phaser.Scene {
     };
     refresh();
 
+    slots.forEach((slot, i) => {
+      const hit = this._addScreenHitZone(480, 320 + i * 40, 640, 36);
+      hit.on("pointerover", () => {
+        sel = i;
+        refresh();
+      });
+      hit.on("pointerup", () => {
+        sel = i;
+        refresh();
+        loadSlot(i);
+      });
+    });
+
     this._bindKeys((code) => {
       if (code === "ArrowUp" || code === "KeyK") {
         sel = (sel - 1 + slots.length) % slots.length;
@@ -244,10 +282,7 @@ export class TitleScene extends Phaser.Scene {
         sel = (sel + 1) % slots.length;
         refresh();
       } else if (code === "Enter") {
-        setActiveSlotId(slots[sel].id);
-        this.app.restoreActiveSave();
-        window.__tmuxTrekCreateLoadingOverlay?.();
-        this.scene.start("boot");
+        loadSlot(sel);
       } else if (code === "KeyR") {
         this._domInput("New name:", (name) => {
           if (name.trim()) {
@@ -315,6 +350,17 @@ export class TitleScene extends Phaser.Scene {
     const obj = this.add.text(x, y, text, style);
     this._screenObjects.push(obj);
     return obj;
+  }
+
+  // Fixed-size invisible tap target; text bounds shift as the ▶ prefix
+  // moves, so hit areas are decoupled from the labels.
+  _addScreenHitZone(x, y, width, height) {
+    const zone = this.add
+      .zone(x, y, width, height)
+      .setOrigin(0.5)
+      .setInteractive({ useHandCursor: true });
+    this._screenObjects.push(zone);
+    return zone;
   }
 
   _syncDebugState(screen, selection = "") {
