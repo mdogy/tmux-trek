@@ -128,7 +128,9 @@ export class TmuxTrekApp {
       ),
     ];
 
-    this.missionSystem.subscribe((snapshot) => this.#handleMissionUpdate(snapshot));
+    this.missionSystem.subscribe((snapshot) =>
+      this.#handleMissionUpdate(snapshot),
+    );
 
     migrate();
     this.missionSystem.loadAct("act-01-sessions");
@@ -179,6 +181,13 @@ export class TmuxTrekApp {
     window.removeEventListener("beforeunload", this.#persistSnapshot);
     window.addEventListener("beforeunload", this.#persistSnapshot);
     window.addEventListener("keydown", this.#handleKeyboardInput);
+    window.addEventListener("resize", this.#refreshScale);
+    // Late web-font loads and sidebar reflows move the canvas without
+    // firing a window resize, leaving the input manager translating taps
+    // through stale canvas bounds until the scale is refreshed.
+    document.fonts?.ready?.then(this.#refreshScale);
+    this.#layoutObserver = new ResizeObserver(this.#refreshScale);
+    this.#layoutObserver.observe(document.body);
   }
 
   dispose() {
@@ -187,6 +196,9 @@ export class TmuxTrekApp {
     this.transitionSystem.dispose();
     window.removeEventListener("beforeunload", this.#persistSnapshot);
     window.removeEventListener("keydown", this.#handleKeyboardInput);
+    window.removeEventListener("resize", this.#refreshScale);
+    this.#layoutObserver?.disconnect();
+    this.#layoutObserver = null;
   }
 
   resetToNewGame() {
@@ -252,9 +264,9 @@ export class TmuxTrekApp {
     const snapshot = this.state.getState();
     return Boolean(
       snapshot.dialogueOpen ||
-        snapshot.terminalOpen ||
-        snapshot.reviewOverlay ||
-        snapshot.completionOverlay,
+      snapshot.terminalOpen ||
+      snapshot.reviewOverlay ||
+      snapshot.completionOverlay,
     );
   }
 
@@ -340,7 +352,10 @@ export class TmuxTrekApp {
       return;
     }
 
-    const result = this.reviewSystem.gradeGate(overlay.actId, overlay.answers ?? {});
+    const result = this.reviewSystem.gradeGate(
+      overlay.actId,
+      overlay.answers ?? {},
+    );
     const reviewGate = this.missionSystem.getReviewGate();
     const nextActLabel = reviewGate?.nextActLabel ?? "the next act";
 
@@ -544,6 +559,15 @@ export class TmuxTrekApp {
     this.inputCapability.recordKeyboardInput(event);
   };
 
+  // Scale.FIT sizes the canvas from the parent at boot but does not track
+  // later parent resizes, so rotating a phone or tablet leaves a stale
+  // canvas size until the scale manager is refreshed.
+  #layoutObserver = null;
+
+  #refreshScale = () => {
+    this.game?.scale.refresh();
+  };
+
   #applyObjectiveState() {
     const objective = this.getCurrentObjective();
 
@@ -587,7 +611,9 @@ export class TmuxTrekApp {
     // #handleMissionUpdate (fired synchronously by missionSystem.restore below)
     // computes an empty diff. Without this, every restored objective looks "new"
     // and runs unnecessary awardObjective / markObjectiveComplete calls.
-    this.lastMissionSnapshot = saved.mission ? structuredClone(saved.mission) : null;
+    this.lastMissionSnapshot = saved.mission
+      ? structuredClone(saved.mission)
+      : null;
     this.state.hideCompletionOverlay();
     this.terminal.engine.restore({ engine: saved.engine });
     this.scoreSystem.restore(saved.score);
@@ -626,7 +652,9 @@ export class TmuxTrekApp {
   }
 
   #handleMissionUpdate(snapshot) {
-    const previousCompleted = new Set(this.lastMissionSnapshot?.completedObjectives ?? []);
+    const previousCompleted = new Set(
+      this.lastMissionSnapshot?.completedObjectives ?? [],
+    );
     const nextCompleted = new Set(snapshot.completedObjectives ?? []);
     const currentActId = snapshot.currentActId;
     let latestDelta = 0;
@@ -640,8 +668,14 @@ export class TmuxTrekApp {
         continue;
       }
 
-      latestDelta += this.scoreSystem.awardObjective({ actId: currentActId, objectiveId });
-      this.progressSystem.markObjectiveComplete({ actId: currentActId, objectiveId });
+      latestDelta += this.scoreSystem.awardObjective({
+        actId: currentActId,
+        objectiveId,
+      });
+      this.progressSystem.markObjectiveComplete({
+        actId: currentActId,
+        objectiveId,
+      });
     }
 
     const currentProgress = this.missionSystem.getProgress();
@@ -665,7 +699,8 @@ export class TmuxTrekApp {
   #syncProgressState() {
     const missionProgress = this.missionSystem.getProgress();
     const overall = this.progressSystem.getOverallSummary(
-      missionProgress?.currentActId ?? this.missionSystem.getSnapshot().currentActId,
+      missionProgress?.currentActId ??
+        this.missionSystem.getSnapshot().currentActId,
     );
     const currentAct = overall.currentAct;
 
