@@ -1,5 +1,24 @@
 # Project History
 
+## 2026-07-17 — Mobile usability suite and touch-input fixes (PR #22)
+
+Built a device-profile mobile e2e suite and fixed the three real touch bugs it caught.
+
+- Added `tests/e2e/mobile/` (21 specs) running against Pixel 7 (Chromium), iPhone 14 (WebKit), and iPad gen 7 (WebKit) Playwright projects with real touch events: layout fit/overflow in both orientations, all title flows by touch, virtual-keyboard focus and the iOS 16px-font zoom rule, rotation on title/mid-game/with-dialog-open, tap-safety on the keyboard-driven play field, touch-operated flash-card review, terminal fit and focus, and save persistence. Superseded the viewport-only `mobile-layout.spec.js`.
+- Fixed: the boot loading overlay kept intercepting input for its 500ms fade-out, silently eating the player's first tap after the title menu appeared (now `pointer-events: none` immediately, with a regression test).
+- Fixed: Phaser translated tap coordinates through canvas bounds cached at boot, so taps missed their targets after web fonts reflowed the masthead, and the canvas never re-fit after device rotation. The scale manager now refreshes on `document.fonts.ready`, a body `ResizeObserver`, and window resize. Root-caused by instrumenting Phaser's scene input during early iPad taps (`sceneUp: 1, zoneUp: 0` — pointer received, hit-test missed).
+- Fixed: review/dialogue buttons were 39px tall on tablets — the 44px touch-target minimum lived only inside the ≤540px media query; it is now unconditional.
+- Tracked known gap as an expected-failure test: title-menu hit zones scale to ~20px on phones (44px guideline); needs a design decision (bigger hit zones vs. DOM menu).
+- Tooling: `test:e2e:mobile` / `test:e2e:desktop` npm scripts, WebKit in CI, suite documented in `docs/mobile-testing.md`.
+
+## 2026-07-14 — Repository and GitHub cleanup
+
+Consolidated branches, PRs, and local state after the July 12 handoff.
+
+- Confirmed `~/tmux-trek` is a symlink to the primary checkout, not a divergent copy.
+- Closed PR #16 (`fix/code-review-cr1-cr12`) as superseded: CR-1–CR-12 were verified resolved on `main` on July 12 via later merges. The branch is intentionally kept on origin for its portable TmuxEmulator/ScoreSystem unit tests (TG-1/TG-3/TG-4).
+- Deleted all merged local and remote branches, pruned stale remote-tracking refs and a dead worktree entry; the repo now carries only `main` plus the kept fix branch.
+
 ## 2026-07-12 — Touch support for title screens and e2e cold-start fix
 
 Made the title menu and save slots tappable, and fixed an e2e flake caused by the Vite dev server.

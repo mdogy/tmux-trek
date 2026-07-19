@@ -204,6 +204,8 @@ h2 {
   color: var(--teal);
   font-family: "Share Tech Mono", monospace;
   font-size: 0.9rem;
+  /* 44px touch-target minimum on every pointer, not just narrow phones */
+  min-height: 44px;
   cursor: pointer;
 }
 
@@ -250,6 +252,8 @@ h2 {
   color: #101218;
   font-family: "Press Start 2P", cursive;
   font-size: 0.7rem;
+  /* 44px touch-target minimum on every pointer, not just narrow phones */
+  min-height: 44px;
   cursor: pointer;
 }
 
@@ -357,10 +361,5 @@ h2 {
   .review-actions {
     align-items: stretch;
     flex-direction: column;
-  }
-
-  .dialogue-button,
-  .review-button {
-    min-height: 44px;
   }
 }

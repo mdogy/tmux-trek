@@ -1,15 +1,15 @@
 # TMUX Trek — Session Handoff
 
-_The start-here document for resuming or restarting work. Last updated July 12, 2026._
+_The start-here document for resuming or restarting work. Last updated July 18, 2026._
 
 This is the operational resume doc: what is built today, how to verify it, what is wrong with it, and the immediate next task. It is written so that **a new session, model, or coding agent can pick up the project with no other context.** Read this first, then [`game-design.md`](game-design.md), [`architecture.md`](architecture.md), and [`implementation-plan.md`](implementation-plan.md).
 
 - Live build: <https://mdogy.github.io/tmux-trek/>
-- Latest deployed baseline commit on `origin/main`: `12e9777` (bridge command-deck tuning, PR #19)
-- Latest local verified work: committed and pushed on `codex/bridge-layout-tuning` (responsive shell, title touch support, audit cleanups, e2e preview-server fix)
-- Open PRs: [#20](https://github.com/mdogy/tmux-trek/pull/20) — responsive mobile shell, touch support, audit cleanups
-- Active branch at last verification: `codex/bridge-layout-tuning`
-- Documentation index: [`README.md`](README.md)
+- Latest merged baseline on `origin/main`: `d317b3c` (tappable title menu and save slots, PR #21)
+- Open PRs: [#22](https://github.com/mdogy/tmux-trek/pull/22) — mobile usability e2e suite (Pixel 7 / iPhone 14 / iPad device profiles) plus three touch-input fixes it uncovered
+- Active branch at last verification: `test/mobile-usability-suite`
+- Branch hygiene: a July 14, 2026 cleanup pruned all merged local/remote branches and closed stale PR #16 as superseded; `origin/fix/code-review-cr1-cr12` is intentionally kept because it holds portable TmuxEmulator/ScoreSystem unit tests (see Code Review section)
+- Documentation index: [`README.md`](README.md); mobile test suite doc: [`mobile-testing.md`](mobile-testing.md)
 
 ---
 
@@ -27,7 +27,10 @@ Build TMUX Trek as an educational game where the story makes real tmux actions n
 - Current local checkout note: `codex/bridge-layout-tuning` was re-pointed at `origin/main` commit `12e9777` on July 12, 2026 (its old tip `bcbb945` had a tree identical to the squashed PR #19 merge); all work since is committed on the branch and pushed to PR #20.
 - Title menu and save slots are now tappable, so touch devices can start/continue/load games; the full execution curriculum still needs a hardware keyboard.
 - Playwright now serves a production build (`vite build --base=/` + `vite preview`); the dev server's HMR client could force a page reload mid-test on cold starts.
-- The next meaningful work is merging PR #20, then continuing the remaining Phase 6.5 cleanup: tighter village location regions, per-NPC art/behavior, and goal-based navigation updates before Act 2 content.
+- PRs #20 and #21 are merged. A **mobile usability e2e suite** (`tests/e2e/mobile/`, PR #22) now runs 21 tests against Pixel 7 (Chromium), iPhone 14 (WebKit), and iPad gen 7 (WebKit) device profiles with real touch events; see [`mobile-testing.md`](mobile-testing.md).
+- Building that suite uncovered and fixed three real touch bugs (all on PR #22): the boot loading overlay swallowed the player's first tap during its 500ms fade-out; Phaser translated taps through canvas bounds cached at boot, so taps missed after web fonts reflowed the masthead and the canvas never re-fit after rotation; and review/dialogue buttons were under the 44px touch-target minimum on tablets.
+- One known usability gap is tracked as an expected-failure test: title-menu hit zones scale to ~20px tall on phones, well under the 44px guideline. Fixing it needs a design decision (larger game-space hit zones or a DOM menu on small screens).
+- The next meaningful work is merging PR #22, then continuing the remaining Phase 6.5 cleanup: tighter village location regions, per-NPC art/behavior, and goal-based navigation updates before Act 2 content.
 
 ---
 
@@ -117,11 +120,14 @@ python3 -m unittest tests/python/test_zones.py                        # PASS —
 npm run test:e2e -- tests/e2e/v2-bridge-art.spec.js                   # PASS — 5 tests
 ```
 
-**As of June 29, 2026 the focused responsive-shell verification is clean:**
+**As of July 17, 2026 the mobile usability verification is clean** (the June 29 `mobile-layout.spec.js` viewport checks are superseded by and folded into this suite):
 
 ```bash
-npm run test:e2e -- tests/e2e/mobile-layout.spec.js                   # PASS — 3 tests
+npm run test:e2e:mobile      # PASS — 63 tests: 21 specs × Pixel 7 / iPhone 14 / iPad gen 7
+npm run test:e2e:desktop     # PASS — 11 tests, including the full vertical slice
 ```
+
+WebKit must be installed once per machine for the iOS-engine projects: `npx playwright install webkit`. CI installs both engines. One mobile test is an intentional `test.fail()` (sub-44px title-menu tap targets); Playwright reports it as passing until the underlying design gap is fixed.
 
 **Broader baseline from June 29, 2026 after the responsive shell fix:**
 
@@ -194,15 +200,19 @@ Verification after the fix:
 - Zone data model (`v2/`) and painted-map runtime integration are active for the current bridge/surface/armory slice. Remaining Phase 6.5 work is primarily richer NPC behavior (`NpcSystem`), cleaner goal-based E2E navigation, distinct per-NPC art, and continued objective redesign before Act 2 content.
 - Acts 2-5 not migrated to new scene architecture (Phases 7-10)
 - The Vitest coverage report is scoped to `src/engine/**/*.js`; there is no single automated coverage percentage for `src/game/` or `src/terminal/` yet
-- Mobile support is viable today only for keyboard-equipped devices. The shared input-capability service is in place, the shell now scales without clipping on representative mobile viewports, but capability-based routing into a dedicated Review Mode is not implemented yet. Use [`design/mobile-implementation-plan.md`](design/mobile-implementation-plan.md) for the checkpointed implementation plan.
+- Mobile support is viable today only for keyboard-equipped devices. The shared input-capability service is in place, the shell scales without clipping on real device profiles, title/save/review flows are fully touch-operable and guarded by the `tests/e2e/mobile/` suite, but capability-based routing into a dedicated Review Mode (Checkpoint 3 of [`design/mobile-implementation-plan.md`](design/mobile-implementation-plan.md)) is not implemented yet.
+- Title-menu tap targets are ~20px tall on phones (44px guideline); tracked as an expected-failure test in `tests/e2e/mobile/title-touch.spec.js` pending a design decision — larger game-space hit zones vs. a DOM menu at small sizes.
+- Grid movement and NPC/terminal interaction (`E`) are keyboard-only by design (mobile strategy Tier 1); the mobile suite asserts taps on the play field are inert but safe.
 
 ---
 
-## Code Review Findings — June 21, 2026
+## Code Review Findings — June 21, 2026 — RESOLVED
+
+**Status (July 14, 2026): resolved.** All production fixes (CR-1 through CR-12; CR-7 was a false positive) were verified present on `main` on July 12, 2026 — they landed via later merges, not the original fix branch. PR #16 was closed as superseded during the July 14 repo cleanup; its branch `origin/fix/code-review-cr1-cr12` is intentionally kept because it carries TmuxEmulator/ScoreSystem unit tests portable to the remaining TG-1/TG-3/TG-4 gaps (those behaviors are covered end-to-end by `tests/e2e/gameplay.spec.js`). The findings below are retained as historical reference only; do not re-implement them.
 
 Full-source review run against `main` at `c0e1299`. Findings are grouped by severity. Items already in the Known Gaps list above are excluded.
 
-**Exact implementation instructions for every fix are in [`docs/code-review-fixes.md`](code-review-fixes.md).** That document has the precise code deltas, verification steps, and a PR sequence. This section is the summary; go there to implement.
+**Exact implementation instructions for every fix are in [`docs/code-review-fixes.md`](code-review-fixes.md).** That document has the precise code deltas, verification steps, and a PR sequence.
 
 ### CRITICAL — must fix before next feature branch
 
@@ -316,7 +326,7 @@ Full acceptance criteria in [`design/world-design-critique-and-plan.md`](design/
 
 Checkpoint A is now complete behind a debug flag: `?useV2Zones=1` normalizes the v2 bridge/surface/armory data into the current scene shape and renders it with the placeholder tile/object atlas. Checkpoint B is also complete: collision now comes from tile and object semantics through `zoneSemantics.js`, and `getCellSemantics()` resolves tile, object, terminal, blocker, and location verbs for v2 zones. Checkpoint C is also complete: the v2 bridge debug path now uses the generated bridge-room backdrop asset in `BridgeScene`, and the browser suite now asserts that path via `data-zone-art="bridge-background"`. A consolidation pass after Checkpoint C made object footprint handling shared, added unit coverage for footprints and location semantics, and made the v2 bridge backdrop suppress placeholder tile/object layers so the generated art is visible. The default live flow still uses the legacy zones; next checkpoint is surface + armory art integration.
 
-Code review fixes (PR #16) should also be merged before the Phase 6.5 content work begins.
+The June 21 code review is fully resolved (PR #16 closed as superseded July 14, 2026); no review work blocks Phase 6.5. Merge PR #22 (mobile usability suite + touch fixes) before starting new gameplay branches so the device-profile tests guard them.
 
 ### Low-Capability Agent Execution Plan
 

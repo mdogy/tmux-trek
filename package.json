@@ -12,6 +12,8 @@
     "test": "vitest run",
     "test:watch": "vitest",
     "test:e2e": "playwright test",
+    "test:e2e:desktop": "playwright test --project=desktop",
+    "test:e2e:mobile": "playwright test --project=mobile-chrome --project=mobile-safari --project=tablet-safari",
     "bdd": "cucumber-js \"features/**/*.feature\" --import \"tests/step-definitions/**/*.steps.js\"",
     "assets:list": "node scripts/parse-prompts.js",
     "assets:generate": "node scripts/generate-assets.js",

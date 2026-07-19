@@ -23,6 +23,10 @@ function createLoadingOverlay() {
   const overlay = {
     remove() {
       window.clearInterval(spinner);
+      // The overlay lingers briefly to cover the first scene render, but
+      // it must stop swallowing input immediately — on touch devices the
+      // player's first tap often lands inside this grace period.
+      loading.style.pointerEvents = "none";
       window.setTimeout(() => {
         document
           .querySelectorAll("#boot-loading")
@@ -37,7 +41,9 @@ function createLoadingOverlay() {
       return;
     }
 
-    console.warn("[TmuxTrek] Loading overlay timed out; showing current scene.");
+    console.warn(
+      "[TmuxTrek] Loading overlay timed out; showing current scene.",
+    );
     overlay.remove();
   }, 12_000);
 
