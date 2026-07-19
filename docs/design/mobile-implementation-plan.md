@@ -161,6 +161,12 @@ Commit:
 
 **Goal:** make the existing review surfaces robust enough to be the touch-first destination.
 
+**Status (July 17, 2026): partially complete.** Review/dialogue buttons now enforce the
+44px touch minimum at every viewport (not just ≤540px), the flash-card review overlay is
+verified fully touch-operable on all three device profiles, and layout-fit checks run in
+`tests/e2e/mobile/`. Remaining from this checkpoint: the explicit empty-review state and
+the mobile-routing entry point (blocked on Checkpoint 3).
+
 Need-to-know:
 
 - This is not a visual redesign.
@@ -202,11 +208,12 @@ Commit:
 
 **Goal:** prevent obvious mobile layout failures for the title, review, and keyboard-equipped game path.
 
-**Status:** implemented for the current shell on June 29, 2026. The Phaser canvas now uses
+**Status:** implemented for the current shell on June 29, 2026, and superseded on
+July 17, 2026 by the device-profile mobile usability suite. The Phaser canvas uses
 `Scale.FIT`, the viewport panel keeps a responsive 4:3 aspect ratio, safe-area spacing is
-applied at mobile breakpoints, and `tests/e2e/mobile-layout.spec.js` covers phone portrait,
-phone landscape, and tablet landscape display. Touch-only Review Mode routing remains a
-separate checkpoint.
+applied at mobile breakpoints. `tests/e2e/mobile-layout.spec.js` (viewport-only checks)
+was folded into `tests/e2e/mobile/` (see Checkpoint 5b below). Touch-only Review Mode
+routing remains a separate checkpoint.
 
 Need-to-know:
 
@@ -244,6 +251,39 @@ Verification:
 Commit:
 
 - `fix(mobile): harden responsive shell layout`
+
+## Checkpoint 5b — Device-Profile Usability Suite _(completed July 17, 2026)_
+
+**Goal:** replace viewport-only mobile checks with a real device-profile touch test suite, and fix what it catches.
+
+**Status: complete** (PR #22). What landed:
+
+- `playwright.config.js` projects: `desktop` (existing specs), `mobile-chrome` (Pixel 7),
+  `mobile-safari` (iPhone 14, WebKit), `tablet-safari` (iPad gen 7, WebKit). All specs in
+  `tests/e2e/mobile/` run on all three device profiles with real touch events
+  (`page.touchscreen.tap`, `locator.tap()`), mobile viewports, and device pixel ratios.
+- Suite contents (21 specs × 3 devices): layout fit and overflow in both orientations,
+  sidebar stacking, every title flow by touch (new game / continue / load slot /
+  delete-all / cold-tap activation), name-input focus for the virtual keyboard plus the
+  iOS ≥16px font zoom rule, rotation on title / mid-game / with the dialog open,
+  tap-safety on the keyboard-driven play field, touch-operated flash-card review,
+  terminal fit and focus on a phone, and save persistence.
+- Three product bugs found and fixed: the boot loading overlay intercepted taps during its
+  500ms fade-out (now `pointer-events: none` immediately, with a regression test); Phaser
+  translated taps through canvas bounds cached at boot, so taps missed after font-load
+  reflow and the canvas never re-fit on rotation (scale now refreshes on
+  `document.fonts.ready`, a body `ResizeObserver`, and window resize); review/dialogue
+  buttons were sub-44px on tablets (minimum now unconditional).
+- Tooling: `npm run test:e2e:mobile` / `test:e2e:desktop`; CI installs WebKit;
+  suite conventions documented in [`../mobile-testing.md`](../mobile-testing.md).
+
+**Known tracked gap → future Checkpoint 7:** title-menu hit zones are 540×50 in
+960×720 game space and scale to ~20px tall on phones, far below the 44px guideline.
+Encoded as a `test.fail()` in `tests/e2e/mobile/title-touch.spec.js`, which flips to an
+alert the moment it starts passing. Fixing it is a design decision:
+either enlarge the game-space hit zones/menu typography, or render the title menu as a
+DOM overlay below a canvas size threshold. Take the decision alongside Checkpoint 3
+(touch routing), since a DOM menu would also simplify review-first routing copy.
 
 ## Checkpoint 6 — Documentation Sync
 
