@@ -5,9 +5,9 @@ _The start-here document for resuming or restarting work. Last updated July 18, 
 This is the operational resume doc: what is built today, how to verify it, what is wrong with it, and the immediate next task. It is written so that **a new session, model, or coding agent can pick up the project with no other context.** Read this first, then [`game-design.md`](game-design.md), [`architecture.md`](architecture.md), and [`implementation-plan.md`](implementation-plan.md).
 
 - Live build: <https://mdogy.github.io/tmux-trek/>
-- Latest merged baseline on `origin/main`: `d317b3c` (tappable title menu and save slots, PR #21)
-- Open PRs: [#22](https://github.com/mdogy/tmux-trek/pull/22) — mobile usability e2e suite (Pixel 7 / iPhone 14 / iPad device profiles) plus three touch-input fixes it uncovered
-- Active branch at last verification: `test/mobile-usability-suite`
+- Latest merged and deployed baseline on `origin/main`: `e796fe9` (mobile usability e2e suite + touch-input fixes, PR #22; Pages deploy verified July 19, 2026)
+- Open PRs: none
+- Active branch at last verification: `main`
 - Branch hygiene: a July 14, 2026 cleanup pruned all merged local/remote branches and closed stale PR #16 as superseded; `origin/fix/code-review-cr1-cr12` is intentionally kept because it holds portable TmuxEmulator/ScoreSystem unit tests (see Code Review section)
 - Documentation index: [`README.md`](README.md); mobile test suite doc: [`mobile-testing.md`](mobile-testing.md)
 
@@ -30,7 +30,7 @@ Build TMUX Trek as an educational game where the story makes real tmux actions n
 - PRs #20 and #21 are merged. A **mobile usability e2e suite** (`tests/e2e/mobile/`, PR #22) now runs 21 tests against Pixel 7 (Chromium), iPhone 14 (WebKit), and iPad gen 7 (WebKit) device profiles with real touch events; see [`mobile-testing.md`](mobile-testing.md).
 - Building that suite uncovered and fixed three real touch bugs (all on PR #22): the boot loading overlay swallowed the player's first tap during its 500ms fade-out; Phaser translated taps through canvas bounds cached at boot, so taps missed after web fonts reflowed the masthead and the canvas never re-fit after rotation; and review/dialogue buttons were under the 44px touch-target minimum on tablets.
 - One known usability gap is tracked as an expected-failure test: title-menu hit zones scale to ~20px tall on phones, well under the 44px guideline. Fixing it needs a design decision (larger game-space hit zones or a DOM menu on small screens).
-- The next meaningful work is merging PR #22, then continuing the remaining Phase 6.5 cleanup: tighter village location regions, per-NPC art/behavior, and goal-based navigation updates before Act 2 content.
+- The next meaningful work is the remaining Phase 6.5 cleanup: tighter village location regions, per-NPC art/behavior, and goal-based navigation updates before Act 2 content. The mobile follow-ups (Review Mode routing, tap-target design decision) are queued as Checkpoints 3 and 7 in [`design/mobile-implementation-plan.md`](design/mobile-implementation-plan.md).
 
 ---
 
@@ -326,7 +326,7 @@ Full acceptance criteria in [`design/world-design-critique-and-plan.md`](design/
 
 Checkpoint A is now complete behind a debug flag: `?useV2Zones=1` normalizes the v2 bridge/surface/armory data into the current scene shape and renders it with the placeholder tile/object atlas. Checkpoint B is also complete: collision now comes from tile and object semantics through `zoneSemantics.js`, and `getCellSemantics()` resolves tile, object, terminal, blocker, and location verbs for v2 zones. Checkpoint C is also complete: the v2 bridge debug path now uses the generated bridge-room backdrop asset in `BridgeScene`, and the browser suite now asserts that path via `data-zone-art="bridge-background"`. A consolidation pass after Checkpoint C made object footprint handling shared, added unit coverage for footprints and location semantics, and made the v2 bridge backdrop suppress placeholder tile/object layers so the generated art is visible. The default live flow still uses the legacy zones; next checkpoint is surface + armory art integration.
 
-The June 21 code review is fully resolved (PR #16 closed as superseded July 14, 2026); no review work blocks Phase 6.5. Merge PR #22 (mobile usability suite + touch fixes) before starting new gameplay branches so the device-profile tests guard them.
+The June 21 code review is fully resolved (PR #16 closed as superseded July 14, 2026), and PR #22 (mobile usability suite + touch fixes) is merged and deployed — no outstanding work blocks Phase 6.5, and new gameplay branches are guarded by the device-profile tests.
 
 ### Low-Capability Agent Execution Plan
 
